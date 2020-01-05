@@ -107,6 +107,7 @@ export default class Config extends Vue {
   username = "";
   mounted() {
     this.pullConfig();
+    this.refreshUserName();
   }
 
   refreshUserName() {
