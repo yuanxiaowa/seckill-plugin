@@ -1,6 +1,6 @@
 <template>
   <div>
-    <el-table :data="value" style="width: 100%" default-expand-all size="mini" row-key="id">
+    <el-table :data="value" style="width: 100%" max-height="400" default-expand-all size="mini" row-key="id">
       <el-table-column type="expand">
         <template slot-scope="props">
           <el-table :data="props.row.items" size="mini" row-key="id">

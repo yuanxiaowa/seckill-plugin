@@ -118,3 +118,49 @@ export async function excuteRequestAction<T = any>(
     });
   });
 }
+
+export class ChromePage {
+  tabId: number;
+  constructor(public tab: chrome.tabs.Tab) {
+    this.tabId = tab.id!;
+  }
+  async goto(url: string) {
+    return new Promise<void>(resolve => {
+      var listener = async (
+        details: chrome.webNavigation.WebNavigationCallbackDetails
+      ) => {
+        chrome.webNavigation.onCompleted.removeListener(listener);
+        resolve();
+      };
+      chrome.webNavigation.onCompleted.addListener(listener);
+      // chrome.webRequest.onCompleted.removeListener()
+      chrome.tabs.update({
+        url
+      });
+    });
+  }
+  async waitForResponse(filter: (url: string) => boolean) {
+    return new Promise(resolve => {
+      var listener = async (
+        details: chrome.webRequest.WebResponseCacheDetails
+      ) => {
+        if (filter(details.url)) {
+          resolve();
+          chrome.webRequest.onCompleted.removeListener(listener);
+        }
+      };
+      chrome.webRequest.onCompleted.addListener(listener, {
+        urls: ["*://*/*"],
+        tabId: this.tabId
+      });
+    });
+  }
+  close() {
+    chrome.tabs.remove(this.tabId);
+  }
+}
+
+export async function newPage() {
+  var tab = await getTab();
+  return new ChromePage(tab);
+}

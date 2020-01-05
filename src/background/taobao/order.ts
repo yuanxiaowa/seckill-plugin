@@ -1,6 +1,6 @@
 import Vue from "vue";
 import { ArgOrder, ArgBuyDirect, CoudanArg } from "./structs";
-import { requestData } from "./tools";
+import { requestData, getUserName } from "./tools";
 import { getGoodsInfo } from "./goods";
 import { addCart, getCartList } from "./cart";
 import qs_lib from "querystring";
@@ -370,8 +370,9 @@ export async function submitOrder(args: ArgOrder<any>, retryCount = 0) {
       logFile(ret, `手机订单提交成功`);
       console.log(`\n😃${_n} ----------手机订单提交成功：${args.title}`);
       console.timeEnd(_n + "订单提交 " + startTime);
-      notify(`手机订单提交成功，速度去付款：${args.title}`);
-      sendQQMsg(`手机订单提交成功，速度去付款：${args.title}`);
+      let msg = `(${getUserName()})手机订单提交成功，速度去付款：${args.title}`;
+      notify(msg);
+      sendQQMsg(msg);
       if (args.autopay) {
         pay(ret.alipayWapCashierUrl);
       }

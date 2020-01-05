@@ -51,7 +51,7 @@ export const request: {
   if (referer) {
     headers = Object.assign(
       {
-        _ref: referer
+        _referer: referer
       },
       headers
     );
@@ -83,6 +83,11 @@ request.post = (url, data, options) =>
   request(Object.assign({ url, data, method: <Method>"post" }, options));
 request.jsonp = (url, options) =>
   request(Object.assign({ url, type: <DataType>"jsonp" }, options));
+
+export async function isRedirectedUrl(url: string) {
+  var res = await axios.get(url);
+  return res.request.responseURL !== url;
+}
 
 // @ts-ignore
 window.request = request;

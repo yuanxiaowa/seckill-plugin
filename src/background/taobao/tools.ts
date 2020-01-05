@@ -3,16 +3,24 @@ import md5 from "js-md5";
 import axios from "axios";
 import qs_lib from "qs";
 
-function getToken() {
+export function getCookie(name: string) {
   return new Promise<string>(resolve => {
     chrome.cookies.get(
       {
-        name: "_m_h5_tk",
+        name,
         url: "https://www.taobao.com"
       },
       cookie => resolve(cookie!.value)
     );
   });
+}
+
+export function getToken() {
+  return getCookie("_m_h5_tk");
+}
+
+export async function getUserName() {
+  return (await getCookie("dnk")) || (await getCookie("__nk__"));
 }
 
 const appKey = "12574478";

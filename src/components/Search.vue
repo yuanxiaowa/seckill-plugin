@@ -63,7 +63,7 @@
         <el-button v-if="form_data.platform==='jingdong'" @click="doubleCoudan">0撸</el-button>
       </el-form-item>
     </el-form>
-    <el-table ref="tb" :data="filtered_table_data" @selection-change="onSelectionChange">
+    <el-table ref="tb" max-height="400" :data="filtered_table_data" @selection-change="onSelectionChange">
       <el-table-column type="selection" width="55"></el-table-column>
       <el-table-column label="商品名称">
         <template slot-scope="{row}">

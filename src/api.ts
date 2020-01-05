@@ -18,6 +18,14 @@ function handleError(e: Error) {
   Notification.error(e.message);
 }
 
+export function invoke(name: string, args: any) {
+  return taobao[name](args).catch(handleError);
+}
+
+export function getUserName(platform: string) {
+  return taobao.getUserName(platform).catch(handleError);
+}
+
 export function cartList(platform: string, from_pc = false): Promise<any> {
   return taobao.cartList(platform).catch(handleError);
 }
@@ -142,7 +150,7 @@ export function getPlusQuanpinList() {
 }
 
 export function getPlusQuanpin(data) {
-  return taobao.getPlusQuanpinList(data).catch(handleError);
+  return taobao.getPlusQuanpin(data).catch(handleError);
 }
 
 export function testOrder(params: any) {

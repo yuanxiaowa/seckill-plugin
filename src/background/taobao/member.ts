@@ -1,16 +1,32 @@
 import { requestData } from "./tools";
 import { getTab, destroyTab } from "../page";
 import { delay } from "../common/tool";
-import { request } from "../common/request";
+import { request, isRedirectedUrl } from "../common/request";
 import $ from "jquery";
 import { fromPairs } from "ramda";
 
+export async function isLogin() {
+  return !(await isRedirectedUrl(
+    `https://i.taobao.com/my_taobao.htm?spm=a21bo.2017.754894437.3.5af911d9wQ8Njb&ad_id=&am_id=&cm_id=&pm_id=1501036000a02c5c3739`
+  ));
+}
+
+export async function login() {
+  window.open(
+    "https://login.taobao.com/member/login.jhtml?from=taobaoindex&f=top&style=&sub=true&redirect_url=https%3A%2F%2Fi.taobao.com%2Fmy_taobao.htm%3Fspm%3Da21bo.2017.754894437.3.5af911d9wQ8Njb%26ad_id%3D%26am_id%3D%26cm_id%3D%26pm_id%3D1501036000a02c5c3739"
+  );
+}
+
 export async function checkStatus() {
-  var tab = await getTab();
-  // "https://login.taobao.com/member/login.jhtml?spm=a21bo.2017.754894437.1.5af911d9Ycypny&f=top&redirectURL=https%3A%2F%2Fwww.taobao.com%2F"
-  await delay(3000);
-  destroyTab(tab.id!);
+  // var tab = await getTab();
+  // // "https://login.taobao.com/member/login.jhtml?spm=a21bo.2017.754894437.1.5af911d9Ycypny&f=top&redirectURL=https%3A%2F%2Fwww.taobao.com%2F"
+  // await delay(3000);
+  // destroyTab(tab.id!);
   // axios.get("");
+  if (!(await isLogin())) {
+    login();
+    return false;
+  }
 }
 
 export async function preserveStatus() {}
@@ -58,8 +74,6 @@ export async function getMyCoupons({ page }) {
       };
     })
     .get();
-  // @ts-ignore
-  window.$root = $root;
   return {
     page,
     items,

@@ -12,8 +12,12 @@ import "./order";
 
 // http://doc.cleverqq.cn/479462
 // https://cqhttp.cc/docs/4.10/#/Post?id=%E4%B8%8A%E6%8A%A5%E6%95%B0%E6%8D%AE%E6%A0%BC%E5%BC%8F
-
+var inited = false;
 export function init(config: any) {
+  if (inited) {
+    return;
+  }
+  inited = true;
   if (!config.accept_messages) {
     return;
   }
@@ -22,9 +26,8 @@ export function init(config: any) {
     var { message_type, raw_message, group_id, user_id } = JSON.parse(e.data);
     var text = raw_message; // .replace(/\[CQ:[^\]]+/g, "").trim();
     if (message_type === "group") {
-      if (config.is_main && groups.includes(group_id)) {
+      if (groups.includes(group_id)) {
         if (handler(raw_message)) {
-          console.log(text);
           // sendMsg("你好呀，" + text);
           /* if (
           /(\d+)点|锁单|先锁|0\.\d|速度|红包|抽奖|试试|手慢无|好价|神价/.test(
@@ -33,7 +36,10 @@ export function init(config: any) {
         ) {
           sendGroupMsg(text);
         } */
-          sendGroupMsg(text);
+          if (config.is_main) {
+            console.log(text);
+            sendGroupMsg(text);
+          }
         }
       }
     } else if (message_type === "private") {

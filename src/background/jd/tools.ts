@@ -2,6 +2,18 @@ import axios from "axios";
 import { request } from "../common/request";
 import setting from "./setting";
 
+export function getCookie(name: string) {
+  return new Promise<string>(resolve => {
+    chrome.cookies.get(
+      {
+        name,
+        url: "https://www.jd.com"
+      },
+      cookie => resolve(cookie!.value)
+    );
+  });
+}
+
 export async function requestData(
   body: any,
   {
@@ -43,11 +55,6 @@ export function getBaseData() {
     eid: setting.eid,
     fp: setting.fp
   };
-}
-
-var cookie = "";
-export function getCookie(name: string) {
-  return cookie;
 }
 
 export async function resolveUrl(url: string) {

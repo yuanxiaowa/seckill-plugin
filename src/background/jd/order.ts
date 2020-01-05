@@ -39,7 +39,7 @@ export async function buyDirect(
     }
   }
   var next = async () => {
-    let res = getNextDataByGoodsInfo({ skuId }, args.quantity, data.miao);
+    let res = await getNextDataByGoodsInfo({ skuId }, args.quantity, data.miao);
     return submitOrder(
       Object.assign(
         {
@@ -292,7 +292,7 @@ export async function submitOrder(
   }
 }
 
-export function getNextDataByGoodsInfo(
+export async function getNextDataByGoodsInfo(
   { skuId }: any,
   quantity: number,
   isSeckill = false
@@ -310,7 +310,7 @@ export function getNextDataByGoodsInfo(
       EncryptInfo: "",
       Token: "",
       commlist: [skuId, "", quantity, skuId, 1, 0, 0].join(","),
-      locationid: (getCookie("jdAddrId") || "")
+      locationid: ((await getCookie("jdAddrId")) || "")
         .split("_")
         .slice(0, 3)
         .join("-"),

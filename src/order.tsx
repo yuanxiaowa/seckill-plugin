@@ -14,7 +14,8 @@ import {
   sysTime,
   getTasks,
   cancelTask,
-  checkStatus
+  checkStatus,
+  getUserName
 } from "./api";
 import { Notification, MessageBox } from "element-ui";
 import { Platform } from "./handlers";
@@ -90,12 +91,15 @@ bus.$on("sys-time", (text: string) => {
   sysTime(platform);
 });
 bus.$on("tasks", (data?: { port: number; qq: number }) => {
-  getTasks().then(items => {
+  getTasks().then(async items => {
     sendMsg(
-      items
-        // @ts-ignore
-        .map(item => [item.platform, item.type, item.text, item.time].join("-"))
-        .join("\n") || "暂无",
+      `(${await getUserName("taobao")})` +
+        items
+          // @ts-ignore
+          .map(item =>
+            [item.platform, item.type, item.text, item.time].join("-")
+          )
+          .join("\n") || "暂无",
       data && data.qq
     );
   });

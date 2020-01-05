@@ -2,17 +2,23 @@ import moment from "moment";
 import * as R from "ramda";
 // import "./externals/intercept";
 import { buyDirect, cartBuy, coudan } from "./taobao/order";
-import { getCartList, addCart, updateCart } from "./taobao/cart";
-import { resolveUrl as taobao_resolve_url } from "./taobao/tools";
+import {
+  getCartList,
+  addCart as taobao_add_cart,
+  updateCart
+} from "./taobao/cart";
+import { resolveUrl as taobao_resolve_url, getUserName } from "./taobao/tools";
+import { addCart as jd_add_cart } from "./jd/cart";
 import {
   getGoodsDetail as jd_getGoodsDetail,
   getGoodsList as taobao_getGoodsList
 } from "./taobao/goods";
 import {
-  checkStatus,
+  checkStatus as taobao_check_status,
   getAddresses,
   getMyCoupons as taobao_getMyCoupons
 } from "./taobao/member";
+import { checkStatus as jd_check_status } from "./jd/member";
 import { handlers as taobao_coupons_handlers } from "./taobao/coupon";
 import "./init";
 import { taskManager } from "./common/task-manager";
@@ -23,6 +29,8 @@ import { handlers as jd_coupons_handlers } from "./jd/coupon";
 import { getGoodsList as jd_getGoodsList } from "./jd/goods";
 import { getMyCoupons as jd_getMyCoupons } from "./jd/member";
 import { seckillList } from "./taobao/seckill";
+import { getBillionList, getBillion } from "./jd/billion";
+import { getPlusQuanpin, getPlusQuanpinList } from "./jd/plus";
 
 async function qiangquan({
   data,
@@ -90,8 +98,14 @@ async function getConfig() {
 }
 
 async function setConfig(_config) {
+  if (JSON.stringify(_config) === JSON.stringify(config)) {
+    return;
+  }
   chrome.storage.local.set(_config);
   Object.assign(config, _config);
+  if (_config.is_main) {
+    jd_check_status();
+  }
 }
 
 function cartDel(data) {
@@ -132,7 +146,12 @@ const taobao = {
   getCartList,
   getConfig,
   setConfig,
-  cartAdd: addCart,
+  cartAdd(args, platform: string) {
+    if (platform === "jingdong") {
+      return jd_add_cart(args);
+    }
+    return taobao_add_cart(args);
+  },
   async cartList() {
     return {
       items: await getCartList()
@@ -142,7 +161,12 @@ const taobao = {
   cartUpdateQuantity,
   async cartToggle() {},
   coudan,
-  checkStatus,
+  async checkStatus(platform: string) {
+    if (platform === "jingdong") {
+      return jd_check_status();
+    }
+    return taobao_check_status();
+  },
   sysTime: sysTaobaoTime,
   goodsList(data, platform: string) {
     if (platform === "taobao") {
@@ -166,8 +190,18 @@ const taobao = {
   },
   getSeckillList(args) {
     return seckillList(args.url);
-  }
+  },
+  getJdMillionList: getBillionList,
+  getJdMillion: getBillion,
+  getUserName,
+  getPlusQuanpinList,
+  getPlusQuanpin
 };
 
 // @ts-ignore
 window.taobao = taobao;
+
+taobao.checkStatus("taobao");
+if (config.is_main) {
+  taobao.checkStatus("jingdong");
+}

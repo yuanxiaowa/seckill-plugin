@@ -1,4 +1,5 @@
 import { request } from "../common/request";
+import { getSkuId } from "./goods";
 
 export async function getCartList() {
   var html: string = await request.get(
@@ -131,7 +132,9 @@ export async function toggleCartChecked(data) {
   );
 }
 
-export async function addCart(skuId: string, quantity: number) {
+export async function addCart(args) {
+  var { url, quantity }: { url: string; quantity: number } = args;
+  var skuId = getSkuId(url);
   var { errId, errMsg } = await request.get(
     "https://wq.jd.com/deal/mshopcart/addcmdy",
     {
