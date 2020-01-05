@@ -111,7 +111,7 @@ export default class SeckillList extends Vue {
         group.checked = false;
         group.items.sort((a, b) => b.price - a.price);
         group.items.forEach(item => {
-          item.checked = false;
+          item.checked = true;
         });
       });
       this.list = data;
