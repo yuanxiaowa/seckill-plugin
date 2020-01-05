@@ -60,14 +60,17 @@ export async function getBillion(item) {
   );
   if (code === 16 || code === 17) {
     let date: moment.Moment;
-    if (code === 16) {
-      let s = /(\d{2}:\d{2})/.exec(resultMsg)![1];
-      date = moment(s, "HH:mm");
-      if (s === "00:00") {
+    let arr = /(\d{2}:\d{2})/.exec(resultMsg);
+    if (arr) {
+      date = moment(arr[1], "HH:mm");
+      if (arr[1] === "00:00") {
         date = date.add("d", 1);
       }
     } else {
       date = moment(item.nextTime);
+      if (Date.now() > date.valueOf() + 1000) {
+        return;
+      }
     }
     (async () => {
       await taskManager.registerTask(
