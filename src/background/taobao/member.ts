@@ -1,4 +1,4 @@
-import { requestData } from "./tools";
+import { requestData, getUserName } from "./tools";
 import { getTab, destroyTab } from "../page";
 import { delay } from "../common/tool";
 import { request, isRedirectedUrl } from "../common/request";
@@ -33,6 +33,7 @@ export async function checkStatus() {
     login();
     return false;
   }
+  return getUserName()
 }
 
 export async function preserveStatus() {}
