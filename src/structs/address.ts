@@ -1,0 +1,3 @@
+interface AddressItem {
+  id: string;
+}
