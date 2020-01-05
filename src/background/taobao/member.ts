@@ -33,7 +33,7 @@ export async function checkStatus() {
     login();
     return false;
   }
-  return getUserName()
+  return getUserName();
 }
 
 export async function preserveStatus() {}
@@ -61,7 +61,10 @@ export async function getMyCoupons({ page }) {
   var items = $eles
     .map((_, ele) => {
       var $ele = $(ele);
-      if ($ele.hasClass("tmall-coupon-used")) {
+      if (
+        $ele.hasClass("tmall-coupon-used") ||
+        $ele.hasClass("tmall-coupon-out")
+      ) {
         return;
       }
       var url = $ele.find(".btn").attr("href")!;
