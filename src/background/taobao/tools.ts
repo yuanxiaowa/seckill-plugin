@@ -20,7 +20,7 @@ export function getToken() {
 }
 
 export async function getUserName() {
-  return decodeURIComponent((await getCookie("dnk")) || (await getCookie("__nk__")));
+  return eval(`"${(await getCookie("dnk")) || (await getCookie("__nk__"))}"`);
 }
 
 const appKey = "12574478";
