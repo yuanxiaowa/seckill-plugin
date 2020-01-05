@@ -26,6 +26,10 @@ export function getUserName(platform: string) {
   return taobao.getUserName(platform).catch(handleError);
 }
 
+export function logout(platform: string) {
+  return taobao.logout(platform).catch(handleError);
+}
+
 export function cartList(platform: string, from_pc = false): Promise<any> {
   return taobao.cartList(platform).catch(handleError);
 }

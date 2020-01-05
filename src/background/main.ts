@@ -16,7 +16,8 @@ import {
 import {
   checkStatus as taobao_check_status,
   getAddresses,
-  getMyCoupons as taobao_getMyCoupons
+  getMyCoupons as taobao_getMyCoupons,
+  logout
 } from "./taobao/member";
 import { checkStatus as jd_check_status } from "./jd/member";
 import { handlers as taobao_coupons_handlers } from "./taobao/coupon";
@@ -195,7 +196,8 @@ const taobao = {
   getJdMillion: getBillion,
   getUserName,
   getPlusQuanpinList,
-  getPlusQuanpin
+  getPlusQuanpin,
+  logout
 };
 
 // @ts-ignore

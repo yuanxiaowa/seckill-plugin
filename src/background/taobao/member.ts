@@ -17,6 +17,12 @@ export async function login() {
   );
 }
 
+export async function logout() {
+  window.open(
+    "https://login.taobao.com/member/logout.jhtml?spm=a21bo.2017.754894437.7.5af911d9e4nvqR&f=top&out=true&redirectURL=https%3A%2F%2Fwww.taobao.com%2F"
+  );
+}
+
 export async function checkStatus() {
   // var tab = await getTab();
   // // "https://login.taobao.com/member/login.jhtml?spm=a21bo.2017.754894437.1.5af911d9Ycypny&f=top&redirectURL=https%3A%2F%2Fwww.taobao.com%2F"
