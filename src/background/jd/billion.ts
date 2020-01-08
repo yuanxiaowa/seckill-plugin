@@ -1,8 +1,15 @@
 import { request } from "../common/request";
 import { taskManager } from "../common/task-manager";
 import moment from "moment";
+import qs_lib from "querystring";
 
 export async function getBillionList({ url }) {
+  if (url.startsWith("https://story.m.jd.com")) {
+    return getBillionList1(url);
+  }
+  return getBillionList2(url);
+}
+export async function getBillionList1(url: string) {
   var {
     data: { billionFloor, hotFloor }
   } = await request.post(
@@ -25,12 +32,135 @@ export async function getBillionList({ url }) {
       url: `https://item.jd.com/${item.skuId}.html`,
       referer: url,
       disCount: Number(item.disCount),
-      pDisCount: Number(item.pDisCount)
+      pDisCount: Number(item.pDisCount),
+      type: 1
     })
   );
 }
 
+export async function getBillionList2(url) {
+  var {
+    data: {
+      billionAllowanceHighCouponList: { list }
+    }
+  } = await request.post(
+    "https://api.m.jd.com/client.action",
+    qs_lib.stringify({
+      functionId: "qryCompositeMaterials",
+      uuid: "1563154528363471128418",
+      area: "",
+      body: JSON.stringify({
+        qryParam: JSON.stringify([
+          {
+            type: "advertGroup",
+            id: "04056297",
+            mapTo: "billionAllowanceTitle"
+          },
+          {
+            type: "advertGroup",
+            id: "04066392",
+            mapTo: "billionAllowanceOrderConfig"
+          },
+          {
+            type: "advertGroup",
+            id: "04047647",
+            mapTo: "billionAllowancePreCouponList",
+            next: [
+              {
+                type: "advertGroup",
+                mapKey: "comment[0]",
+                mapTo: "OrderConfig"
+              }
+            ]
+          },
+          {
+            type: "advertGroup",
+            id: "04050913",
+            mapTo: "billionAllowanceHighCouponList",
+            next: [
+              {
+                type: "advertGroup",
+                mapKey: "comment[1]",
+                mapTo: "OrderConfig"
+              },
+              {
+                type: "productSku",
+                mapKey: "extension.cpSkuId",
+                mapTo: "product"
+              }
+            ]
+          },
+          {
+            type: "advertGroup",
+            id: "04025251",
+            mapTo: "billionAllowanceCouponMore"
+          },
+          {
+            type: "advertGroup",
+            id: "04025252",
+            mapTo: "billionAllowanceGoodsMore"
+          },
+          { type: "advertGroup", id: "04056492", mapTo: "HypermarketTitle" },
+          {
+            type: "advertGroup",
+            id: "04080382",
+            mapTo: "HypermarketList",
+            next: [
+              {
+                type: "productGroup",
+                mapKey: "comment[0]",
+                mapTo: "productList"
+              }
+            ]
+          }
+        ]),
+        pageId: "1426387",
+        activityIdRaw: "00576882",
+        previewTime: "",
+        platform: "APP/m"
+      }),
+      clientVersion: "1.0.0",
+      client: "wh5"
+    }),
+    {
+      referer: url
+    }
+  );
+  var activityId = /active\/(\w+)/.exec(url)![1];
+  var ret = list.map(({ extension, next: { OrderConfig, product } }, i) => {
+    var item = product.data.list[0];
+    var nextTime;
+    if (OrderConfig) {
+      nextTime = moment(parseInt(OrderConfig.stageName) + "", "HH").valueOf();
+    } else {
+    }
+    return {
+      skuName: item.name,
+      skuImage: item.image,
+      p: Number(item.pPrice),
+      pDisCount: item.pPrice - extension.disCount,
+      disCount: extension.disCount,
+      type: 2,
+      activityId,
+      key: extension.key,
+      roleId: extension.roleId,
+      url: `https://item.jd.com/${item.skuId}.html`,
+      referer: url,
+      nextTime
+    };
+  });
+  console.log(ret);
+  return ret;
+}
+
 export async function getBillion(item) {
+  if (item.type === 1) {
+    return getBillion1(item);
+  }
+  return getBillion2(item);
+}
+
+export async function getBillion1(item) {
   // {"code":999,"drawNum":1,"resultMsg":"领取成功！感谢您的参与，祝您购物愉快~","status":1}
   // {"code":17,"drawNum":3,"resultMsg":"此券已经被抢完了，下次记得早点来哟~","status":-1}
   var { code, resultMsg } = await request.post(
@@ -58,6 +188,7 @@ export async function getBillion(item) {
       }
     }
   );
+  console.log(item.skuName, code, resultMsg);
   if (code === 16 || code === 17) {
     let date: moment.Moment;
     let arr = /(\d{2}:\d{2})/.exec(resultMsg);
@@ -86,4 +217,40 @@ export async function getBillion(item) {
     })();
   }
   return { data: item.skuName + "\n" + resultMsg, code: 0 };
+}
+
+export async function getBillion2(item) {
+  var { subCodeMsg, subCode } = await request.post(
+    "https://api.m.jd.com/client.action",
+    qs_lib.stringify({
+      functionId: "newBabelAwardCollection",
+      body: JSON.stringify({
+        activityId: item.activityId,
+        scene: 1,
+        args: `key=${item.key},roleId=${item.roleId}`
+      }),
+      clientVersion: "1.0.0",
+      client: "wh5"
+    }),
+    {
+      referer: item.referer
+    }
+  );
+  // {"subCodeMsg":"本时段优惠券已抢完，请14:00再来吧！","subCode":"D2","code":"0","msg":null}
+  // Apple 苹果 iPhone 11 手机 黑色 全网通128G A25 活动太火爆，休息一会再来哟~~
+  // 鲜本味 德国罗曼白羽鸡蛋 30枚 1.35kg 粉壳蛋年货礼盒 A16 您提交过于频繁，过一会再试试吧~
+  console.log(item.skuName, subCode, subCodeMsg);
+  if (/(\d{2}:\d{2})/.test(subCodeMsg)) {
+    let nextTime = moment(RegExp.$1, "HH:mm").valueOf();
+    await taskManager.registerTask(
+      {
+        name: item.skuName,
+        platform: "jingdong",
+        comment: "京东百亿补贴",
+        time: nextTime
+      },
+      nextTime
+    );
+    return getBillion2(item);
+  }
 }
