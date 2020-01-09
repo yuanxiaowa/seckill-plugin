@@ -23,7 +23,14 @@ import { checkStatus as jd_check_status } from "./jd/member";
 import { handlers as taobao_coupons_handlers } from "./taobao/coupon";
 import "./init";
 import { taskManager } from "./common/task-manager";
-import { config } from "./common/setting";
+import {
+  config,
+  set_config,
+  get_config,
+  get_accounts,
+  accounts,
+  set_accounts
+} from "./common/setting";
 import { sysTaobaoTime } from "./common/time";
 import { resolveUrl as jd_resolve_url } from "./jd/tools";
 import { handlers as jd_coupons_handlers } from "./jd/coupon";
@@ -32,6 +39,7 @@ import { getMyCoupons as jd_getMyCoupons } from "./jd/member";
 import { seckillList } from "./taobao/seckill";
 import { getBillionList, getBillion } from "./jd/billion";
 import { getPlusQuanpin, getPlusQuanpinList } from "./jd/plus";
+import { getRedirectedUrl } from "./common/request";
 
 async function qiangquan({
   data,
@@ -95,18 +103,28 @@ async function buy_from_cart(args: any, t?: string) {
 }
 
 async function getConfig() {
-  return R.clone(config);
+  return get_config();
 }
 
 async function setConfig(_config) {
   if (JSON.stringify(_config) === JSON.stringify(config)) {
     return;
   }
-  chrome.storage.local.set(_config);
-  Object.assign(config, _config);
+  set_config(_config);
   if (_config.is_main) {
     jd_check_status();
   }
+}
+
+async function getAccounts() {
+  return get_accounts();
+}
+
+async function setAccounts(_accounts) {
+  if (JSON.stringify(_accounts) === JSON.stringify(accounts)) {
+    return;
+  }
+  set_accounts(_accounts);
 }
 
 function cartDel(data) {
@@ -147,6 +165,8 @@ const taobao = {
   getCartList,
   getConfig,
   setConfig,
+  getAccounts,
+  setAccounts,
   cartAdd(args, platform: string) {
     if (platform === "jingdong") {
       return jd_add_cart(args);
@@ -197,7 +217,8 @@ const taobao = {
   getUserName,
   getPlusQuanpinList,
   getPlusQuanpin,
-  logout
+  logout,
+  getRedirectedUrl
 };
 
 // @ts-ignore

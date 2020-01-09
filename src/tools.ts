@@ -1,4 +1,4 @@
-import { resolveUrl } from "./api";
+import { resolveUrl, getRedirectedUrl } from "./api";
 import { Platform } from "./handlers";
 
 /*
@@ -212,6 +212,13 @@ export function resolveText(text: string, datetime?: string | Date) {
         action = "coudan";
       }
     }
+    if (type !== "coudan" && type !== "qiangquan") {
+      if (
+        urls.find(item => item.includes(".jd.com/") || /\bt.cn\//.test(item))
+      ) {
+        type = "qiangquan";
+      }
+    }
     // @ts-ignore
     return <Ret>{
       type: type!,
@@ -253,9 +260,14 @@ export async function getUrls({ urls, platform }: any): Promise<string[]> {
 }
 
 export async function getDealedData(data: any) {
-  var platform = "taobao";
-  if (data.urls[0].includes(".jd.com")) {
+  var platform = "";
+  if (/^\w{11}$|\.(taobao|tmall)\.com\//.test(data.urls[0])) {
+    platform = "taobao";
+  } else if (/\.jd\.com\//.test(data.urls[0])) {
     platform = "jingdong";
+  } else {
+    data.urls = Promise.all(data.urls.map(getRedirectedUrl));
+    return getDealedData(data);
   }
   data.platform = platform;
   var urls = await getUrls(data);

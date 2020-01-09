@@ -10,7 +10,10 @@ export async function getWindow() {
         height: 100,
         type: "popup"
       },
-      window => resolve(window)
+      window => {
+        window!.alwaysOnTop = false;
+        resolve(window);
+      }
     );
   });
 }
@@ -20,8 +23,8 @@ export async function getTab(): Promise<chrome.tabs.Tab> {
   return new Promise(resolve => {
     chrome.tabs.create(
       {
-        windowId: win.id
-        // active: false
+        windowId: win.id,
+        active: false
       },
       resolve
     );
@@ -124,7 +127,7 @@ export class ChromePage {
   constructor(public tab: chrome.tabs.Tab) {
     this.tabId = tab.id!;
   }
-  async goto(url: string) {
+  goto(url: string) {
     return new Promise<void>(resolve => {
       var listener = async (
         details: chrome.webNavigation.WebNavigationCallbackDetails
@@ -139,7 +142,20 @@ export class ChromePage {
       });
     });
   }
-  async waitForResponse(filter: (url: string) => boolean) {
+  evaluate(fn: string | Function, ...args: any[]) {
+    var args_str = args.map(arg => JSON.stringify(arg)).join(",");
+    var code = typeof fn !== "string" ? `(${fn.toString()})(${args_str})` : fn;
+    return new Promise(resolve => {
+      chrome.tabs.executeScript(
+        this.tabId,
+        {
+          code
+        },
+        resolve
+      );
+    });
+  }
+  waitForResponse(filter: (url: string) => boolean) {
     return new Promise(resolve => {
       var listener = async (
         details: chrome.webRequest.WebResponseCacheDetails
@@ -155,6 +171,71 @@ export class ChromePage {
       });
     });
   }
+  waitForResponseBody(filter: (url: string) => boolean) {
+    return new Promise(resolve => {
+      chrome.debugger.attach(
+        {
+          tabId: this.tabId
+        },
+        "1.0",
+        () => {
+          chrome.debugger.sendCommand(
+            {
+              //first enable the Network
+              tabId: this.tabId
+            },
+            "Network.enable"
+          );
+          chrome.debugger.onEvent.addListener(
+            (debuggee, message, params: any) => {
+              if (message === "Network.responseReceived") {
+                if (!filter(params.response.url)) {
+                  return;
+                }
+                chrome.debugger.sendCommand(
+                  {
+                    tabId: this.tabId
+                  },
+                  "Network.getResponseBody",
+                  {
+                    requestId: params.requestId
+                  },
+                  ({ base64Encoded, body }: any) => {
+                    resolve(body);
+                    chrome.debugger.detach(debuggee);
+                  }
+                );
+              }
+            }
+          );
+        }
+      );
+
+      // var listener = async (
+      //   details: chrome.webRequest.WebResponseCacheDetails
+      // ) => {
+      //   if (filter(details.url)) {
+      //     resolve();
+      //     chrome.webRequest.onCompleted.removeListener(listener);
+      //   }
+      // };
+      // chrome.webRequest.onCompleted.addListener(listener, {
+      //   urls: ["*://*/*"],
+      //   tabId: this.tabId
+      // });
+    });
+  }
+  waitForNavigation() {
+    return new Promise<void>(resolve => {
+      var listener = async (
+        details: chrome.webNavigation.WebNavigationCallbackDetails
+      ) => {
+        chrome.webNavigation.onCompleted.removeListener(listener);
+        resolve();
+      };
+      chrome.webNavigation.onCompleted.addListener(listener);
+    });
+  }
   close() {
     chrome.tabs.remove(this.tabId);
   }
@@ -164,3 +245,8 @@ export async function newPage() {
   var tab = await getTab();
   return new ChromePage(tab);
 }
+
+/* newPage().then(async page => {
+  await page.goto("https://www.baidu.com");
+  page.waitForResponseBody(url => url.startsWith("https://dss3.bdstatic.com/"));
+}); */

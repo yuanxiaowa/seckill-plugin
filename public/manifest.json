@@ -58,6 +58,7 @@
   // ],
   // 权限申请
   "permissions": [
+    "debugger",
     "cookies",
     "contextMenus", // 右键菜单
     "tabs", // 标签

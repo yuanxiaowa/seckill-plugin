@@ -1,4 +1,6 @@
 import { request, isRedirectedUrl } from "../common/request";
+import { newPage } from "../page";
+import { accounts } from "../common/setting";
 
 export async function isLoginMobile() {
   var { retcode } = await request.jsonp(
@@ -10,20 +12,62 @@ export async function isLoginMobile() {
   return retcode === 0;
 }
 
-export function loginMobile() {
-  window.open(
-    "https://plogin.m.jd.com/cgi-bin/m/qqlogin?appid=300&returnurl=https%3A%2F%2Fwqlogin1.jd.com%2Fpassport%2FLoginRedirect%3Fstate%3D814378955%26returnurl%3D%252F%252Fhome.m.jd.com%252FmyJd%252Fnewhome.action%253Fsceneval%253D2%2526ufc%253D%2526&source=wq_passport&risk_jd[eid]=TNNEVY6UM2645G3OEU4WPA5OIB7A4MZSUPXMQVREJQ2P5IZKD5RUIEF7AXO6RA5W5SMDN3LPMAPSKAOKQWLD4ADVGU&risk_jd[fp]=dba9c5bd2179493db69f975d63bb78e5"
+export async function loginMobile() {
+  var page = await newPage();
+  await page.goto(
+    "https://plogin.m.jd.com/login/login?appid=300&returnurl=https%3A%2F%2Fwqlogin2.jd.com%2Fpassport%2FLoginRedirect%3Fstate%3D1100300751178%26returnurl%3D%252F%252Fhome.m.jd.com%252FmyJd%252Fnewhome.action%253Fsceneval%253D2%2526ufc%253D%2526&source=wq_passport"
   );
+  if (!accounts.jingdong.password) {
+    return;
+  }
+  await page.evaluate(function(account) {
+    var sw = document.querySelector<HTMLLinkElement>(".planBLogin")!;
+    if (sw.textContent === "帐号密码登录") {
+      sw.click();
+    }
+    var username = document.querySelector<HTMLInputElement>("#username")!;
+    username.value = account.username;
+    username.dispatchEvent(new Event("input"));
+    var pwd = document.querySelector<HTMLInputElement>("#pwd")!;
+    pwd.value = account.password;
+    pwd.dispatchEvent(new Event("input"));
+    document.querySelector<HTMLLinkElement>(".btn")!.click();
+  }, accounts.jingdong);
+  /* await page.waitForResponse(
+    startsWith("https://jcap.m.jd.com/cgi-bin/api/check")
+  ); */
+  // await page.waitForNavigation();
+  // page.close();
 }
 
 export async function isLoginPc() {
   return !(await isRedirectedUrl("https://home.jd.com/"));
 }
 
-export function loginPc() {
-  window.open(
-    "https://qq.jd.com/new/qq/login.aspx?ReturnUrl=https%3A%2F%2Fwww.jd.com%2F"
+export async function loginPc() {
+  var page = await newPage();
+  await page.goto(
+    "https://passport.jd.com/uc/login?ReturnUrl=https%3A%2F%2Forder.jd.com%2Fcenter%2Flist.action"
   );
+  if (!accounts.jingdong.password) {
+    return;
+  }
+  await page.evaluate(account => {
+    var sw = document.querySelector<HTMLLinkElement>(".login-tab-r a")!;
+    if (!sw.classList.contains("active")) {
+      sw.click();
+    }
+    document.querySelector<HTMLInputElement>("#loginname")!.value =
+      account.username;
+    document.querySelector<HTMLInputElement>("#nloginpwd")!.value =
+      account.username;
+    document.querySelector<HTMLLinkElement>("#loginsubmit")!.click();
+  }, accounts.jingdong);
+  /* window.open(
+    "https://qq.jd.com/new/qq/login.aspx?ReturnUrl=https%3A%2F%2Fwww.jd.com%2F"
+  ); */
+  // await page.waitForNavigation();
+  // page.close();
 }
 
 var mobile_logined = false;

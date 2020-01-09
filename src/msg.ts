@@ -27,7 +27,7 @@ export function init(config: any) {
     var text = raw_message; // .replace(/\[CQ:[^\]]+/g, "").trim();
     if (message_type === "group") {
       if (groups.includes(group_id)) {
-        if (handler(raw_message)) {
+        if (handler(raw_message) && !raw_message.includes("饿了么")) {
           // sendMsg("你好呀，" + text);
           /* if (
           /(\d+)点|锁单|先锁|0\.\d|速度|红包|抽奖|试试|手慢无|好价|神价/.test(

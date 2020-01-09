@@ -1,3 +1,5 @@
+import { clone } from "ramda";
+
 export const UA = {
   wap:
     "Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A372 Safari/604.1",
@@ -15,6 +17,37 @@ export const config = {
   accept_messages: true,
   keywords: []
 };
+
+export function get_config() {
+  return clone(config);
+}
+
+export function set_config(_conf) {
+  Object.assign(config, _conf);
+  localStorage.setItem("config", JSON.stringify(config));
+}
+
+export const accounts = {
+  jingdong: {
+    username: "",
+    password: "",
+    paypass: ""
+  },
+  taobao: {
+    username: "",
+    password: "",
+    paypass: ""
+  }
+};
+
+export function get_accounts() {
+  return clone(accounts);
+}
+
+export function set_accounts(_conf) {
+  Object.assign(accounts, _conf);
+  localStorage.setItem("accounts", JSON.stringify(accounts));
+}
 
 export const DT = {
   taobao: 0,

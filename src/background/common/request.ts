@@ -19,7 +19,7 @@ interface RequestOption {
   headers?: Record<string, string>;
   type?: DataType;
   referer?: string;
-  dataType?: "json";
+  dataType?: "json" | "form";
 }
 
 // @ts-ignore
@@ -64,6 +64,8 @@ export const request: {
       },
       headers
     );
+  } else if (dataType === "form") {
+    data = qs_lib.stringify(data);
   }
   var res = await axios({
     url,
@@ -84,9 +86,13 @@ request.post = (url, data, options) =>
 request.jsonp = (url, options) =>
   request(Object.assign({ url, type: <DataType>"jsonp" }, options));
 
-export async function isRedirectedUrl(url: string) {
+export async function getRedirectedUrl(url: string) {
   var res = await axios.get(url);
-  return res.request.responseURL !== url;
+  return res.request.responseURL;
+}
+
+export async function isRedirectedUrl(url: string) {
+  return (await getRedirectedUrl(url)) !== url;
 }
 
 // @ts-ignore

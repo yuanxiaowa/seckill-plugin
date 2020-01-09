@@ -91,6 +91,9 @@ export function comment(data: any, platform: string): Promise<any> {
 export function resolveUrl(data: any, platform: string): Promise<any> {
   return taobao.resolveUrl(data.data, platform).catch(handleError);
 }
+export function getRedirectedUrl(url: string): Promise<string> {
+  return taobao.getRedirectedUrl(url).catch(handleError);
+}
 
 export function getQrcode(url: string) {
   return taobao.getQrcode(url).catch(handleError);
@@ -123,6 +126,14 @@ export function getConfig() {
 
 export function setConfig(data: any) {
   return taobao.setConfig(data).catch(handleError);
+}
+
+export function getAccounts() {
+  return taobao.getAccounts().catch(handleError);
+}
+
+export function setAccounts(data: any) {
+  return taobao.setAccounts(data).catch(handleError);
 }
 
 export function getTasks() {

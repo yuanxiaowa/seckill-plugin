@@ -1,7 +1,6 @@
 import { request } from "../common/request";
 import { taskManager } from "../common/task-manager";
 import moment from "moment";
-import qs_lib from "querystring";
 
 export async function getBillionList({ url }) {
   if (url.startsWith("https://story.m.jd.com")) {
@@ -45,7 +44,7 @@ export async function getBillionList2(url) {
     }
   } = await request.post(
     "https://api.m.jd.com/client.action",
-    qs_lib.stringify({
+    {
       functionId: "qryCompositeMaterials",
       uuid: "1563154528363471128418",
       area: "",
@@ -121,9 +120,10 @@ export async function getBillionList2(url) {
       }),
       clientVersion: "1.0.0",
       client: "wh5"
-    }),
+    },
     {
-      referer: url
+      referer: url,
+      dataType: "form"
     }
   );
   var activityId = /active\/(\w+)/.exec(url)![1];
@@ -222,7 +222,7 @@ export async function getBillion1(item) {
 export async function getBillion2(item) {
   var { subCodeMsg, subCode } = await request.post(
     "https://api.m.jd.com/client.action",
-    qs_lib.stringify({
+    {
       functionId: "newBabelAwardCollection",
       body: JSON.stringify({
         activityId: item.activityId,
@@ -231,9 +231,10 @@ export async function getBillion2(item) {
       }),
       clientVersion: "1.0.0",
       client: "wh5"
-    }),
+    },
     {
-      referer: item.referer
+      referer: item.referer,
+      dataType: "form"
     }
   );
   // {"subCodeMsg":"本时段优惠券已抢完，请14:00再来吧！","subCode":"D2","code":"0","msg":null}
