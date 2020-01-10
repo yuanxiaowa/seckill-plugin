@@ -69,7 +69,6 @@ export default class AccountInfo extends Vue {
 
   async created() {
     this.form = await getAccounts();
-    console.log(this.form);
     this.$nextTick(() => {
       this.$watch("form", setAccounts, {
         deep: true

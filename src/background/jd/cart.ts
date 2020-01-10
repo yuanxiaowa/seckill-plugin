@@ -61,7 +61,7 @@ export async function getCartList() {
           itemId: itemId,
           title: sku.name,
           cid: sku.cid,
-          img: "//img10.360buyimg.com/cms/s80x80_" + sku.image,
+          img: "https://img10.360buyimg.com/cms/s80x80_" + sku.image,
           url: `https://item.jd.com/${sku.id}.html`,
           price: product.price / 100,
           quantity: product.num,

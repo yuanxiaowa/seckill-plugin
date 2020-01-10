@@ -56,7 +56,7 @@ export function buyDirect(
   t: string,
   platform: string
 ): Promise<any> {
-  return taobao.buy(data, t).catch(handleError);
+  return taobao.buy(data, t, platform).catch(handleError);
 }
 export function coudan(data: any, platform: string): Promise<any> {
   return taobao.coudan(data, platform).catch(handleError);

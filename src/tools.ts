@@ -261,7 +261,9 @@ export async function getUrls({ urls, platform }: any): Promise<string[]> {
 
 export async function getDealedData(data: any) {
   var platform = "";
-  if (/^\w{11}$|\.(taobao|tmall)\.com\//.test(data.urls[0])) {
+  if (
+    /^\w{11}$|\.(taobao|tmall)\.com\/|^https:\/\/m\.tb\.cn\//.test(data.urls[0])
+  ) {
     platform = "taobao";
   } else if (/\.jd\.com\//.test(data.urls[0])) {
     platform = "jingdong";

@@ -23,7 +23,7 @@ export function get_config() {
 }
 
 export function set_config(_conf) {
-  Object.assign(config, _conf);
+  Object.assign(config, clone(_conf));
   localStorage.setItem("config", JSON.stringify(config));
 }
 
@@ -45,7 +45,7 @@ export function get_accounts() {
 }
 
 export function set_accounts(_conf) {
-  Object.assign(accounts, _conf);
+  Object.assign(accounts, clone(_conf));
   localStorage.setItem("accounts", JSON.stringify(accounts));
 }
 

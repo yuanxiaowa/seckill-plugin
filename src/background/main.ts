@@ -1,14 +1,21 @@
 import moment from "moment";
 import * as R from "ramda";
 // import "./externals/intercept";
-import { buyDirect, cartBuy, coudan } from "./taobao/order";
 import {
-  getCartList,
+  buyDirect as taobao_buyDirect,
+  cartBuy as taobao_cartBuy,
+  coudan
+} from "./taobao/order";
+import {
+  getCartList as taobao_getCartList,
   addCart as taobao_add_cart,
   updateCart
 } from "./taobao/cart";
 import { resolveUrl as taobao_resolve_url, getUserName } from "./taobao/tools";
-import { addCart as jd_add_cart } from "./jd/cart";
+import {
+  addCart as jd_add_cart,
+  getCartList as jd_getCartList
+} from "./jd/cart";
 import {
   getGoodsDetail as jd_getGoodsDetail,
   getGoodsList as taobao_getGoodsList
@@ -40,6 +47,7 @@ import { seckillList } from "./taobao/seckill";
 import { getBillionList, getBillion } from "./jd/billion";
 import { getPlusQuanpin, getPlusQuanpinList } from "./jd/plus";
 import { getRedirectedUrl } from "./common/request";
+import { buyDirect as jd_buyDirect, cartBuy as jd_cartBuy } from "./jd/order";
 
 async function qiangquan({
   data,
@@ -60,7 +68,8 @@ async function qiangquan({
   return { url: data };
 }
 
-async function buy(args: any, t?: string) {
+async function buy(args: any, t: string, platform: string) {
+  var handler = platform === "jingdong" ? jd_buyDirect : taobao_buyDirect;
   if (t) {
     let time = moment(t).valueOf();
     let diff = time - Date.now();
@@ -69,19 +78,20 @@ async function buy(args: any, t?: string) {
         {
           name: "抢单",
           time: t,
-          platform: "taobao",
+          platform,
           comment: args._comment
         },
         time
       );
-      buyDirect(args, p);
+      handler(args, p);
       return;
     }
   }
-  return buyDirect(args);
+  return handler(args);
 }
 
-async function buy_from_cart(args: any, t?: string) {
+async function buy_from_cart(args: any, t: string, platform: string) {
+  var handler = platform === "jingdong" ? jd_cartBuy : taobao_cartBuy;
   if (t) {
     let time = moment(t).valueOf();
     let diff = time - Date.now();
@@ -95,11 +105,11 @@ async function buy_from_cart(args: any, t?: string) {
         },
         time
       );
-      cartBuy(args, p);
+      handler(args, p);
       return;
     }
   }
-  return cartBuy(args);
+  return handler(args);
 }
 
 async function getConfig() {
@@ -162,7 +172,7 @@ const taobao = {
   qiangquan,
   buy,
   cartBuy: buy_from_cart,
-  getCartList,
+  // getCartList: taobao_getCartList,
   getConfig,
   setConfig,
   getAccounts,
@@ -173,9 +183,12 @@ const taobao = {
     }
     return taobao_add_cart(args);
   },
-  async cartList() {
+  async cartList(platform: string) {
+    if (platform === "jingdong") {
+      return jd_getCartList();
+    }
     return {
-      items: await getCartList()
+      items: await taobao_getCartList()
     };
   },
   cartDel,

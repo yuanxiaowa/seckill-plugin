@@ -1,6 +1,7 @@
 import { request, isRedirectedUrl } from "../common/request";
 import { newPage } from "../page";
 import { accounts } from "../common/setting";
+import { delay } from "../common/tool";
 
 export async function isLoginMobile() {
   var { retcode } = await request.jsonp(
@@ -20,6 +21,7 @@ export async function loginMobile() {
   if (!accounts.jingdong.password) {
     return;
   }
+  await delay(1000);
   await page.evaluate(function(account) {
     var sw = document.querySelector<HTMLLinkElement>(".planBLogin")!;
     if (sw.textContent === "帐号密码登录") {
@@ -52,6 +54,7 @@ export async function loginPc() {
   if (!accounts.jingdong.password) {
     return;
   }
+  await delay(1000);
   await page.evaluate(account => {
     var sw = document.querySelector<HTMLLinkElement>(".login-tab-r a")!;
     if (!sw.classList.contains("active")) {

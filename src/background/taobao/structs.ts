@@ -35,6 +35,7 @@ export interface ArgOrder<T> {
   addressId?: string;
   referer?: string;
   autopay?: boolean;
+  is_pc?: boolean;
 }
 
 export interface ArgCartBuy {
