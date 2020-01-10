@@ -60,9 +60,28 @@ async function qiangquan({
 }) {
   var handlers =
     platform === "jingdong" ? jd_coupons_handlers : taobao_coupons_handlers;
+
   for (let handler of handlers) {
     if (handler.test(data)) {
-      return (handler.page || handler.api)!(data);
+      let h = (handler.page || handler.api)!;
+      if (t) {
+        let time = moment(t).valueOf();
+        let diff = time - Date.now();
+        if (diff > 0) {
+          let p = taskManager.registerTask(
+            {
+              name: "抢券",
+              time: t,
+              platform,
+              comment: ""
+            },
+            time
+          );
+          await p;
+          return h(data);
+        }
+      }
+      return h(data);
     }
   }
   return { url: data };
