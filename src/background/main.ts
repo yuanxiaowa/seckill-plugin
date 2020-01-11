@@ -248,7 +248,20 @@ const taobao = {
   getJdMillion: getBillion,
   getUserName,
   getPlusQuanpinList,
-  getPlusQuanpin,
+  async getPlusQuanpin(item) {
+    if (item.datetime) {
+      let t = moment(item.datetime);
+      await taskManager.registerTask(
+        {
+          name: "抢券",
+          platform: "jingdong",
+          comment: "京东plus券",
+          time: t.valueOf()
+        },
+        t.valueOf()
+      );
+    }
+  },
   logout,
   getRedirectedUrl
 };
