@@ -249,7 +249,6 @@ const taobao = {
   getUserName,
   getPlusQuanpinList,
   async getPlusQuanpin(item) {
-console.log(item)
     if (item.datetime) {
       let t = moment(item.datetime);
       await taskManager.registerTask(
@@ -262,7 +261,7 @@ console.log(item)
         t.valueOf()
       );
     }
-    getPlusQuanpin(item)
+    return getPlusQuanpin(item)
   },
   logout,
   getRedirectedUrl
