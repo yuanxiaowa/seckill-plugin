@@ -617,6 +617,9 @@ export async function obtainActivityCoupon(data: {
       sid: "",
       uuid: "15617018266251592388825",
       area: ""
+    },
+    {
+      dataType: 'form'
     }
   );
   var resData = JSON.parse(ret);

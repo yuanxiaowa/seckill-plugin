@@ -22,14 +22,14 @@
       </el-tab-pane>
       <el-tab-pane label="京东">
         <el-tabs>
-          <el-tab-pane label="京东百亿补贴">
-            <jd-billion></jd-billion>
+          <el-tab-pane label="领券中心">
+            <coupon-center></coupon-center>
           </el-tab-pane>
           <el-tab-pane label="plus优惠券">
             <jingdong-coupon></jingdong-coupon>
           </el-tab-pane>
-          <el-tab-pane label="领券中心">
-            <coupon-center></coupon-center>
+          <el-tab-pane label="京东百亿补贴">
+            <jd-billion></jd-billion>
           </el-tab-pane>
         </el-tabs>
       </el-tab-pane>
