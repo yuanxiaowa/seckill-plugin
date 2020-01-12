@@ -52,7 +52,16 @@ export const sysJingdongTime = getSysTime(
   ({ serverTime }) => serverTime
 );
 
+var lastSysTime = {
+  jingdong: 0,
+  taobao: 0
+};
+
 export async function sysPlatformTime(platform: string) {
+  if (Date.now() - lastSysTime[platform] < 30 * 60 * 1000) {
+    return;
+  }
+  lastSysTime[platform] = Date.now();
   var handler = platform === "taobao" ? sysTaobaoTime : sysJingdongTime;
   console.log(platform + "开始同步时钟");
   var { dt, rtl } = await handler();

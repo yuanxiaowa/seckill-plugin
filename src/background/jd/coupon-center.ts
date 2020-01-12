@@ -3,10 +3,11 @@ import { flatten } from "ramda";
 import { taskManager } from "../common/task-manager";
 import moment from "moment";
 
+const coupon_center_url =
+  "https://coupon.m.jd.com/center/getCouponCenter.action?ad_od=0";
+
 export async function getCouponCenterItems() {
-  var html = await request.get(
-    "https://coupon.m.jd.com/center/getCouponCenter.action?ad_od=0"
-  );
+  var html = await request.get(coupon_center_url);
   var text = /var _roundCoupon = (.*\})/.exec(html)![1];
   var {
     result: { groupActInfo }
@@ -58,7 +59,8 @@ export async function getCouponCenterCoupon(item) {
         g_login_type: 1,
         callback: "jsonpCBKD",
         g_ty: "ls"
-      }
+      },
+      referer: coupon_center_url
     }
   );
   console.log(ret);
