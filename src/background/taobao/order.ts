@@ -36,7 +36,7 @@ function transformOrderData(
       ? +data.realPay_1.fields.price
       : data.submitOrder_1.hidden.extensionMap.showPrice;
     if (typeof args.expectedPrice === "number") {
-      if (Number(args.expectedPrice) < Number(price)) {
+      if (Number(args.expectedPrice) < Number(price) - 0.1) {
         throw {
           message: `${args.title} 价格太高，期望${args.expectedPrice}，实际${price}`,
           code: 2
@@ -370,7 +370,9 @@ export async function submitOrder(args: ArgOrder<any>, retryCount = 0) {
       logFile(ret, `手机订单提交成功`);
       console.log(`\n😃${_n} ----------手机订单提交成功：${args.title}`);
       console.timeEnd(_n + "订单提交 " + startTime);
-      let msg = `(${await getUserName()})手机订单提交成功，速度去付款：${args.title}`;
+      let msg = `(${await getUserName()})手机订单提交成功，速度去付款：${
+        args.title
+      }`;
       notify(msg);
       sendQQMsg(msg);
       if (args.autopay) {

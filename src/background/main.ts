@@ -49,6 +49,8 @@ import { getPlusQuanpin, getPlusQuanpinList } from "./jd/plus";
 import { getRedirectedUrl } from "./common/request";
 import { buyDirect as jd_buyDirect, cartBuy as jd_cartBuy } from "./jd/order";
 
+import "./jd/task";
+
 async function qiangquan({
   data,
   t,
@@ -249,7 +251,7 @@ const taobao = {
   getUserName,
   getPlusQuanpinList,
   async getPlusQuanpin(item) {
-console.log(item)
+    console.log(item);
     if (item.datetime) {
       let t = moment(item.datetime);
       await taskManager.registerTask(
@@ -262,7 +264,7 @@ console.log(item)
         t.valueOf()
       );
     }
-    getPlusQuanpin(item)
+    getPlusQuanpin(item);
   },
   logout,
   getRedirectedUrl

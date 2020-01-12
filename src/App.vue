@@ -27,7 +27,7 @@
         <jingdong-coupon></jingdong-coupon>
       </el-tab-pane>
     </el-tabs>
-    <!-- <iframe ref="ifr" :key="id" :src="status_url" frameborder="0" style="opacity:0"></iframe> -->
+    <iframe ref="ifr" :key="id" :src="status_url" frameborder="0" style="opacity:0"></iframe>
     <el-backtop target=".page-component__scroll"></el-backtop>
   </div>
 </template>

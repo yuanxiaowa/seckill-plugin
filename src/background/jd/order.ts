@@ -119,7 +119,7 @@ export async function submitOrder(
       await p;
     }
     await page.goto(args.data.submit_url);
-    page.evaluate(function f(pass) {
+    page.evaluate(function f(pass, expectedPrice) {
       var script_content = document.querySelector(".wx_wrap")!
         .previousElementSibling!.textContent!;
       var text = /(window\.dealData\s=[\s\S]*)/.exec(script_content)![1];
@@ -387,70 +387,84 @@ export async function submitOrderPc(
       await p;
     }
     await page.goto(args.data.submit_url);
-    page.evaluate(pass => {
-      var meta_text = document.getElementById("skuDetailInfo")!.textContent!;
-      var meta_data = JSON.parse(meta_text);
-      var area_ele = document.querySelector<HTMLDivElement>(
-        ".consignee-item.item-selected"
-      )!;
-      var btn = document.getElementById("enterPriseUserPaymentSubmit")!;
-      var data = {
-        skuNumList: meta_data.map(item => ({
-          skuId: item.skuId,
-          num: item.num
-        })),
-        areaRequest: {
-          provinceId: area_ele.getAttribute("provinceId"),
-          cityId: area_ele.getAttribute("cityId"),
-          countyId: area_ele.getAttribute("countyId"),
-          townId: area_ele.getAttribute("townId")
-        },
-        coordnateRequest: {
-          longtitude: area_ele.getAttribute("gcLng"),
-          latitude: area_ele.getAttribute("gcLat")
+    page.evaluate(
+      (pass, expectedPrice) => {
+        var meta_text = document.getElementById("skuDetailInfo")!.textContent!;
+        var meta_data = JSON.parse(meta_text);
+        var area_ele = document.querySelector<HTMLDivElement>(
+          ".consignee-item.item-selected"
+        )!;
+        var btn = document.getElementById("enterPriseUserPaymentSubmit")!;
+        if (typeof expectedPrice === "number") {
+          let price = +document
+            .getElementById("sumPayPriceId")!
+            .textContent!.substring(1);
+          if (price - expectedPrice > 0.1) {
+            throw new Error("太贵了");
+          }
         }
-      };
-      function check() {
-        return fetch(`https://trade.jd.com/api/v1/batch/stock`, {
-          method: "post",
-          body: JSON.stringify(data),
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json"
+        var data = {
+          skuNumList: meta_data.map(item => ({
+            skuId: item.skuId,
+            num: item.num
+          })),
+          areaRequest: {
+            provinceId: area_ele.getAttribute("provinceId"),
+            cityId: area_ele.getAttribute("cityId"),
+            countyId: area_ele.getAttribute("countyId"),
+            townId: area_ele.getAttribute("townId")
+          },
+          coordnateRequest: {
+            longtitude: area_ele.getAttribute("gcLng"),
+            latitude: area_ele.getAttribute("gcLat")
           }
-        })
-          .then(res => res.json())
-          .then(
-            ({ result }) =>
-              !Object.keys(result).find(key =>
-                result[key].status.includes("无货")
-              )
-          );
-      }
-      function handler() {
-        check().then(b => {
-          if (!b) {
-            return handler();
-          }
-          submit();
-        });
-      }
-      function submit() {
-        console.log(new Date(), "去下单");
-        btn.click();
-        setTimeout(() => {
-          handler();
-          var ele = document.querySelector<HTMLDivElement>(".ui-dialog");
-          if (ele) {
-            ele.parentNode!.removeChild(ele);
-          }
-        }, 5000);
-      }
-      document.querySelector<HTMLInputElement>(
-        ".quark-pw-result-input"
-      )!.value = pass;
-      submit();
-    }, accounts.jingdong.paypass);
+        };
+        function check() {
+          return fetch(`https://trade.jd.com/api/v1/batch/stock`, {
+            method: "post",
+            body: JSON.stringify(data),
+            headers: {
+              Accept: "application/json",
+              "Content-Type": "application/json"
+            }
+          })
+            .then(res => res.json())
+            .then(
+              ({ result }) =>
+                !Object.keys(result).find(key =>
+                  result[key].status.includes("无货")
+                )
+            );
+        }
+        function handler() {
+          check().then(b => {
+            if (!b) {
+              return handler();
+            }
+            submit();
+          });
+        }
+        function submit() {
+          console.log(new Date(), "去下单");
+          btn.click();
+          setTimeout(() => {
+            handler();
+            var ele = document.querySelector<HTMLDivElement>(".ui-dialog");
+            if (ele) {
+              ele.parentNode!.removeChild(ele);
+            }
+          }, 5000);
+        }
+        let input_pass = document.querySelector<HTMLInputElement>(
+          ".quark-pw-result-input"
+        )!;
+        input_pass.value = pass;
+        input_pass.dispatchEvent(new Event("input"));
+        submit();
+      },
+      accounts.jingdong.paypass,
+      args.expectedPrice
+    );
   } catch (e) {
     if (page!) {
       page!.close();

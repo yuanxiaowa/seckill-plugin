@@ -23,7 +23,12 @@ chrome.webRequest.onBeforeSendHeaders.addListener(
       if (headers) {
         headers.forEach(item => {
           if (item.name.startsWith("_")) {
-            item.name = item.name.substring(1);
+            let name = item.name.substring(1);
+            if (name === "user-agent" || name === "origin") {
+              headers!.find(item => item.name.toLowerCase() === name)!.value =
+                item.value;
+            }
+            item.name = name;
           }
         });
       }
