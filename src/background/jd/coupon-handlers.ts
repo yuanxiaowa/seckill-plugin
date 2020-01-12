@@ -449,30 +449,42 @@ export async function getShopCoupons(url: string) {
  * @param url
  * @example https://coupon.m.jd.com/coupons/show.action?key=95f6d76c6af84f61b6431c128938a9a6&roleId=20962745&to=https://pro.m.jd.com/mall/active/VfaRyNj2vtwfoWgUEFoqGzF4B1Z/index.html&sceneval=2&time=1563640816871
  */
-export async function getCouponSingle(url: string) {
+export async function getCouponSingle(url: string, other?: any) {
   var { searchParams } = new URL(url);
-  var { ret, errmsg } = await request.get(
+  var { ret, errmsg, rvc } = await request.get(
     "https://s.m.jd.com/activemcenter/mfreecoupon/getcoupon",
     {
-      qs: {
-        key: searchParams.get("key"),
-        roleId: searchParams.get("roleId"),
-        to: searchParams.get("to"),
-        verifycode: "",
-        verifysession: "",
-        _: Date.now(),
-        sceneval: searchParams.get("sceneval"),
-        g_login_type: "1",
-        callback: "jsonpCBKA",
-        g_ty: "ls"
-      },
+      qs: Object.assign(
+        {
+          key: searchParams.get("key"),
+          roleId: searchParams.get("roleId"),
+          to: searchParams.get("to"),
+          verifycode: "",
+          verifysession: "",
+          _: Date.now(),
+          sceneval: searchParams.get("sceneval"),
+          g_login_type: "1",
+          callback: "jsonpCBKA",
+          g_ty: "ls"
+        },
+        other
+      ),
       referer: url,
       type: "jsonp"
     }
   );
+  var success = ret === 0 || ret === 999;
+  if (rvc) {
+    let { rvc_content, rvc_uuid } = rvc;
+    let img_url = "https:" + rvc_content;
+    return getCouponSingle(url, {
+      verifycode: "",
+      verifysession: rvc_uuid
+    });
+  }
   // 145:提交频繁 16:已抢完
   return {
-    success: ret === 0,
+    success,
     msg: errmsg
   };
 }

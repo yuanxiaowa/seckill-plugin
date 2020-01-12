@@ -50,6 +50,7 @@ import { getRedirectedUrl } from "./common/request";
 import { buyDirect as jd_buyDirect, cartBuy as jd_cartBuy } from "./jd/order";
 
 import "./jd/task";
+import { getCouponCenterCoupon, getCouponCenterItems } from './jd/coupon-center';
 
 async function qiangquan({
   data,
@@ -266,7 +267,9 @@ const taobao = {
     return getPlusQuanpin(item);
   },
   logout,
-  getRedirectedUrl
+  getRedirectedUrl,
+  getCouponCenterItems,
+  getCouponCenterCoupon
 };
 
 // @ts-ignore

@@ -18,7 +18,7 @@ function handleError(e: Error) {
   Notification.error(e.message);
 }
 
-export function invoke(name: string, args: any) {
+export function invoke(name: string, args?: any) {
   return taobao[name](args).catch(handleError);
 }
 
