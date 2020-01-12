@@ -69,6 +69,9 @@ export default class CouponCenter extends Vue {
     items.forEach(item => invoke("getCouponCenterCoupon", item));
   }
   get filter_datas() {
+    if (!this.is_new) {
+      return this.datas;
+    }
     var now = Date.now();
     return this.datas.filter(item => item.t > now);
   }
