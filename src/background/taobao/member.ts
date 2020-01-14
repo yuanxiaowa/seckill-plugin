@@ -20,7 +20,7 @@ export async function login() {
     document.querySelector<HTMLInputElement>("#TPL_username_1")!.value =
       account.username;
     document.querySelector<HTMLInputElement>("#TPL_password_1")!.value =
-      account.username;
+      account.password;
     document.querySelector<HTMLButtonElement>("#J_SubmitStatic")!.click();
   }, accounts.taobao);
   // await page.waitForNavigation();

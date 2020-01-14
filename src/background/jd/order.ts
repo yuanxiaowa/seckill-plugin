@@ -118,85 +118,99 @@ export async function submitOrder(
     if (p) {
       await p;
     }
-    await page.goto(args.data.submit_url);
-    page.evaluate(function f(pass, expectedPrice) {
-      var script_content = document.querySelector(".wx_wrap")!
-        .previousElementSibling!.textContent!;
-      var text = /(window\.dealData\s=[\s\S]*)/.exec(script_content)![1];
-      eval(text);
-      // @ts-ignore
-      var dealData = window.dealData;
-      var order = dealData.order;
-      var vendorCart = order.venderCart;
-      var address = order.address;
-      var products = vendorCart[0].mfsuits[0].products;
-      var btn = Array.from(
-        document.querySelectorAll<HTMLDivElement>(".mod_btns")
-      )
-        .filter(ele => ele.style.display !== "none")
-        .reverse()[0]
-        .querySelector<HTMLLinkElement>("a")!;
-      var data = {
-        skuNumList: products.map(({ mainSku }) => ({
-          skuId: mainSku.skuId,
-          num: mainSku.num
-        })),
-        areaRequest: {
-          provinceId: address.provId,
-          cityId: address.cityId,
-          countyId: address.countyId,
-          townId: address.townId
-        },
-        coordnateRequest: {
-          longtitude: address.longitude,
-          latitude: address.latitude
-        }
-      };
-      function check() {
-        return fetch(`https://trade.jd.com/api/v1/batch/stock`, {
-          method: "post",
-          body: JSON.stringify(data),
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json"
-          }
-        })
-          .then(res => res.json())
-          .then(
-            ({ result }) =>
-              !Object.keys(result).find(key =>
-                result[key].status.includes("无货")
-              )
+    page.goto(args.data.submit_url);
+    await page.waitForResponse(url => url.includes("userasset"));
+    await delay(300);
+    page.evaluate(
+      function f(pass, expectedPrice) {
+        if (typeof expectedPrice === "number") {
+          let price = Number(
+            document.querySelector(".price strong")!.textContent!.substring(1)
           );
-      }
-      function handler() {
-        check().then(b => {
-          if (!b) {
-            return handler();
+          if (price > expectedPrice + 0.1) {
+            throw new Error("价格太高了");
           }
-          submit();
-        });
-      }
-      function submit() {
-        console.log(new Date(), "去下单");
-        btn.click();
+        }
+        var script_content = document.querySelector(".wx_wrap")!
+          .previousElementSibling!.textContent!;
+        var text = /(window\.dealData\s=[\s\S]*)/.exec(script_content)![1];
+        eval(text);
+        // @ts-ignore
+        var dealData = window.dealData;
+        var order = dealData.order;
+        var vendorCart = order.venderCart;
+        var address = order.address;
+        var products = vendorCart[0].mfsuits[0].products;
+        var btn = Array.from(
+          document.querySelectorAll<HTMLDivElement>(".mod_btns")
+        )
+          .filter(ele => ele.style.display !== "none")
+          .reverse()[0]
+          .querySelector<HTMLLinkElement>("a")!;
+        var data = {
+          skuNumList: products.map(({ mainSku }) => ({
+            skuId: mainSku.skuId,
+            num: mainSku.num
+          })),
+          areaRequest: {
+            provinceId: address.provId,
+            cityId: address.cityId,
+            countyId: address.countyId,
+            townId: address.townId
+          },
+          coordnateRequest: {
+            longtitude: address.longitude,
+            latitude: address.latitude
+          }
+        };
+        function check() {
+          return fetch(`https://trade.jd.com/api/v1/batch/stock`, {
+            method: "post",
+            body: JSON.stringify(data),
+            headers: {
+              Accept: "application/json",
+              "Content-Type": "application/json"
+            }
+          })
+            .then(res => res.json())
+            .then(
+              ({ result }) =>
+                !Object.keys(result).find(key =>
+                  result[key].status.includes("无货")
+                )
+            );
+        }
+        function handler() {
+          check().then(b => {
+            if (!b) {
+              return handler();
+            }
+            submit();
+          });
+        }
+        function submit() {
+          console.log(new Date(), "去下单");
+          btn.click();
+          setTimeout(() => {
+            handler();
+            var ele = document.querySelector<HTMLDivElement>(".ui-dialog");
+            if (ele) {
+              ele.parentNode!.removeChild(ele);
+            }
+          }, 5000);
+        }
         setTimeout(() => {
-          handler();
-          var ele = document.querySelector<HTMLDivElement>(".ui-dialog");
-          if (ele) {
-            ele.parentNode!.removeChild(ele);
-          }
-        }, 5000);
-      }
-      setTimeout(() => {
-        var ele = document.querySelector<HTMLInputElement>("#shortid")!;
-        ele.value = pass;
-        ele.dispatchEvent(new Event("focus"));
-        ele.dispatchEvent(new Event("input"));
-        ele.dispatchEvent(new Event("blur"));
-        submit();
-      }, 500);
-    }, accounts.jingdong.paypass);
+          var ele = document.querySelector<HTMLInputElement>("#shortid")!;
+          ele.value = pass;
+          ele.dispatchEvent(new Event("focus"));
+          ele.dispatchEvent(new Event("input"));
+          ele.dispatchEvent(new Event("blur"));
+          submit();
+        }, 500);
+      },
+      accounts.jingdong.paypass,
+      args.expectedPrice
+    );
     // let text_userasset = await page
     //   .waitForResponse(res => res.url().includes("userasset"))
     //   .then(res => res.text());

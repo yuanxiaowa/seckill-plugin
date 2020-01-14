@@ -1,6 +1,6 @@
 import { set_config, set_accounts } from "./common/setting";
 
-chrome.runtime.onInstalled.addListener(() => {
+function init() {
   var _config = localStorage.getItem("config");
   var _accounts = localStorage.getItem("accounts");
   if (_config) {
@@ -12,7 +12,10 @@ chrome.runtime.onInstalled.addListener(() => {
   /* chrome.storage.local.get(data => {
     Object.assign(config, data);
   }); */
-});
+}
+
+chrome.runtime.onStartup.addListener(init);
+chrome.runtime.onInstalled.addListener(init);
 
 var version = Number(/Chrome\/(\d+)/.exec(navigator.userAgent)![1]);
 

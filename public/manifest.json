@@ -67,8 +67,8 @@
     "webRequestBlocking",
     "webNavigation",
     "storage", // 插件本地存储
-    "http://*/*", // 可以通过executeScript或者insertCSS访问的网站
-    "https://*/*" // 可以通过executeScript或者insertCSS访问的网站
+    "*://*/*" // 可以通过executeScript或者insertCSS访问的网站
+    // "https://*/*" // 可以通过executeScript或者insertCSS访问的网站
   ],
   // 普通页面能够直接访问的插件资源列表，如果不设置是无法直接访问的
   // "web_accessible_resources": ["js/inject.js"],

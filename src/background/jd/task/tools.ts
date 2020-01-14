@@ -14,7 +14,7 @@ export async function requestDataByFunction(
   functionId: string,
   body: any,
   method: "get" | "post" = "get",
-  extra?: Record<string, string>
+  extra?: Record<string, any>
 ) {
   var qs: Record<string, string> = {
     functionId
@@ -28,8 +28,8 @@ export async function requestDataByFunction(
       {
         body: JSON.stringify(body)
       },
-      extra,
-      extra_data
+      extra_data,
+      extra
     );
   }
   var ret = await request({
@@ -54,6 +54,28 @@ export async function requestDataByFunction(
   return data;
 }
 
+export var jr_params = {
+  riskDeviceParam: JSON.stringify({
+    eid:
+      "XPYRQKYPRDZOXAAHSFNAICGWZ2SZUFGXSHY7A76H3BFL7PEZE5EZD6NCYGADCBSQKA4M7LFAXP7QX444SEC7PTRO3Q",
+    dt: "iPhone 7 Plus (A1661/A1785/A1786)",
+    ma: "",
+    im: "",
+    os: "iOS",
+    osv: "13.3",
+    ip: "180.117.160.226",
+    apid: "JDJR-App",
+    ia: "",
+    uu: "",
+    cv: "5.3.20",
+    nt: "WIFI",
+    at: "1",
+    fp: "967ded3c77573bf46285db66ed106ed7",
+    token:
+      "L5TGWHAQ5QAM7PQXAOO6I3SLC4TZTE4GRA6R5XNBNLV6OPLKIDBN4PY5YZH65SHCHSA5FCY2QBFBW"
+  })
+};
+
 export async function requestJr<T = any>(
   url: string,
   data,
@@ -62,7 +84,7 @@ export async function requestJr<T = any>(
   var res = await request({
     url,
     data: {
-      reqData: JSON.stringify(data)
+      reqData: JSON.stringify(Object.assign({}, data, jr_params))
     },
     referer: "https://m.jr.jd.com/",
     dataType: "form",
@@ -72,6 +94,7 @@ export async function requestJr<T = any>(
         "Mozilla/5.0 (iPhone; CPU iPhone OS 12_3_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148/application=JDJR-App&deviceId=7B4C588C-8371-4F85-B91D-F015D8C88E90&clientType=ios&iosType=iphone&clientVersion=5.2.32&HiClVersion=5.2.32&isUpdate=0&osVersion=12.3.1&osName=iOS&platform=iPhone 7 Plus (A1661/A1785/A1786)&screen=736*414&src=App Store&ip=2408:84ec:a012:4fe0:8e8:d4c0:79ca:649e&mac=02:00:00:00:00:00&netWork=1&netWorkType=1&stockSDK=stocksdk-iphone_3.0.0&sPoint=MTAwMDUjSlJMaWZlQ2hhbm5lbFZpZXdDb250cm9sbGVyI3RhbmNodWFuZzQwMDFfSlJMaWZlQ2hhbm5lbFZpZXdDb250cm9sbGVyKihudWxsKSrkvJfnrbnmibbotKvlpKfotZst5YWo6YeP&jdPay=(*#@jdPaySDK*#@jdPayChannel=jdfinance&jdPayChannelVersion=5.2.32&jdPaySdkVersion=2.23.3.0&jdPayClientName=iOS*#@jdPaySDK*#@)"
     }
   });
+  res = res.resultData;
   if (inner) {
     if (!["0000", "200"].includes(res.code)) {
       console.log(url);
@@ -81,4 +104,13 @@ export async function requestJr<T = any>(
     return res.data;
   }
   return res;
+}
+
+export async function requestRaw(url, data: string) {
+  return request.post(url, data, {
+    headers: {
+      "_user-agent": "JD4iPhone/166820 (iPhone; iOS 13.3; Scale/3.00)",
+      "Content-Type": "application/x-www-form-urlencoded"
+    }
+  });
 }
