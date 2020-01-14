@@ -114,3 +114,12 @@ export async function requestRaw(url, data: string) {
     }
   });
 }
+
+export async function requestRawGet(url) {
+  return request.get(url, {
+    headers: {
+      "_user-agent": "JD4iPhone/166820 (iPhone; iOS 13.3; Scale/3.00)",
+      "Content-Type": "application/x-www-form-urlencoded"
+    }
+  });
+}
