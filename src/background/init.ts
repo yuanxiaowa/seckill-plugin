@@ -28,8 +28,12 @@ chrome.webRequest.onBeforeSendHeaders.addListener(
           if (item.name.startsWith("_")) {
             let name = item.name.substring(1);
             if (name === "user-agent" || name === "origin") {
-              headers!.find(item => item.name.toLowerCase() === name)!.value =
-                item.value;
+              let _item = headers!.find(
+                item => item.name.toLowerCase() === name
+              );
+              if (_item) {
+                _item.value = item.value;
+              }
             }
             item.name = name;
           }

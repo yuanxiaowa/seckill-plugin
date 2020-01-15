@@ -10,10 +10,6 @@ function requestData(functionId: string, body?: any) {
   });
 }
 
-function waterFarm() {
-  return requestData("waterGoodForFarm");
-}
-
 export const farm_tasks = [
   {
     title: "农场任务",
@@ -61,17 +57,27 @@ export const farm_tasks = [
         });
       }
       if (!gotBrowseTaskAdInit.f) {
-        for (let { advertId, limit } of gotBrowseTaskAdInit.userBrowseTaskAds) {
-          items.push({
-            functionId: "browseAdTaskForFarm",
-            body: { advertId, type: 0, version: 2, channel: 1 }
-          });
-          items.push({
-            functionId: "browseAdTaskForFarm",
-            body: { advertId, type: 1, version: 2, channel: 1 }
-          });
+        for (let {
+          advertId,
+          limit,
+          hadFinishedTimes,
+          hadGotTimes
+        } of gotBrowseTaskAdInit.userBrowseTaskAds) {
+          if (hadFinishedTimes < limit) {
+            items.push({
+              functionId: "browseAdTaskForFarm",
+              body: { advertId, type: 0, version: 2, channel: 1 }
+            });
+          }
+          if (hadGotTimes < limit) {
+            items.push({
+              functionId: "browseAdTaskForFarm",
+              body: { advertId, type: 1, version: 2, channel: 1 }
+            });
+          }
         }
       }
+      return items;
     },
     async doTask({ functionId, body }) {
       await requestData(functionId, body);

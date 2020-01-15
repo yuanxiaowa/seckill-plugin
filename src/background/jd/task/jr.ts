@@ -145,6 +145,11 @@ export const jr_tasks = [
       return [115, 143, 145, 146];
     },
     async doTask(actId) {
+      await requestJr("https://ms.jr.jd.com/gw/generic/zc/h5/m/receiveAct", {
+        bizLine: 15,
+        actId,
+        extRule: null
+      });
       var { status } = await requestJr(
         "https://ms.jr.jd.com/gw/generic/zc/h5/m/canCompleteZJAct",
         {
@@ -223,15 +228,48 @@ export const jr_tasks = [
       return [];
     },
     async doTask(item) {
-      var {
-        code,
-        data
-      } = await requestJr("https://ms.jr.jd.com/gw/generic/hy/h5/m/lottery", {
-        actKey: "AbeQry",
-        t: Date.now()
-      });
+      var { code, data } = await requestJr(
+        "https://ms.jr.jd.com/gw/generic/hy/h5/m/lottery",
+        {
+          actKey: "AbeQry",
+          t: Date.now()
+        }
+      );
       if (code === "0000") {
         console.log(new Date(), "金币抽奖：" + data.awardTitle);
+      }
+    }
+  },
+  {
+    // https://jdde.jd.com/btyingxiao/marketing/html/index.html?from=kgg
+    title: "签到赢免息红包",
+    async test() {
+      var { data } = await requestJr(
+        "https://ms.jr.jd.com/gw/generic/syh_yxmx/h5/m/canJoin",
+        {
+          clientType: "sms",
+          actKey: "181299"
+        }
+      );
+      return data;
+    },
+    async doTask() {
+      var { data } = await requestJr(
+        "https://ms.jr.jd.com/gw/generic/syh_yxmx/h5/m/interestFreeLottery",
+        {
+          clientType: "sms",
+          actKey: "181299",
+          deviceInfo: {
+            eid:
+              "TNNEVY6UM2645G3OEU4WPA5OIB7A4MZSUPXMQVREJQ2P5IZKD5RUIEF7AXO6RA5W5SMDN3LPMAPSKAOKQWLD4ADVGU",
+            fp: "fa9f69f8e3aacd84b3b69f64b1f01cca",
+            token:
+              "RA3LSBN6GPSJYASTJ447XKRRSKQJZOQ247WCWLHKBDJFS7CKM3USKKC7ZEJRCMBXKUD2NA3GZOUUM"
+          }
+        }
+      );
+      if (data) {
+        console.log(this.title, data);
       }
     }
   }
