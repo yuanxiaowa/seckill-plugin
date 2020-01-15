@@ -105,12 +105,7 @@ export function getJinguoDayWork() {
   );
 }
 
-export async function doHarvest() {
-  var { userInfo, userToken } = await getJinguoInfo();
-  return harvestJinguo({ userId: userInfo, userToken });
-}
-
-export async function doJinguo() {
+async function doJinguo() {
   var [signData, shareData] = await getJinguoDayWork();
   // signJinguo(signData.workType, 2);
   if (signData.workStatus === 0) {
@@ -126,3 +121,33 @@ export async function doJinguo() {
     await signJinguo(shareData.workType, 2);
   }
 }
+
+export const jinguo_tasks = [
+  {
+    title: "收获金果",
+    period: 20 * 60 * 1000,
+    async doTask() {
+      var { userInfo, userToken } = await getJinguoInfo();
+      return harvestJinguo({ userId: userInfo, userToken });
+    }
+  },
+  {
+    title: "金果任务",
+    async test() {
+      return true;
+    },
+    doTask: doJinguo
+  },
+  {
+    title: "金果签到",
+    period: [
+      [7, 9],
+      [11, 13],
+      [18, 20]
+    ],
+    async doTask() {
+      var [signData] = await getJinguoDayWork();
+      await signJinguo(signData.workType, 2);
+    }
+  }
+];

@@ -17,10 +17,10 @@ export function daily(f: Function) {
   );
 }
 
-export function period(f: Function, title: string, t = 1000) {
+export function period({ handler, title, t = 1000 }) {
   if (title) {
     console.log(new Date(), title);
   }
-  f();
-  setTimeout(() => period(f, title, t), t);
+  handler();
+  setTimeout(() => period({ handler, title, t }), t);
 }

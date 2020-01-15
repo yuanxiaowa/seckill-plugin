@@ -1,7 +1,6 @@
 import { flatten } from "ramda";
 import { delay } from "../../common/tool";
 import { request } from "../../common/request";
-import { wrapTasksHandler } from "../task-util";
 
 async function requestData({
   functionId,
@@ -39,64 +38,81 @@ async function requestData({
   throw new Error(res.msg);
 }
 
-export async function getNianshouTasks() {
-  var {
-    result: { taskVos }
-  } = await requestData({
-    functionId: "bombnian_getTaskDetail",
-    data: {},
-    method: "post"
-  });
-  var items = taskVos.slice(1);
-  return flatten(
-    items.map(item => {
-      if (item.status !== 1) {
-        return [];
-      }
-      var key = Object.keys(item).find(key => Array.isArray(item[key]))!;
-      var subitems: any[];
-      if (key) {
-        subitems = item[key];
-      } else {
-        if (item.simpleRecordInfoVo) {
-          subitems = [item.simpleRecordInfoVo];
-        } else {
+export const nianshou_tasks = [
+  {
+    title: "年兽任务",
+    async list() {
+      var {
+        result: { taskVos }
+      } = await requestData({
+        functionId: "bombnian_getTaskDetail",
+        data: {},
+        method: "post"
+      });
+      var items = taskVos.slice(1);
+      return flatten(
+        items.map(item => {
+          if (item.status !== 1) {
+            return [];
+          }
+          var key = Object.keys(item).find(key => Array.isArray(item[key]))!;
+          var subitems: any[];
+          if (key) {
+            subitems = item[key];
+          } else {
+            if (item.simpleRecordInfoVo) {
+              subitems = [item.simpleRecordInfoVo];
+            } else {
+              return;
+            }
+          }
+          return subitems
+            .filter(subitem => subitem.status === 1)
+            .map(subitem =>
+              Object.assign(subitem, {
+                waitDuration: item.waitDuration,
+                taskId: item.taskId
+              })
+            );
+        })
+      );
+    },
+    async doTask(item) {
+      await requestData({
+        functionId: "tc_doTask_mongo",
+        data: {
+          taskToken: item.taskToken,
+          actionType: 1
+        },
+        method: "post"
+      });
+      await delay(item.waitDuration + 2000);
+      await requestData({
+        functionId: "bombnian_collectScore",
+        data: {
+          taskId: item.taskId,
+          itemId: item.itemId
+        },
+        method: "post"
+      });
+    }
+  },
+  {
+    title: "炸年兽",
+    async test() {
+      return true;
+    },
+    async doTask() {
+      while (true) {
+        let { success } = requestData({
+          functionId: "bombnian_raise",
+          data: {},
+          method: "post"
+        });
+        if (!success) {
           return;
         }
       }
-      return subitems
-        .filter(subitem => subitem.status === 1)
-        .map(subitem =>
-          Object.assign(subitem, {
-            waitDuration: item.waitDuration,
-            taskId: item.taskId
-          })
-        );
-    })
-  );
-}
-
-export async function finishNianshouTask(item) {
-  await requestData({
-    functionId: "tc_doTask_mongo",
-    data: {
-      taskToken: item.taskToken,
-      actionType: 1
-    },
-    method: "post"
-  });
-  await delay(item.waitDuration + 2000);
-  await requestData({
-    functionId: "bombnian_collectScore",
-    data: {
-      taskId: item.taskId,
-      itemId: item.itemId
-    },
-    method: "post"
-  });
-}
-
-export const doNianshouTasks = wrapTasksHandler({
-  list: getNianshouTasks,
-  handler: finishNianshouTask
-});
+    }
+  }
+];

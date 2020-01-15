@@ -1,8 +1,10 @@
 import { daily, period, delay } from "@/background/common/tool";
 import { signInJr, getSignAwardJR, jr_tasks } from "./jr";
-import { signInJd, signInJdCoupon } from "./jd";
-import { doNianshouTasks } from "./nianshou";
-import { harvestJinguo, doHarvest, doJinguo } from "./jinguo";
+import { signInJd, jd_tasks } from "./jd";
+import { nianshou_tasks } from "./nianshou";
+import { jinguo_tasks } from "./jinguo";
+import { joy_tasks } from "./joy";
+import { farm_tasks } from "./farm";
 
 async function signIn() {
   await Promise.all([signInJr(), signInJd()]);
@@ -11,12 +13,14 @@ async function signIn() {
 
 async function excuteTasks(tasks) {
   tasks.forEach(async task => {
-    try {
-      if (task.test) {
+    if (task.test) {
+      daily(async () => {
         if (await task.test()) {
           await task.doTask();
         }
-      } else if (task.list) {
+      });
+    } else if (task.list) {
+      daily(async () => {
         for (let item of await task.list()) {
           try {
             await task.doTask(item);
@@ -27,19 +31,39 @@ async function excuteTasks(tasks) {
             await delay(task.delay);
           }
         }
+      });
+    } else if (task.period) {
+      if (typeof task.period === "number") {
+        (function f() {
+          task.doTask();
+          setTimeout(f, task.period);
+        })();
+      } else if (task.period) {
+        daily(async function f() {
+          var times: number[][] = [];
+          if (Array.isArray(task.period)) {
+            times = task.period;
+          } else if (typeof task.period === "function") {
+            times = await task.period();
+          }
+          for (let [start, end] of times) {
+            if (Date.now() < start) {
+              await delay(start - Date.now());
+            }
+            if (Date.now() < end) {
+              task.doTask();
+            }
+          }
+        });
       }
-    } catch (error) {
-      console.log(error);
     }
   });
 }
 
-function dailyTask() {
-  signIn();
-  doNianshouTasks();
-  doJinguo();
-  signInJdCoupon();
-  excuteTasks(jr_tasks);
-}
-daily(dailyTask);
-period(doHarvest, "收获金果", 20 * 60 * 1000);
+daily(signIn);
+excuteTasks(jr_tasks);
+excuteTasks(jd_tasks);
+excuteTasks(joy_tasks);
+excuteTasks(nianshou_tasks);
+excuteTasks(jinguo_tasks);
+excuteTasks(farm_tasks);

@@ -38,6 +38,11 @@ export const request: {
     url: string,
     options?: Omit<RequestOption, "url" | "type">
   ): Promise<T>;
+  form<T = any>(
+    url: string,
+    data?: any,
+    options?: Omit<RequestOption, "url" | "dataType" | "method">
+  ): Promise<T>;
 } = async function({
   url,
   data,
@@ -85,6 +90,8 @@ request.post = (url, data, options) =>
   request(Object.assign({ url, data, method: <Method>"post" }, options));
 request.jsonp = (url, options) =>
   request(Object.assign({ url, type: <DataType>"jsonp" }, options));
+request.form = (url, options) =>
+  request(Object.assign({ url, method: "post", dataType: "form" }, options));
 
 export async function getRedirectedUrl(url: string) {
   var res = await axios.get(url);
