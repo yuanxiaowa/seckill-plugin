@@ -5,6 +5,7 @@ import { nianshou_tasks } from "./nianshou";
 import { jinguo_tasks } from "./jinguo";
 import { joy_tasks } from "./joy";
 import { farm_tasks } from "./farm";
+import { nutrient_tasks } from "./nutrient";
 
 async function signIn() {
   await Promise.all([signInJr(), signInJd()]);
@@ -13,7 +14,13 @@ async function signIn() {
 
 async function excuteTasks(tasks) {
   tasks.forEach(async task => {
-    if (task.test) {
+    if (task.nextTime) {
+      (async function f() {
+        await task.doTask();
+        let date = await task.nextTime();
+        setTimeout(f, date - Date.now());
+      })();
+    } else if (task.test) {
       daily(async () => {
         if (await task.test()) {
           await task.doTask();
@@ -67,3 +74,4 @@ excuteTasks(joy_tasks);
 excuteTasks(nianshou_tasks);
 excuteTasks(jinguo_tasks);
 excuteTasks(farm_tasks);
+excuteTasks(nutrient_tasks);

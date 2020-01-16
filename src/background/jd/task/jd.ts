@@ -28,98 +28,6 @@ export function signInJd() {
 
 export const jd_tasks = [
   {
-    title: "种豆得豆任务",
-    async list() {
-      return [
-        {
-          url:
-            "https://api.m.jd.com/client.action?functionId=plantBeanIndex&clientVersion=8.4.2&build=71043&client=android&d_brand=vivo&d_model=vivoy31a&osVersion=5.1.1&screen=1280*720&partner=jingdong&aid=33b8e7b27dbbd174&oaid=&eid=I6DTSOY3JWZ6IAISM62QQJAVUS2FR7ABUASGK552AMB5IRBE2MN67VBSA67GIEU573OZZOCXNRHBCQ63L4DOAZMKOICV6CLIWVKJ77MKTWJCPDIFQMTQ&sdkVersion=22&lang=zh_CN&uuid=865166029777979-008114eccc76&area=1_2802_2821_0&networkType=wifi&wifiBssid=unknown&st=1579009983649&sign=a9fcd18dbb06262e0e6d99f97c4e79cc&sv=122",
-          data:
-            "body=%7B%22followType%22%3A%221%22%2C%22monitor_refer%22%3A%22%22%2C%22monitor_source%22%3A%22plant_app_plant_index%22%2C%22shareUuid%22%3A%22%22%2C%22version%22%3A%228.4.0.0%22%2C%22wxHeadImgUrl%22%3A%22%22%7D&"
-        },
-        {
-          url:
-            "https://api.m.jd.com/client.action?functionId=purchaseRewardTask&clientVersion=8.4.2&build=71043&client=android&d_brand=vivo&d_model=vivoy31a&osVersion=5.1.1&screen=1280*720&partner=jingdong&aid=33b8e7b27dbbd174&oaid=&eid=I6DTSOY3JWZ6IAISM62QQJAVUS2FR7ABUASGK552AMB5IRBE2MN67VBSA67GIEU573OZZOCXNRHBCQ63L4DOAZMKOICV6CLIWVKJ77MKTWJCPDIFQMTQ&sdkVersion=22&lang=zh_CN&uuid=865166029777979-008114eccc76&area=1_2802_2821_0&networkType=wifi&wifiBssid=unknown&st=1579015717630&sign=54d2023009fae3ae2a6047c915f226d5&sv=121",
-          data:
-            "body=%7B%22monitor_refer%22%3A%22plant_purchaseRewardTask%22%2C%22monitor_source%22%3A%22plant_app_plant_index%22%2C%22roundId%22%3A%22n3kp6xjxvxogcoqbns6eertieu%22%2C%22version%22%3A%228.4.0.0%22%7D&"
-        },
-        {
-          url:
-            "https://api.m.jd.com/client.action?functionId=receiveNutrientsTask&clientVersion=8.4.2&build=71043&client=android&d_brand=vivo&d_model=vivoy31a&osVersion=5.1.1&screen=1280*720&partner=jingdong&aid=33b8e7b27dbbd174&oaid=&eid=I6DTSOY3JWZ6IAISM62QQJAVUS2FR7ABUASGK552AMB5IRBE2MN67VBSA67GIEU573OZZOCXNRHBCQ63L4DOAZMKOICV6CLIWVKJ77MKTWJCPDIFQMTQ&sdkVersion=22&lang=zh_CN&uuid=865166029777979-008114eccc76&area=1_2802_2821_0&networkType=wifi&wifiBssid=unknown&st=1579015810004&sign=41bf59799d54a5f41a889a66e9cd78c4&sv=122",
-          data:
-            "body=%7B%22awardType%22%3A%227%22%2C%22monitor_refer%22%3A%22plant_receiveNutrientsTask%22%2C%22monitor_source%22%3A%22plant_app_plant_index%22%2C%22version%22%3A%228.4.0.0%22%7D&"
-        }
-      ];
-    },
-    async doTask(item) {
-      return requestRaw(item.url, item.data);
-    }
-  },
-  {
-    title: "关注频道领营养液",
-    delay: 3000,
-    async list() {
-      var {
-        data: { goodChannelList, normalChannelList }
-      } = await request.get(
-        "https://api.m.jd.com/client.action?functionId=plantChannelTaskList&body=%7B%7D&uuid=865166029777979-008114eccc76&appid=ld"
-      );
-      return normalChannelList
-        .slice(0, 5)
-        .filter(item => item.taskState === "2");
-    },
-    async doTask({ channelId, channelTaskId }) {
-      await request.get("https://api.m.jd.com/client.action", {
-        qs: {
-          functionId: "plantChannelNutrientsTask",
-          body: JSON.stringify({ channelTaskId, channelId }),
-          uuid: "865166029777979-008114eccc76",
-          appid: "ld"
-        }
-      });
-    }
-  },
-  {
-    title: "关注商品领营养液",
-    delay: 3000,
-    async list() {
-      var {
-        data: { productInfoList }
-      } = await request.get(
-        "https://api.m.jd.com/client.action?functionId=productTaskList&body=%7B%22monitor_source%22%3A%22plant_m_plant_index%22%2C%22monitor_refer%22%3A%22plant_productTaskList%22%2C%22version%22%3A%228.4.0.0%22%7D&appid=ld&client=android&clientVersion=8.4.2&networkType=wifi&osVersion=5.1.1&uuid=865166029777979-008114eccc76"
-      );
-      return productInfoList
-        .map(([item]) => item)
-        .filter(item => item.taskState === "2");
-    },
-    async doTask({ productTaskId, skuId }) {
-      await request.get(
-        "https://api.m.jd.com/client.action?functionId=productNutrientsTask&appid=ld&client=android&clientVersion=8.4.2&networkType=wifi&osVersion=5.1.1&uuid=865166029777979-008114eccc76&jsonp=jsonp_1579103007009_62910",
-        {
-          qs: {
-            body: JSON.stringify({
-              productTaskId,
-              skuId,
-              monitor_source: "plant_m_plant_index",
-              monitor_refer: "plant_productNutrientsTask",
-              version: "8.4.0.0"
-            })
-          }
-        }
-      );
-    }
-  },
-  {
-    title: "领每小时的营养液",
-    period: 1000 * 60 * 60 * 2,
-    doTask() {
-      return requestRaw(
-        "https://api.m.jd.com/client.action?functionId=receiveNutrients&clientVersion=8.4.2&build=71043&client=android&d_brand=vivo&d_model=vivoy31a&osVersion=5.1.1&screen=1280*720&partner=jingdong&aid=33b8e7b27dbbd174&oaid=&eid=I6DTSOY3JWZ6IAISM62QQJAVUS2FR7ABUASGK552AMB5IRBE2MN67VBSA67GIEU573OZZOCXNRHBCQ63L4DOAZMKOICV6CLIWVKJ77MKTWJCPDIFQMTQ&sdkVersion=22&lang=zh_CN&uuid=865166029777979-008114eccc76&area=1_2802_2821_0&networkType=wifi&wifiBssid=unknown&st=1579009990839&sign=4c384b4f8aed8bbfd36e6339e3349787&sv=121",
-        `body=%7B%22monitor_refer%22%3A%22plant_receiveNutrients%22%2C%22monitor_source%22%3A%22plant_app_plant_index%22%2C%22roundId%22%3A%22n3kp6xjxvxogcoqbns6eertieu%22%2C%22version%22%3A%228.4.0.0%22%7D&`
-      );
-    }
-  },
-  {
     title: "京东优惠券签到领红包",
     async test() {
       return true;
@@ -191,7 +99,7 @@ export const jd_tasks = [
       var { data } = await request.post(
         "https://bean.jd.com/myJingBean/getPopSign"
       );
-      return data;
+      return data.filter(({ signed }) => !signed);
     },
     async doTask({ shopUrl }) {
       var shopId;
