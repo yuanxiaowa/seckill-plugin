@@ -1,4 +1,5 @@
 import { request } from "@/background/common/request";
+import moment from "moment";
 
 async function requestData(url: string, body: any) {
   var { data, code, echo } = await request.form(url, {
@@ -120,7 +121,7 @@ export const nutrient_tasks = [
       var {
         timeNutrientsRes: { nextReceiveTime, countDown }
       } = await getIndex();
-      return Number(nextReceiveTime);
+      return Number(nextReceiveTime || moment(7, "HH").valueOf());
     },
     doTask() {
       return requestData(
