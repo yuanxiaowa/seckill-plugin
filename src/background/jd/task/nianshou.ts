@@ -95,6 +95,7 @@ export const nianshou_tasks = [
         },
         method: "post"
       });
+      await delay(2000);
     }
   },
   {

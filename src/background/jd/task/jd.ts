@@ -96,6 +96,7 @@ export const jd_tasks = [
   {
     title: "店铺签到领京豆",
     async list() {
+      await request.get("https://bean.jd.com/myJingBean/list");
       var { data } = await request.post(
         "https://bean.jd.com/myJingBean/getPopSign"
       );
