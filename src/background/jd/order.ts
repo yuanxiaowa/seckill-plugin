@@ -407,22 +407,30 @@ export async function submitOrderPc(
     page.evaluate(
       (pass, expectedPrice) => {
         var meta_text = document.getElementById("skuDetailInfo")!.textContent!;
-        var skuNumList = [];
+        var skuNumList: any = [];
         if (meta_text) {
           let meta_data = JSON.parse(meta_text);
           skuNumList = meta_data.map(item => ({
             skuId: item.skuId,
             num: item.num
-          }))
+          }));
         } else {
-          Array.from(document.querySelectorAll('.goods-item')).map(item => {
-            var skuId = item.getAttribute('goods-id')!
-            var num = item.querySelector('.p-num')!.textContent!.trim().substring(1)
-            return {
-              skuId,
-              num
-            }
-          })
+          skuNumList = Array.from(document.querySelectorAll(".goods-item"))
+            .map(item => {
+              var skuId = item.getAttribute("goods-id")!;
+              if (!skuId) {
+                return;
+              }
+              var num = item
+                .querySelector(".p-num")!
+                .textContent!.trim()
+                .substring(1);
+              return {
+                skuId,
+                num
+              };
+            })
+            .filter(Boolean);
         }
         var area_ele = document.querySelector<HTMLDivElement>(
           ".consignee-item.item-selected"
