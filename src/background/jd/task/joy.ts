@@ -131,5 +131,22 @@ export const joy_tasks = [
         sku
       });
     }
+  },
+  {
+    title: "喂宠物",
+    async list() {
+      var {
+        data: { feedCount, feedPetRewards }
+      } = await request.get("https://jdjoy.jd.com/pet/getTodayFeedInfo");
+      var diff =
+        feedPetRewards[feedPetRewards.length - 1].feedCount - feedCount;
+      if (diff > 0) {
+        return [...Array(diff)];
+      }
+      return [];
+    },
+    async doTask() {
+      return request.get(`https://jdjoy.jd.com/pet/feed?feedCount=10`);
+    }
   }
 ];
