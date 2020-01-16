@@ -134,14 +134,19 @@ export const joy_tasks = [
   },
   {
     title: "喂宠物",
-    async list() {
+    async nextTime() {
       var {
         data: { feedCount, feedPetRewards }
       } = await request.get("https://jdjoy.jd.com/pet/getTodayFeedInfo");
       var diff =
         feedPetRewards[feedPetRewards.length - 1].feedCount - feedCount;
       if (diff > 0) {
-        return [...Array(diff)];
+        let {
+          data: { lastFeedTime }
+        } = await request.get(
+          "https://jdjoy.jd.com/pet/enterRoom?reqSource=h5&invitePin="
+        );
+        return lastFeedTime + 2 * 60 * 60 * 1000;
       }
       return [];
     },
