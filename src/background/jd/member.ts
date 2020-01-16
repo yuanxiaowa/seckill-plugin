@@ -63,7 +63,7 @@ export async function loginPc() {
     document.querySelector<HTMLInputElement>("#loginname")!.value =
       account.username;
     document.querySelector<HTMLInputElement>("#nloginpwd")!.value =
-      account.username;
+      account.password;
     document.querySelector<HTMLLinkElement>("#loginsubmit")!.click();
   }, accounts.jingdong);
   /* window.open(
