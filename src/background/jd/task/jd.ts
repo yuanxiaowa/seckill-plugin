@@ -184,5 +184,24 @@ export const jd_tasks = [
         }
       });
     }
+  },
+  {
+    title: "店铺签到领京豆",
+    async list() {
+      var { data } = await request.post(
+        "https://bean.jd.com/myJingBean/getPopSign"
+      );
+      return data;
+    },
+    async doTask({ shopUrl }) {
+      var shopId;
+      if (!/^http:\/\/mall\./.test(shopUrl)) {
+        let html = await request.get(shopUrl);
+        shopId = /var\s+shopId\s*=\s*"(\d+)/.exec(html)![1];
+      } else {
+        shopId = /-(\d+)/.exec(shopUrl)![1];
+      }
+      return request.get(`https://mall.jd.com/shopSign-${shopId}.html`);
+    }
   }
 ];

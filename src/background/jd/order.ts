@@ -131,74 +131,77 @@ export async function submitOrder(
             throw new Error("价格太高了");
           }
         }
-        var script_content = document.querySelector(".wx_wrap")!
-          .previousElementSibling!.textContent!;
-        var text = /(window\.dealData\s=[\s\S]*)/.exec(script_content)![1];
-        eval(text);
-        // @ts-ignore
-        var dealData = window.dealData;
-        var order = dealData.order;
-        var vendorCart = order.venderCart;
-        var address = order.address;
-        var products = vendorCart[0].mfsuits[0].products;
+        // var script_content = document.querySelector(".wx_wrap")!
+        //   .previousElementSibling!.textContent!;
+        // var text = /(window\.dealData\s=[\s\S]*)/.exec(script_content)![1];
+        // eval(text);
+        // // @ts-ignore
+        // var dealData = window.dealData;
+        // var order = dealData.order;
+        // var vendorCart = order.venderCart;
+        // var address = order.address;
+
+        // var products = (vendorCart[0].mfsuits || vendorCart[0].mzsuits)[0]
+        //   .products;
         var btn = Array.from(
           document.querySelectorAll<HTMLDivElement>(".mod_btns")
         )
           .filter(ele => ele.style.display !== "none")
           .reverse()[0]
           .querySelector<HTMLLinkElement>("a")!;
-        var data = {
-          skuNumList: products.map(({ mainSku }) => ({
-            skuId: mainSku.skuId,
-            num: mainSku.num
-          })),
-          areaRequest: {
-            provinceId: address.provId,
-            cityId: address.cityId,
-            countyId: address.countyId,
-            townId: address.townId
-          },
-          coordnateRequest: {
-            longtitude: address.longitude,
-            latitude: address.latitude
-          }
-        };
-        function check() {
-          return fetch(`https://trade.jd.com/api/v1/batch/stock`, {
-            method: "post",
-            body: JSON.stringify(data),
-            headers: {
-              Accept: "application/json",
-              "Content-Type": "application/json"
-            }
-          })
-            .then(res => res.json())
-            .then(
-              ({ result }) =>
-                !Object.keys(result).find(key =>
-                  result[key].status.includes("无货")
-                )
-            );
-        }
-        function handler() {
-          check().then(b => {
-            if (!b) {
-              return handler();
-            }
-            submit();
-          });
-        }
+        // var data = {
+        //   skuNumList: products.map(({ mainSku }) => ({
+        //     skuId: mainSku.skuId,
+        //     num: mainSku.num
+        //   })),
+        //   areaRequest: {
+        //     provinceId: address.provId,
+        //     cityId: address.cityId,
+        //     countyId: address.countyId,
+        //     townId: address.townId
+        //   },
+        //   coordnateRequest: {
+        //     longtitude: address.longitude,
+        //     latitude: address.latitude
+        //   }
+        // };
+        // function check() {
+        //   return fetch(`https://trade.jd.com/api/v1/batch/stock`, {
+        //     method: "post",
+        //     body: JSON.stringify(data),
+        //     headers: {
+        //       Accept: "application/json",
+        //       "Content-Type": "application/json"
+        //     }
+        //   })
+        //     .then(res => res.json())
+        //     .then(
+        //       ({ result }) =>
+        //         !Object.keys(result).find(key =>
+        //           result[key].status.includes("无货")
+        //         )
+        //     );
+        // }
+        // function handler() {
+        //   check().then(b => {
+        //     if (!b) {
+        //       return handler();
+        //     }
+        //     submit();
+        //   });
+        // }
         function submit() {
-          console.log(new Date(), "去下单");
+          // console.log(new Date(), "去下单");
           btn.click();
-          setTimeout(() => {
-            handler();
-            var ele = document.querySelector<HTMLDivElement>(".ui-dialog");
-            if (ele) {
-              ele.parentNode!.removeChild(ele);
-            }
-          }, 5000);
+          setTimeout(submit, 500);
         }
+        setInterval(() => {
+          // handler();
+          var ele = document.querySelector<HTMLDivElement>(".ui-dialog");
+          if (ele) {
+            ele.parentNode!.removeChild(ele);
+          }
+        }, 5000);
         setTimeout(() => {
           var ele = document.querySelector<HTMLInputElement>("#shortid")!;
           ele.value = pass;
@@ -404,7 +407,23 @@ export async function submitOrderPc(
     page.evaluate(
       (pass, expectedPrice) => {
         var meta_text = document.getElementById("skuDetailInfo")!.textContent!;
-        var meta_data = JSON.parse(meta_text);
+        var skuNumList = [];
+        if (meta_text) {
+          let meta_data = JSON.parse(meta_text);
+          skuNumList = meta_data.map(item => ({
+            skuId: item.skuId,
+            num: item.num
+          }))
+        } else {
+          Array.from(document.querySelectorAll('.goods-item')).map(item => {
+            var skuId = item.getAttribute('goods-id')!
+            var num = item.querySelector('.p-num')!.textContent!.trim().substring(1)
+            return {
+              skuId,
+              num
+            }
+          })
+        }
         var area_ele = document.querySelector<HTMLDivElement>(
           ".consignee-item.item-selected"
         )!;
@@ -418,10 +437,7 @@ export async function submitOrderPc(
           }
         }
         var data = {
-          skuNumList: meta_data.map(item => ({
-            skuId: item.skuId,
-            num: item.num
-          })),
+          skuNumList,
           areaRequest: {
             provinceId: area_ele.getAttribute("provinceId"),
             cityId: area_ele.getAttribute("cityId"),

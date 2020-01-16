@@ -145,6 +145,7 @@ export class ChromePage {
   evaluate(fn: string | Function, ...args: any[]) {
     var args_str = args.map(arg => JSON.stringify(arg)).join(",");
     var code = typeof fn !== "string" ? `(${fn.toString()})(${args_str})` : fn;
+    console.log(code)
     return new Promise(resolve => {
       chrome.tabs.executeScript(
         this.tabId,

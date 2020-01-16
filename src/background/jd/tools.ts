@@ -3,13 +3,13 @@ import { request } from "../common/request";
 import setting from "./setting";
 
 export function getCookie(name: string) {
-  return new Promise<string>(resolve => {
+  return new Promise<string | null>(resolve => {
     chrome.cookies.get(
       {
         name,
         url: "https://www.jd.com"
       },
-      cookie => resolve(cookie!.value)
+      cookie => resolve(cookie && cookie.value)
     );
   });
 }
