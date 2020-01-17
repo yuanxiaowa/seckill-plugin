@@ -49,8 +49,12 @@ import { getPlusQuanpin, getPlusQuanpinList } from "./jd/plus";
 import { getRedirectedUrl } from "./common/request";
 import { buyDirect as jd_buyDirect, cartBuy as jd_cartBuy } from "./jd/order";
 
+import {
+  getCouponCenterCoupon,
+  getCouponCenterItems
+} from "./jd/coupon-center";
 import "./jd/task";
-import { getCouponCenterCoupon, getCouponCenterItems } from './jd/coupon-center';
+import "./baidu";
 
 async function qiangquan({
   data,

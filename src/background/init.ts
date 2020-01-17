@@ -27,7 +27,11 @@ chrome.webRequest.onBeforeSendHeaders.addListener(
         headers.forEach(item => {
           if (item.name.startsWith("_")) {
             let name = item.name.substring(1);
-            if (name === "user-agent" || name === "origin") {
+            if (
+              name === "user-agent" ||
+              name === "origin" ||
+              name === "cookie"
+            ) {
               let _item = headers!.find(
                 item => item.name.toLowerCase() === name
               );
@@ -45,7 +49,12 @@ chrome.webRequest.onBeforeSendHeaders.addListener(
     }
   },
   {
-    urls: ["*://*.taobao.com/*", "*://*.tmall.com/*", "*://*.jd.com/*"]
+    urls: [
+      "*://*.taobao.com/*",
+      "*://*.tmall.com/*",
+      "*://*.jd.com/*",
+      "https://activity.baidu.com/*"
+    ]
   },
   version > 76
     ? ["blocking", "requestHeaders", "extraHeaders"]

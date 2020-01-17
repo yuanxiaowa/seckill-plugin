@@ -131,9 +131,6 @@ export const nutrient_tasks = [
       var {
         timeNutrientsRes: { nextReceiveTime, countDown }
       } = await getIndex();
-      console.log(
-        new Date(Number(nextReceiveTime || moment(7, "HH").valueOf()))
-      );
       return Number(nextReceiveTime || moment(7, "HH").valueOf());
     },
     doTask() {
@@ -167,11 +164,11 @@ export const nutrient_tasks = [
     }
   },
   {
-    title: "帮收",
+    title: "帮别人收营养液",
     period: 10 * 60 * 1000,
     delay: 3000,
     async list() {
-      var { friendInfoList } = await requestData(
+      var { friendInfoList, tips } = await requestData(
         "https://api.m.jd.com/client.action?functionId=plantFriendList&appid=ld&client=android&clientVersion=8.4.2&networkType=wifi&osVersion=5.1.1&uuid=865166029777979-008114eccc76",
         {
           pageNum: "1",
@@ -180,6 +177,9 @@ export const nutrient_tasks = [
           version: "8.4.0.0"
         }
       );
+      if (tips === "今日帮助收取次数已达上限，明天再来帮忙吧") {
+        throw new Error(tips);
+      }
       return friendInfoList.filter(
         ({ nutrCount }) => nutrCount && Number(nutrCount) > 0
       );

@@ -96,7 +96,7 @@ export async function requestJr<T = any>(
   });
   res = res.resultData;
   if (inner) {
-    if (!["0000", "200"].includes(res.code)) {
+    if (!["0000", "200"].includes(String(res.code))) {
       console.log(url);
       console.trace();
       throw new Error(res.msg);
