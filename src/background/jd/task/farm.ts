@@ -1,4 +1,5 @@
 import { request } from "@/background/common/request";
+import moment from "moment";
 
 function requestData(functionId: string, body?: any) {
   return request.get("https://api.m.jd.com/client.action", {
@@ -10,17 +11,15 @@ function requestData(functionId: string, body?: any) {
   });
 }
 
+function getMeta() {
+  return requestData("taskInitForFarm");
+}
+
 export const farm_tasks = [
   {
     title: "农场任务",
     async list() {
-      var {
-        gotThreeMealInit,
-        signInit,
-        firstWaterInit,
-        waterRainInit,
-        gotBrowseTaskAdInit
-      } = await requestData("taskInitForFarm");
+      var { signInit, firstWaterInit, gotBrowseTaskAdInit } = await getMeta();
       var items: any[] = [];
       if (!signInit.f) {
         items.push({
@@ -28,28 +27,7 @@ export const farm_tasks = [
           body: { type: 0, version: 2, channel: 1 }
         });
       }
-      if (!gotThreeMealInit.f) {
-        items.push({
-          functionId: "gotThreeMealForFarm",
-          body: { type: 0 }
-        });
-      }
       if (!firstWaterInit.f) {
-        for (let i = 0; i < 10 - firstWaterInit.totalWaterTimes; i++) {
-          items.push({
-            functionId: "waterGoodForFarm"
-          });
-        }
-        items.push({
-          functionId: "firstWaterTaskForFarm"
-        });
-      }
-      if (!waterRainInit.f) {
-        // 每天两次，间隔3小时
-        items.push({
-          functionId: "waterRainForFarm",
-          body: { type: 1, version: 2 }
-        });
       }
       if (true) {
         items.push({
@@ -81,6 +59,52 @@ export const farm_tasks = [
     },
     async doTask({ functionId, body }) {
       await requestData(functionId, body);
+    }
+  },
+  {
+    title: "定时领水",
+    async period() {
+      var { gotThreeMealInit } = await getMeta();
+      return gotThreeMealInit.threeMealTimes.map(s =>
+        s.split("-").map(h => moment(h, "HH").valueOf())
+      );
+    },
+    async doTask() {
+      return requestData("gotThreeMealForFarm", { type: 0 });
+    }
+  },
+  {
+    title: "收集水滴雨",
+    async nextTime() {
+      var {
+        waterRainInit: { config, f, lastTime }
+      } = await getMeta();
+      if (f) {
+        return;
+      }
+      return lastTime + config.intervalTime * 60 * 60 * 1000;
+    },
+    async doTask() {
+      return requestData("waterRainForFarm", { type: 1, version: 2 });
+    }
+  },
+  {
+    title: "浇水",
+    async test() {
+      return true;
+    },
+    async doTask() {
+      var { firstWaterInit, totalWaterTaskInit } = await getMeta();
+      var count = 10 - firstWaterInit.totalWaterTimes;
+      for (let i = 0; i < count; i++) {
+        await requestData("waterGoodForFarm");
+      }
+      if (!firstWaterInit.f) {
+        await requestData("firstWaterTaskForFarm");
+      }
+      if (!totalWaterTaskInit.f) {
+        await requestData("totalWaterTaskForFarm");
+      }
     }
   }
 ];

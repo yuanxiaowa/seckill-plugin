@@ -1,25 +1,28 @@
 import { daily, period, delay } from "@/background/common/tool";
-import { signInJr, getSignAwardJR, jr_tasks } from "./jr";
-import { signInJd, jd_tasks } from "./jd";
+import { jr_tasks } from "./jr";
+import { jd_tasks } from "./jd";
 import { nianshou_tasks } from "./nianshou";
 import { jinguo_tasks } from "./jinguo";
 import { joy_tasks } from "./joy";
 import { farm_tasks } from "./farm";
 import { nutrient_tasks } from "./nutrient";
-
-async function signIn() {
-  await Promise.all([signInJr(), signInJd()]);
-  await getSignAwardJR();
-}
+import { pig_tasks } from "./pig";
 
 async function excuteTasks(tasks) {
   tasks.forEach(async task => {
     if (task.nextTime) {
-      (async function f() {
+      let f = async () => {
         await task.doTask();
         let date = await task.nextTime();
-        setTimeout(f, date - Date.now());
-      })();
+        if (date) {
+          setTimeout(f, date - Date.now());
+        }
+      };
+      if (task.forever) {
+        f();
+      } else {
+        daily(f);
+      }
     } else if (task.test) {
       daily(async () => {
         if (await task.test()) {
@@ -27,7 +30,7 @@ async function excuteTasks(tasks) {
         }
       });
     } else if (task.list) {
-      daily(async () => {
+      let handler = async () => {
         for (let item of await task.list()) {
           try {
             await task.doTask(item);
@@ -38,13 +41,24 @@ async function excuteTasks(tasks) {
             await delay(task.delay);
           }
         }
-      });
+      };
+      if (task.period) {
+        period({
+          handler,
+          t: task.period,
+          title: task.title
+        });
+      } else {
+        daily(handler);
+      }
     } else if (task.period) {
       if (typeof task.period === "number") {
-        (function f() {
-          task.doTask();
-          setTimeout(f, task.period);
-        })();
+        let handler = () => task.doTask();
+        period({
+          handler,
+          t: task.period,
+          title: task.title
+        });
       } else if (task.period) {
         daily(async function f() {
           var times: number[][] = [];
@@ -67,7 +81,6 @@ async function excuteTasks(tasks) {
   });
 }
 
-daily(signIn);
 excuteTasks(jr_tasks);
 excuteTasks(jd_tasks);
 excuteTasks(joy_tasks);
@@ -75,3 +88,4 @@ excuteTasks(nianshou_tasks);
 excuteTasks(jinguo_tasks);
 excuteTasks(farm_tasks);
 excuteTasks(nutrient_tasks);
+excuteTasks(pig_tasks);

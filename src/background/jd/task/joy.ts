@@ -134,6 +134,7 @@ export const joy_tasks = [
   },
   {
     title: "喂宠物",
+    forever: true,
     async nextTime() {
       var {
         data: { feedCount, feedPetRewards }
@@ -146,12 +147,22 @@ export const joy_tasks = [
         } = await request.get(
           "https://jdjoy.jd.com/pet/enterRoom?reqSource=h5&invitePin="
         );
-        return lastFeedTime + 2 * 60 * 60 * 1000;
+        return lastFeedTime + 3 * 60 * 60 * 1000;
       }
-      return [];
     },
     async doTask() {
       return request.get(`https://jdjoy.jd.com/pet/feed?feedCount=10`);
+    }
+  },
+  {
+    title: "帮好友喂",
+    async list() {
+      return [];
+    },
+    async doTask() {
+      return request.get(
+        "https://jdjoy.jd.com/pet/helpFeed?friendPin=pet_virtual_friend_%E4%B8%81%E5%BA%A7%E7%9A%84%E7%9C%9F%E7%88%B1%E7%B2%89"
+      );
     }
   }
 ];

@@ -42,14 +42,15 @@ export const nianshou_tasks = [
   {
     title: "年兽任务",
     async list() {
-      var {
-        result: { taskVos }
-      } = await requestData({
+      var { result, success } = await requestData({
         functionId: "bombnian_getTaskDetail",
         data: {},
         method: "post"
       });
-      var items = taskVos.slice(1);
+      if (!success) {
+        return delay(3000).then(() => this.list());
+      }
+      var items = result.taskVos.slice(1);
       return flatten(
         items.map(item => {
           if (item.status !== 1) {

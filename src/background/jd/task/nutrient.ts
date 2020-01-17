@@ -1,17 +1,26 @@
 import { request } from "@/background/common/request";
 import moment from "moment";
+import { mermorize } from "@/background/common/tool";
 
 async function requestData(url: string, body: any) {
-  var { data, code, echo } = await request.form(url, {
-    body: JSON.stringify(body)
-  });
+  var { data, code, echo } = await request.form(
+    url,
+    {
+      body: JSON.stringify(body)
+    },
+    {
+      headers: {
+        _origin: "https://api.m.jd.com"
+      }
+    }
+  );
   if (code !== "0") {
     throw new Error(echo);
   }
   return data;
 }
 
-function getIndex() {
+var getIndex = mermorize(function() {
   return requestData(
     "https://api.m.jd.com/client.action?functionId=plantBeanIndex&clientVersion=8.4.2&build=71043&client=android&d_brand=vivo&d_model=vivoy31a&osVersion=5.1.1&screen=1280*720&partner=jingdong&aid=33b8e7b27dbbd174&oaid=&eid=I6DTSOY3JWZ6IAISM62QQJAVUS2FR7ABUASGK552AMB5IRBE2MN67VBSA67GIEU573OZZOCXNRHBCQ63L4DOAZMKOICV6CLIWVKJ77MKTWJCPDIFQMTQ&sdkVersion=22&lang=zh_CN&uuid=865166029777979-008114eccc76&area=1_2802_2821_0&networkType=wifi&wifiBssid=ea8683e82e32666b8ecd789b2fc7933f&st=1579182263066&sign=451e8b17e18a2094ec6fee23cc2d3ef8&sv=101",
     {
@@ -23,7 +32,7 @@ function getIndex() {
       wxHeadImgUrl: ""
     }
   );
-}
+}, 200);
 
 export const nutrient_tasks = [
   {
@@ -117,10 +126,14 @@ export const nutrient_tasks = [
   },
   {
     title: "领每小时的营养液",
+    forever: true,
     async nextTime() {
       var {
         timeNutrientsRes: { nextReceiveTime, countDown }
       } = await getIndex();
+      console.log(
+        new Date(Number(nextReceiveTime || moment(7, "HH").valueOf()))
+      );
       return Number(nextReceiveTime || moment(7, "HH").valueOf());
     },
     doTask() {
@@ -137,17 +150,48 @@ export const nutrient_tasks = [
   },
   {
     title: "喂营养液",
-    async test() {
-      var { roundList } = await getIndex();
-      return Number(roundList[2].nutrients) > 0;
-    },
+    period: 3 * 60 * 60 * 1000,
     async doTask() {
-      return requestData(
-        "https://api.m.jd.com/client.action?functionId=cultureBean&clientVersion=8.4.2&build=71043&client=android&d_brand=vivo&d_model=vivoy31a&osVersion=5.1.1&screen=1280*720&partner=jingdong&aid=33b8e7b27dbbd174&oaid=&eid=I6DTSOY3JWZ6IAISM62QQJAVUS2FR7ABUASGK552AMB5IRBE2MN67VBSA67GIEU573OZZOCXNRHBCQ63L4DOAZMKOICV6CLIWVKJ77MKTWJCPDIFQMTQ&sdkVersion=22&lang=zh_CN&uuid=865166029777979-008114eccc76&area=1_2802_2821_0&networkType=wifi&wifiBssid=ea8683e82e32666b8ecd789b2fc7933f&st=1579186086718&sign=ec57e91023afdb933c2e2b96501755c3&sv=122",
+      var { roundList } = await getIndex();
+      if (Number(roundList[1].nutrients) > 0) {
+        return requestData(
+          "https://api.m.jd.com/client.action?functionId=cultureBean&clientVersion=8.4.2&build=71043&client=android&d_brand=vivo&d_model=vivoy31a&osVersion=5.1.1&screen=1280*720&partner=jingdong&aid=33b8e7b27dbbd174&oaid=&eid=I6DTSOY3JWZ6IAISM62QQJAVUS2FR7ABUASGK552AMB5IRBE2MN67VBSA67GIEU573OZZOCXNRHBCQ63L4DOAZMKOICV6CLIWVKJ77MKTWJCPDIFQMTQ&sdkVersion=22&lang=zh_CN&uuid=865166029777979-008114eccc76&area=1_2802_2821_0&networkType=wifi&wifiBssid=ea8683e82e32666b8ecd789b2fc7933f&st=1579186086718&sign=ec57e91023afdb933c2e2b96501755c3&sv=122",
+          {
+            monitor_refer: "plant_index",
+            monitor_source: "plant_app_plant_index",
+            roundId: "n3kp6xjxvxogcoqbns6eertieu",
+            version: "8.4.0.0"
+          }
+        );
+      }
+    }
+  },
+  {
+    title: "帮收",
+    period: 10 * 60 * 1000,
+    delay: 3000,
+    async list() {
+      var { friendInfoList } = await requestData(
+        "https://api.m.jd.com/client.action?functionId=plantFriendList&appid=ld&client=android&clientVersion=8.4.2&networkType=wifi&osVersion=5.1.1&uuid=865166029777979-008114eccc76",
         {
-          monitor_refer: "plant_index",
-          monitor_source: "plant_app_plant_index",
+          pageNum: "1",
+          monitor_source: "plant_m_plant_index",
+          monitor_refer: "plantFriendList",
+          version: "8.4.0.0"
+        }
+      );
+      return friendInfoList.filter(
+        ({ nutrCount }) => nutrCount && Number(nutrCount) > 0
+      );
+    },
+    async doTask({ paradiseUuid }) {
+      await requestData(
+        "https://api.m.jd.com/client.action?functionId=collectUserNutr&appid=ld&client=android&clientVersion=8.4.2&networkType=wifi&osVersion=5.1.1&uuid=865166029777979-008114eccc76",
+        {
+          paradiseUuid,
           roundId: "n3kp6xjxvxogcoqbns6eertieu",
+          monitor_source: "plant_m_plant_index",
+          monitor_refer: "collectUserNutr",
           version: "8.4.0.0"
         }
       );

@@ -24,3 +24,18 @@ export function period({ handler, title, t = 1000 }) {
   handler();
   setTimeout(() => period({ handler, title, t }), t);
 }
+
+export function mermorize(handler: () => any, delay = 1000) {
+  var prev_t = 0;
+  var prev_p;
+  return () => {
+    if (prev_p) {
+      if (Date.now() - prev_t < delay) {
+        return prev_p;
+      }
+    }
+    prev_t = Date.now();
+    prev_p = handler();
+    return prev_p;
+  };
+}

@@ -1,7 +1,21 @@
 import { requestJr } from "./tools";
 import { request } from "@/background/common/request";
+import { signInJd } from "./jd";
 
-export async function signInJr() {
+async function signInJr() {
+  // var {
+  //   resBusiData: { isSign }
+  // } = await requestJr(
+  //   `https://ms.jr.jd.com/gw/generic/gry/h5/m/querySignHistory?_=${Date.now()}`,
+  //   {
+  //     channelSource: "JRAPP",
+  //     riskDeviceParam:
+  //       '{"deviceType":"iPhone 7 Plus (A1661/A1785/A1786)","traceIp":"","macAddress":"02:00:00:00:00:00","imei":"7B4C588C-8371-4F85-B91D-F015D8C88E90","os":"iOS","osVersion":"13.3","fp":"7e8fbf00ae6a55bd7ef3b4513f6793d4","ip":"172.16.91.146","eid":"DC2RJF5LVTZ4FRINXN3WARSD3AD5W3Y6HY2KZJ67ZWGCWZAHRVAHBSTLURKL23PFZWXTJ7FGAO5MOBD6T4KIT45DZI","appId":"com.jd.jinrong","openUUID":"9d6039ba9a88469d7733658d45e3dae4df03af46","uuid":"","clientVersion":"5.3.30","resolution":"736*414","channelInfo":"appstore","networkType":"WIFI","startNo":212,"openid":"","token":"","sid":"","terminalType":"02","longtitude":"","latitude":"","securityData":"","jscContent":"","fnHttpHead":"","receiveRequestTime":"","port":"","appType":1,"optType":"","idfv":"","wifiSSID":"","wifiMacAddress":"","cellIpAddress":"","wifiIpAddress":"","sdkToken":"C3ROKUU3EHCQVKIYXBHNGOUUHUFXRPQQBWS6QRIXFWZDQZ2J5B4DQEAZHORMUG6L3KG6LHYMWY6Q4"}'
+  //   }
+  // );
+  // if (isSign) {
+  //   return;
+  // }
   var { resBusiMsg, resBusiCode } = await requestJr(
     `https://ms.jr.jd.com/gw/generic/gry/h5/m/signIn`,
     {
@@ -13,7 +27,7 @@ export async function signInJr() {
   }
 }
 
-export function getSignAwardJR() {
+function getSignAwardJR() {
   return requestJr(`https://nu.jr.jd.com/gw/generic/jrm/h5/m/process`, {
     actCode: "FBBFEC496C",
     type: 4
@@ -21,6 +35,29 @@ export function getSignAwardJR() {
 }
 
 export const jr_tasks = [
+  {
+    title: "双签",
+    async list() {
+      var { businessData } = await requestJr(
+        `https://nu.jr.jd.com/gw/generic/jrm/h5/m/process?_=${Date.now()}`,
+        { actCode: "FBBFEC496C", type: 9, frontParam: { channel: "JR" } },
+        true
+      );
+      if (!businessData.get) {
+        return [businessData];
+      }
+      return [];
+    },
+    async doTask(item) {
+      if (!item.signInJd) {
+        await signInJd();
+      }
+      if (item.signInJr) {
+        await signInJr();
+      }
+      await getSignAwardJR();
+    }
+  },
   {
     title: "翻钢镚",
     async list() {

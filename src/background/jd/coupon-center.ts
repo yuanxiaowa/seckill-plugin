@@ -54,6 +54,7 @@ export async function getCouponCenterItems() {
     t,
     tStr: moment(t).format(moment.HTML5_FMT.DATETIME_LOCAL_SECONDS)
   });
+  return items;
 }
 
 export async function getCouponCenterCoupon(item) {
