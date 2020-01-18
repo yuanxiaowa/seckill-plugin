@@ -52,7 +52,7 @@ export const jr_tasks = [
       if (!item.signInJd) {
         await signInJd();
       }
-      if (item.signInJr) {
+      if (!item.signInJr) {
         await signInJr();
       }
       await getSignAwardJR();
