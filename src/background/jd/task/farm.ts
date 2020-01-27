@@ -1,5 +1,6 @@
 import { request } from "@/background/common/request";
 import moment from "moment";
+import { delay } from "@/background/common/tool";
 
 function requestData(functionId: string, body?: any) {
   return request.get("https://api.m.jd.com/client.action", {
@@ -19,6 +20,7 @@ export const farm_tasks = [
   {
     title: "农场任务",
     async list() {
+      await delay(120 * 1000);
       var { signInit, firstWaterInit, gotBrowseTaskAdInit } = await getMeta();
       var items: any[] = [];
       if (!signInit.f) {

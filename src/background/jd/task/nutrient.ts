@@ -1,6 +1,6 @@
 import { request } from "@/background/common/request";
 import moment from "moment";
-import { mermorize } from "@/background/common/tool";
+import { mermorize, delay } from "@/background/common/tool";
 
 async function requestData(url: string, body: any) {
   var { data, code, echo } = await request.form(
@@ -43,16 +43,17 @@ export const nutrient_tasks = [
       if (awardList[3].limitFlag === "1") {
         items.push({
           url:
-            "https://api.m.jd.com/client.action?functionId=purchaseRewardTask&clientVersion=8.4.2&build=71043&client=android&d_brand=vivo&d_model=vivoy31a&osVersion=5.1.1&screen=1280*720&partner=jingdong&aid=33b8e7b27dbbd174&oaid=&eid=I6DTSOY3JWZ6IAISM62QQJAVUS2FR7ABUASGK552AMB5IRBE2MN67VBSA67GIEU573OZZOCXNRHBCQ63L4DOAZMKOICV6CLIWVKJ77MKTWJCPDIFQMTQ&sdkVersion=22&lang=zh_CN&uuid=865166029777979-008114eccc76&area=1_2802_2821_0&networkType=wifi&wifiBssid=unknown&st=1579015717630&sign=54d2023009fae3ae2a6047c915f226d5&sv=121",
+            "https://api.m.jd.com/client.action?functionId=purchaseRewardTask&clientVersion=8.4.2&build=71043&client=android&d_brand=vivo&d_model=vivoy31a&osVersion=5.1.1&screen=1280*720&partner=jingdong&aid=33b8e7b27dbbd174&oaid=&eid=I6DTSOY3JWZ6IAISM62QQJAVUS2FR7ABUASGK552AMB5IRBE2MN67VBSA67GIEU573OZZOCXNRHBCQ63L4DOAZMKOICV6CLIWVKJ77MKTWJCPDIFQMTQ&sdkVersion=22&lang=zh_CN&uuid=865166029777979-008114eccc76&area=1_2802_2821_0&networkType=wifi&wifiBssid=ea8683e82e32666b8ecd789b2fc7933f&st=1580127825966&sign=ca7a1d7bc2ad035d3eb04384600520cb&sv=110",
           data: {
             monitor_refer: "plant_purchaseRewardTask",
             monitor_source: "plant_app_plant_index",
-            roundId: "n3kp6xjxvxogcoqbns6eertieu",
+            roundId: "j6kzrj5bdris4oqbns6eertieu",
             version: "8.4.0.0"
           }
         });
       }
       if (awardList[4].childAwardList[0].limitFlag === "1") {
+        await delay(60 * 1000);
         items.push({
           url:
             "https://api.m.jd.com/client.action?functionId=receiveNutrientsTask&clientVersion=8.4.2&build=71043&client=android&d_brand=vivo&d_model=vivoy31a&osVersion=5.1.1&screen=1280*720&partner=jingdong&aid=33b8e7b27dbbd174&oaid=&eid=I6DTSOY3JWZ6IAISM62QQJAVUS2FR7ABUASGK552AMB5IRBE2MN67VBSA67GIEU573OZZOCXNRHBCQ63L4DOAZMKOICV6CLIWVKJ77MKTWJCPDIFQMTQ&sdkVersion=22&lang=zh_CN&uuid=865166029777979-008114eccc76&area=1_2802_2821_0&networkType=wifi&wifiBssid=unknown&st=1579015810004&sign=41bf59799d54a5f41a889a66e9cd78c4&sv=122",
@@ -131,15 +132,22 @@ export const nutrient_tasks = [
       var {
         timeNutrientsRes: { nextReceiveTime, countDown }
       } = await getIndex();
-      return Number(nextReceiveTime || moment(7, "HH").valueOf());
+      var now = new Date();
+      if (now.getHours() < 7) {
+        return moment(7, "HH").valueOf();
+      }
+      if (!nextReceiveTime) {
+        return now.getTime() + 1 * 60 * 1000;
+      }
+      return Number(nextReceiveTime.valueOf());
     },
     doTask() {
       return requestData(
-        "https://api.m.jd.com/client.action?functionId=receiveNutrients&clientVersion=8.4.2&build=71043&client=android&d_brand=vivo&d_model=vivoy31a&osVersion=5.1.1&screen=1280*720&partner=jingdong&aid=33b8e7b27dbbd174&oaid=&eid=I6DTSOY3JWZ6IAISM62QQJAVUS2FR7ABUASGK552AMB5IRBE2MN67VBSA67GIEU573OZZOCXNRHBCQ63L4DOAZMKOICV6CLIWVKJ77MKTWJCPDIFQMTQ&sdkVersion=22&lang=zh_CN&uuid=865166029777979-008114eccc76&area=1_2802_2821_0&networkType=wifi&wifiBssid=unknown&st=1579009990839&sign=4c384b4f8aed8bbfd36e6339e3349787&sv=121",
+        "https://api.m.jd.com/client.action?functionId=receiveNutrients&clientVersion=8.4.2&build=71043&client=android&d_brand=vivo&d_model=vivoy31a&osVersion=5.1.1&screen=1280*720&partner=jingdong&aid=33b8e7b27dbbd174&oaid=&eid=I6DTSOY3JWZ6IAISM62QQJAVUS2FR7ABUASGK552AMB5IRBE2MN67VBSA67GIEU573OZZOCXNRHBCQ63L4DOAZMKOICV6CLIWVKJ77MKTWJCPDIFQMTQ&sdkVersion=22&lang=zh_CN&uuid=865166029777979-008114eccc76&area=1_2802_2821_0&networkType=wifi&wifiBssid=ea8683e82e32666b8ecd789b2fc7933f&st=1580128487373&sign=32728f74f85797ea79a5dce574e6e453&sv=101",
         {
           monitor_refer: "plant_receiveNutrients",
           monitor_source: "plant_app_plant_index",
-          roundId: "n3kp6xjxvxogcoqbns6eertieu",
+          roundId: "j6kzrj5bdris4oqbns6eertieu",
           version: "8.4.0.0"
         }
       );
@@ -186,12 +194,12 @@ export const nutrient_tasks = [
     },
     async doTask({ paradiseUuid }) {
       await requestData(
-        "https://api.m.jd.com/client.action?functionId=collectUserNutr&appid=ld&client=android&clientVersion=8.4.2&networkType=wifi&osVersion=5.1.1&uuid=865166029777979-008114eccc76",
+        "https://api.m.jd.com/client.action?functionId=collectUserNutr&clientVersion=8.4.2&build=71043&client=android&d_brand=vivo&d_model=vivoy31a&osVersion=5.1.1&screen=1280*720&partner=jingdong&aid=33b8e7b27dbbd174&oaid=&eid=I6DTSOY3JWZ6IAISM62QQJAVUS2FR7ABUASGK552AMB5IRBE2MN67VBSA67GIEU573OZZOCXNRHBCQ63L4DOAZMKOICV6CLIWVKJ77MKTWJCPDIFQMTQ&sdkVersion=22&lang=zh_CN&uuid=865166029777979-008114eccc76&area=1_2802_2821_0&networkType=wifi&wifiBssid=ea8683e82e32666b8ecd789b2fc7933f&st=1580128651348&sign=92cc95d5cabd29a0aeb6d5daeafd213a&sv=100",
         {
-          paradiseUuid,
-          roundId: "n3kp6xjxvxogcoqbns6eertieu",
-          monitor_source: "plant_m_plant_index",
           monitor_refer: "collectUserNutr",
+          monitor_source: "plant_app_plant_index",
+          paradiseUuid,
+          roundId: "j6kzrj5bdris4oqbns6eertieu",
           version: "8.4.0.0"
         }
       );

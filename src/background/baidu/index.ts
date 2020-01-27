@@ -1,4 +1,4 @@
-import { excuteTasks } from "../common/tool";
-import { card_tasks } from "./card";
+// import { excuteTasks } from "../common/tool";
+// import { card_tasks } from "./card";
 
-excuteTasks(card_tasks);
+// excuteTasks(card_tasks);

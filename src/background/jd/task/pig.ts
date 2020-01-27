@@ -1,5 +1,5 @@
 import { requestJr } from "./tools";
-import { mermorize } from "@/background/common/tool";
+import { mermorize, delay } from "@/background/common/tool";
 
 export async function requestData(url: string, data) {
   var { resultData } = await requestJr(url, data);
@@ -27,6 +27,7 @@ export const pig_tasks = [
   {
     title: "小猪任务",
     async list() {
+      await delay(60 * 3 * 1000);
       var { missions } = await requestData(
         `https://ms.jr.jd.com/gw/generic/uc/h5/m/pigPetMissionList?_=${Date.now()}`,
         {

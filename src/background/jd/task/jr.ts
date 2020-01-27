@@ -1,6 +1,8 @@
 import { requestJr } from "./tools";
 import { request } from "@/background/common/request";
 import { signInJd } from "./jd";
+import { delay } from "@/background/common/tool";
+import { flatten } from "ramda";
 
 async function signInJr() {
   // var {
@@ -178,51 +180,88 @@ export const jr_tasks = [
   },
   {
     title: "浏览赚金豆",
+    delay: 60 * 1000,
     async list() {
-      return [115, 143, 145, 146];
-    },
-    async doTask(actId) {
-      await requestJr("https://ms.jr.jd.com/gw/generic/zc/h5/m/receiveAct", {
-        bizLine: 15,
-        actId,
-        extRule: null
-      });
-      var { status } = await requestJr(
-        "https://ms.jr.jd.com/gw/generic/zc/h5/m/canCompleteZJAct",
+      var { data } = await requestJr(
+        "https://ms.jr.jd.com/gw/generic/zc/h5/m/getCollectActListByRewardType",
         {
+          bizLine: 2,
+          rewardType: 4,
+          pageNum: 1,
+          pageSize: 50,
+          deviceInfo: {
+            eid:
+              "DC2RJF5LVTZ4FRINXN3WARSD3AD5W3Y6HY2KZJ67ZWGCWZAHRVAHBSTLURKL23PFZWXTJ7FGAO5MOBD6T4KIT45DZI",
+            fp: "7e8fbf00ae6a55bd7ef3b4513f6793d4",
+            token:
+              "6ESLWXVYC5VCZWV7P4R5X6FIU5YRYZ2XC4HFB4ZU3E4IUDFIPLJCK3WN7AZGG72HMQD7BFXYFDS2M",
+            openUUID: "",
+            optType: "https://jddx.jd.com/m/jddnew/money/index.html?from=dlqfl"
+          },
+          clientType: "sms",
+          clientVersion: "11.0"
+        }
+      );
+      return flatten(
+        data.map(
+          ({ id, alreadyRewardTimesDay, rewardExtTimesLimit, bizLine }) => {
+            var items =
+              rewardExtTimesLimit === undefined
+                ? [id]
+                : [...Array(rewardExtTimesLimit - alreadyRewardTimesDay)].fill(
+                    id
+                  );
+            return items.map(actId => ({
+              bizLine,
+              actId,
+              extRule: null
+            }));
+          }
+        )
+      ).concat(
+        [115, 143, 145, 146].map(actId => ({
           bizLine: 15,
           actId,
           extRule: null
-        }
+        }))
+      );
+    },
+    async doTask(args) {
+      await requestJr(
+        "https://ms.jr.jd.com/gw/generic/zc/h5/m/receiveAct",
+        args
+      );
+      var { status } = await requestJr(
+        "https://ms.jr.jd.com/gw/generic/zc/h5/m/canCompleteZJAct",
+        args
       );
       if (!status) {
         return;
       }
       var { resultCode } = await requestJr(
         "https://ms.jr.jd.com/gw/generic/zc/h5/m/completeZJAct",
-        {
-          bizLine: 15,
-          actId,
-          extRule: null
-        }
+        args
       );
       if (resultCode !== "00000") {
         return;
       }
-      await requestJr("https://ms.jr.jd.com/gw/generic/zc/h5/m/rewardGift", {
-        bizLine: 15,
-        actId,
-        deviceInfo: {
-          eid:
-            "XPYRQKYPRDZOXAAHSFNAICGWZ2SZUFGXSHY7A76H3BFL7PEZE5EZD6NCYGADCBSQKA4M7LFAXP7QX444SEC7PTRO3Q",
-          fp: "03b9a11b84573b6cc2b42eacf8bd9c8f",
-          token:
-            "FDM576RS7ZWPHUWMTIAT4D2V5Q2GFL7MBSSNX5VFJOQAWYJXFSKCG3FUTLIPZQCBFA2SXLJTPIMDQ",
-          optType:
-            "https://jddx.jd.com/m/jddnew/btyingxiao/sfstore/index.html?from=jrdaka&final_page=xxf_yxmx"
-        },
-        extRule: null
-      });
+      await requestJr(
+        "https://ms.jr.jd.com/gw/generic/zc/h5/m/rewardGift",
+        Object.assign(
+          {
+            deviceInfo: {
+              eid:
+                "XPYRQKYPRDZOXAAHSFNAICGWZ2SZUFGXSHY7A76H3BFL7PEZE5EZD6NCYGADCBSQKA4M7LFAXP7QX444SEC7PTRO3Q",
+              fp: "03b9a11b84573b6cc2b42eacf8bd9c8f",
+              token:
+                "FDM576RS7ZWPHUWMTIAT4D2V5Q2GFL7MBSSNX5VFJOQAWYJXFSKCG3FUTLIPZQCBFA2SXLJTPIMDQ",
+              optType:
+                "https://jddx.jd.com/m/jddnew/btyingxiao/sfstore/index.html?from=jrdaka&final_page=xxf_yxmx"
+            }
+          },
+          args
+        )
+      );
     }
   },
   {

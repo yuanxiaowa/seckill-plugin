@@ -147,7 +147,7 @@ export const joy_tasks = [
         } = await request.get(
           "https://jdjoy.jd.com/pet/enterRoom?reqSource=h5&invitePin="
         );
-        return lastFeedTime + 3 * 60 * 60 * 1000;
+        return lastFeedTime + 3 * 60 * 60 * 1000 + 5000;
       }
     },
     async doTask() {

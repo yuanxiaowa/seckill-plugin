@@ -21,7 +21,7 @@ export async function loginMobile() {
   if (!accounts.jingdong.password) {
     return;
   }
-  await delay(1000);
+  await delay(2000);
   await page.evaluate(function(account) {
     var sw = document.querySelector<HTMLLinkElement>(".planBLogin")!;
     if (sw.textContent === "帐号密码登录") {
@@ -48,9 +48,7 @@ export async function isLoginPc() {
 
 export async function loginPc() {
   var page = await newPage();
-  await page.goto(
-    "https://passport.jd.com/uc/login?ReturnUrl=https%3A%2F%2Forder.jd.com%2Fcenter%2Flist.action"
-  );
+  await page.goto("https://passport.jd.com/uc/login");
   if (!accounts.jingdong.password) {
     return;
   }
