@@ -43,11 +43,11 @@ export const nutrient_tasks = [
       if (awardList[3].limitFlag === "1") {
         items.push({
           url:
-            "https://api.m.jd.com/client.action?functionId=purchaseRewardTask&clientVersion=8.4.2&build=71043&client=android&d_brand=vivo&d_model=vivoy31a&osVersion=5.1.1&screen=1280*720&partner=jingdong&aid=33b8e7b27dbbd174&oaid=&eid=I6DTSOY3JWZ6IAISM62QQJAVUS2FR7ABUASGK552AMB5IRBE2MN67VBSA67GIEU573OZZOCXNRHBCQ63L4DOAZMKOICV6CLIWVKJ77MKTWJCPDIFQMTQ&sdkVersion=22&lang=zh_CN&uuid=865166029777979-008114eccc76&area=1_2802_2821_0&networkType=wifi&wifiBssid=ea8683e82e32666b8ecd789b2fc7933f&st=1580127825966&sign=ca7a1d7bc2ad035d3eb04384600520cb&sv=110",
+            "https://api.m.jd.com/client.action?functionId=purchaseRewardTask&clientVersion=8.4.2&build=71043&client=android&d_brand=vivo&d_model=vivoy31a&osVersion=5.1.1&screen=1280*720&partner=jingdong&aid=33b8e7b27dbbd174&oaid=&eid=I6DTSOY3JWZ6IAISM62QQJAVUS2FR7ABUASGK552AMB5IRBE2MN67VBSA67GIEU573OZZOCXNRHBCQ63L4DOAZMKOICV6CLIWVKJ77MKTWJCPDIFQMTQ&sdkVersion=22&lang=zh_CN&uuid=865166029777979-008114eccc76&area=1_2802_2821_0&networkType=wifi&wifiBssid=ea8683e82e32666b8ecd789b2fc7933f&st=1580917800316&sign=7ca0f5ce3da4c1385f96d2095925975e&sv=111",
           data: {
             monitor_refer: "plant_purchaseRewardTask",
             monitor_source: "plant_app_plant_index",
-            roundId: "j6kzrj5bdris4oqbns6eertieu",
+            roundId: "dbtb7voguyexkoqbns6eertieu",
             version: "8.4.0.0"
           }
         });
@@ -143,11 +143,11 @@ export const nutrient_tasks = [
     },
     doTask() {
       return requestData(
-        "https://api.m.jd.com/client.action?functionId=receiveNutrients&clientVersion=8.4.2&build=71043&client=android&d_brand=vivo&d_model=vivoy31a&osVersion=5.1.1&screen=1280*720&partner=jingdong&aid=33b8e7b27dbbd174&oaid=&eid=I6DTSOY3JWZ6IAISM62QQJAVUS2FR7ABUASGK552AMB5IRBE2MN67VBSA67GIEU573OZZOCXNRHBCQ63L4DOAZMKOICV6CLIWVKJ77MKTWJCPDIFQMTQ&sdkVersion=22&lang=zh_CN&uuid=865166029777979-008114eccc76&area=1_2802_2821_0&networkType=wifi&wifiBssid=ea8683e82e32666b8ecd789b2fc7933f&st=1580128487373&sign=32728f74f85797ea79a5dce574e6e453&sv=101",
+        "https://api.m.jd.com/client.action?functionId=receiveNutrients&clientVersion=8.4.2&build=71043&client=android&d_brand=vivo&d_model=vivoy31a&osVersion=5.1.1&screen=1280*720&partner=jingdong&aid=33b8e7b27dbbd174&oaid=&eid=I6DTSOY3JWZ6IAISM62QQJAVUS2FR7ABUASGK552AMB5IRBE2MN67VBSA67GIEU573OZZOCXNRHBCQ63L4DOAZMKOICV6CLIWVKJ77MKTWJCPDIFQMTQ&sdkVersion=22&lang=zh_CN&uuid=865166029777979-008114eccc76&area=1_2802_2821_0&networkType=wifi&wifiBssid=ea8683e82e32666b8ecd789b2fc7933f&st=1580917684143&sign=db72127a16d08fa608f9c042245b4d23&sv=102",
         {
           monitor_refer: "plant_receiveNutrients",
           monitor_source: "plant_app_plant_index",
-          roundId: "j6kzrj5bdris4oqbns6eertieu",
+          roundId: "dbtb7voguyexkoqbns6eertieu",
           version: "8.4.0.0"
         }
       );
@@ -170,39 +170,39 @@ export const nutrient_tasks = [
         );
       }
     }
-  },
-  {
-    title: "帮别人收营养液",
-    period: 10 * 60 * 1000,
-    delay: 3000,
-    async list() {
-      var { friendInfoList, tips } = await requestData(
-        "https://api.m.jd.com/client.action?functionId=plantFriendList&appid=ld&client=android&clientVersion=8.4.2&networkType=wifi&osVersion=5.1.1&uuid=865166029777979-008114eccc76",
-        {
-          pageNum: "1",
-          monitor_source: "plant_m_plant_index",
-          monitor_refer: "plantFriendList",
-          version: "8.4.0.0"
-        }
-      );
-      if (tips === "今日帮助收取次数已达上限，明天再来帮忙吧") {
-        throw new Error(tips);
-      }
-      return friendInfoList.filter(
-        ({ nutrCount }) => nutrCount && Number(nutrCount) > 0
-      );
-    },
-    async doTask({ paradiseUuid }) {
-      await requestData(
-        "https://api.m.jd.com/client.action?functionId=collectUserNutr&clientVersion=8.4.2&build=71043&client=android&d_brand=vivo&d_model=vivoy31a&osVersion=5.1.1&screen=1280*720&partner=jingdong&aid=33b8e7b27dbbd174&oaid=&eid=I6DTSOY3JWZ6IAISM62QQJAVUS2FR7ABUASGK552AMB5IRBE2MN67VBSA67GIEU573OZZOCXNRHBCQ63L4DOAZMKOICV6CLIWVKJ77MKTWJCPDIFQMTQ&sdkVersion=22&lang=zh_CN&uuid=865166029777979-008114eccc76&area=1_2802_2821_0&networkType=wifi&wifiBssid=ea8683e82e32666b8ecd789b2fc7933f&st=1580128651348&sign=92cc95d5cabd29a0aeb6d5daeafd213a&sv=100",
-        {
-          monitor_refer: "collectUserNutr",
-          monitor_source: "plant_app_plant_index",
-          paradiseUuid,
-          roundId: "j6kzrj5bdris4oqbns6eertieu",
-          version: "8.4.0.0"
-        }
-      );
-    }
   }
+  // {
+  //   title: "帮别人收营养液",
+  //   period: 10 * 60 * 1000,
+  //   delay: 3000,
+  //   async list() {
+  //     var { friendInfoList, tips } = await requestData(
+  //       "https://api.m.jd.com/client.action?functionId=plantFriendList&appid=ld&client=android&clientVersion=8.4.2&networkType=wifi&osVersion=5.1.1&uuid=865166029777979-008114eccc76",
+  //       {
+  //         pageNum: "1",
+  //         monitor_source: "plant_m_plant_index",
+  //         monitor_refer: "plantFriendList",
+  //         version: "8.4.0.0"
+  //       }
+  //     );
+  //     if (tips === "今日帮助收取次数已达上限，明天再来帮忙吧") {
+  //       throw new Error(tips);
+  //     }
+  //     return friendInfoList.filter(
+  //       ({ nutrCount }) => nutrCount && Number(nutrCount) > 0
+  //     );
+  //   },
+  //   async doTask({ paradiseUuid }) {
+  //     await requestData(
+  //       "https://api.m.jd.com/client.action?functionId=collectUserNutr&clientVersion=8.4.2&build=71043&client=android&d_brand=vivo&d_model=vivoy31a&osVersion=5.1.1&screen=1280*720&partner=jingdong&aid=33b8e7b27dbbd174&oaid=&eid=I6DTSOY3JWZ6IAISM62QQJAVUS2FR7ABUASGK552AMB5IRBE2MN67VBSA67GIEU573OZZOCXNRHBCQ63L4DOAZMKOICV6CLIWVKJ77MKTWJCPDIFQMTQ&sdkVersion=22&lang=zh_CN&uuid=865166029777979-008114eccc76&area=1_2802_2821_0&networkType=wifi&wifiBssid=ea8683e82e32666b8ecd789b2fc7933f&st=1580128651348&sign=92cc95d5cabd29a0aeb6d5daeafd213a&sv=100",
+  //       {
+  //         monitor_refer: "collectUserNutr",
+  //         monitor_source: "plant_app_plant_index",
+  //         paradiseUuid,
+  //         roundId: "j6kzrj5bdris4oqbns6eertieu",
+  //         version: "8.4.0.0"
+  //       }
+  //     );
+  //   }
+  // }
 ];

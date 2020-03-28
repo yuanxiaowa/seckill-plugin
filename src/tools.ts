@@ -139,7 +139,7 @@ export function resolveText(text: string, datetime?: string | Date) {
       } else {
         action = "qiangquan";
       }
-    } else if (text.includes("叠加")) {
+    } else if (/叠加(?!红包|首单)/.test(text)) {
       let r = /(\d+)-(\d+)/g;
       let quote = 0;
       let discount = 0;
@@ -201,7 +201,9 @@ export function resolveText(text: string, datetime?: string | Date) {
       if (!/钢化膜|手机膜|数据线/.test(text)) {
         action = "notice";
       }
-    } else if (/大米|盐|猫超|有货的上|蟹|桌|椅/.test(text)) {
+    } else if (
+      /大米|盐|猫超|有货的上|蟹|桌|椅|酸奶|纯甄|安慕希|蒙牛|伊利/.test(text)
+    ) {
       action = "notice";
     }
     if (!/(\d+)点/.test(text)) {

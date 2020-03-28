@@ -19,9 +19,9 @@ export function signInJd() {
     },
     "post",
     {
-      sign: "6d78be68bd08ad9e6eea153ea362cbd8",
-      st: "1561685238868",
-      sv: "100"
+      sign: "a37085c0c95ed57920107de3bd0fa2a7",
+      st: "1580917838307",
+      sv: "101"
     }
   );
 }
