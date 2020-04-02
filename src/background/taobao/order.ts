@@ -4,7 +4,7 @@ import { requestData, getUserName } from "./tools";
 import { getGoodsInfo } from "./goods";
 import { addCart, getCartList } from "./cart";
 import qs_lib from "querystring";
-import { config, UA } from "../common/setting";
+import { config, UA, accounts } from "../common/setting";
 import { delay } from "../common/tool";
 import { taskManager } from "../common/task-manager";
 import { notify, sendQQMsg } from "../common/message";
@@ -253,6 +253,7 @@ export async function submitOrder(args: ArgOrder<any>, retryCount = 0) {
   console.log(`-----准备提交：${args.title}`);
   var postdata;
   var structure;
+  var expire_count = 0;
   async function getNewestOrderData() {
     let { params } = transformOrderData(data1, args, "address_1");
     try {
@@ -275,13 +276,17 @@ export async function submitOrder(args: ArgOrder<any>, retryCount = 0) {
       if (data.data.submitOrder_1) {
         data1.data = data.data;
       }
+      expire_count = 0;
     } catch (e) {
       if (e.message !== "对不起，系统繁忙，请稍候再试") {
         if (e.message === "令牌过期") {
-          window.open(
-            "https://login.taobao.com/member/login.jhtml?spm=a21bo.2017.754894437.1.5af911d9pLCy1I&f=top&redirectURL=https%3A%2F%2Fwww.taobao.com%2F"
-          );
-          e.skip = true;
+          if (expire_count > 0) {
+            window.open(
+              "https://login.taobao.com/member/login.jhtml?spm=a21bo.2017.754894437.1.5af911d9pLCy1I&f=top&redirectURL=https%3A%2F%2Fwww.taobao.com%2F"
+            );
+            e.skip = true;
+          }
+          expire_count++;
         }
         throw e;
       }
@@ -375,8 +380,12 @@ export async function submitOrder(args: ArgOrder<any>, retryCount = 0) {
       }`;
       notify(msg);
       sendQQMsg(msg);
-      if (args.autopay) {
-        pay(ret.alipayWapCashierUrl);
+      if (
+        (args.autopay || args.expectedPrice! <= 0.3) &&
+        accounts.taobao.paypass
+      ) {
+        console.log(ret);
+        pay(ret.alipayWapCashierUrl, accounts.taobao.paypass);
       }
     } catch (e) {
       startTime = Date.now();
@@ -552,14 +561,31 @@ export async function cartBuy(
 // @ts-ignore
 window.pay = pay;
 
-function pay(url: string) {
-  var pass = "hello.";
-  excutePageAction(url, {
-    code: `
+function pay(url: string, pass: string) {
+  if (url.startsWith("//")) {
+    url = "https:" + url;
+  }
+  var code = `
+  setTimeout(() => {
+    console.log("enter1")
+    var $eles = document.querySelectorAll(".am-button.am-button-blue")
+    if ($eles.length>1) {
+      $eles[1].click();
+    }
+    console.log("enter2")
     var pass = '${pass}';
-    $('.J-encryptpwd').val([...pass].map(c => encrypt(c)).join(','))
-    $('.J-pwd').value = '${"*".repeat(pass.length)}';
-    $('form#cashier').trigger("submit");
-    `
+    // document.querySelector('.J-encryptpwd').val([...pass].map(c => encrypt(c)).join(','))
+    var pwd = document.querySelector('.J-pwd')
+    for(let i = 0; i < pass.length; i++) {
+      pwd.value += pass[i];
+      pwd.dispatchEvent(new Event("input"))
+    }
+  }, 100)
+  `;
+  console.log(url, code);
+  excutePageAction(url, {
+    code,
+    // autoclose: false
+    close_delay: 3000
   });
 }
