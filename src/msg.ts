@@ -22,7 +22,7 @@ export function init(config: any) {
     return;
   }
   var ws = new WebSocket("ws://localhost:6700/event/");
-  ws.onmessage = e => {
+  ws.onmessage = (e) => {
     var { message_type, raw_message, group_id, user_id } = JSON.parse(e.data);
     var text = raw_message; // .replace(/\[CQ:[^\]]+/g, "").trim();
     if (message_type === "group") {
@@ -49,7 +49,7 @@ export function init(config: any) {
             ? undefined
             : {
                 qq: user_id,
-                port: qq_users[user_id]
+                port: qq_users[user_id],
               };
         if (raw_message === "cs" || raw_message === "检查状态") {
           return bus.$emit("check-status", data);
@@ -114,7 +114,7 @@ function getTidyText(text: string) {
 }
 
 class Recorder {
-  max = 20;
+  max = 50;
   items: string[] = [];
   add(str: string) {
     if (this.items.length >= this.max) {
@@ -135,10 +135,7 @@ window.recorder = recorder;
 window.handler = handler;
 
 function handler(text: string, datetime?: string | Date) {
-  if (
-    text.includes("【苏宁】") ||
-    text.includes("【盒马】" || text.includes("美团"))
-  ) {
+  if (/【苏宁】|【盒马】|美团/.test(text)) {
     return;
   }
   text = text

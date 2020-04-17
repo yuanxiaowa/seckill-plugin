@@ -30,7 +30,7 @@ const num_cn_map = "零一二三四五六七八九十".split("").reduce(
     return state;
   },
   {
-    两: 2
+    两: 2,
   }
 );
 const NUM_CN_STR = Object.keys(num_cn_map).join("");
@@ -63,7 +63,7 @@ export function resolveText(text: string, datetime?: string | Date) {
   }
   if (urls.length > 0) {
     type = "url";
-    urls.forEach(url => {
+    urls.forEach((url) => {
       text = text.replace(url, "");
     });
     let quantities_arr = text.match(
@@ -77,7 +77,7 @@ export function resolveText(text: string, datetime?: string | Date) {
         new RegExp(`(?<!限购)[${NUM_CN_STR}](?=件|份)`, "g")
       )!;
       if (quantities_arr) {
-        quantities_arr = quantities_arr.map(key => num_cn_map[key]);
+        quantities_arr = quantities_arr.map((key) => num_cn_map[key]);
       }
     }
 
@@ -198,7 +198,7 @@ export function resolveText(text: string, datetime?: string | Date) {
         text
       )
     ) {
-      if (type! === "taokouling" && blacklist.find(t => text.includes(t))) {
+      if (type! === "taokouling" && blacklist.find((t) => text.includes(t))) {
         return;
       }
       return <Ret>{
@@ -207,14 +207,14 @@ export function resolveText(text: string, datetime?: string | Date) {
         urls,
         quantities,
         expectedPrice,
-        datetime: getDate(datetime)
+        datetime: getDate(datetime),
       };
     } else if (text.includes("1元包邮")) {
       if (!/钢化膜|手机膜|数据线/.test(text)) {
         action = "notice";
       }
     } else if (
-      /大米|盐|猫超|有货的上|蟹|桌|椅|酸奶|纯甄|安慕希|蒙牛|伊利/.test(text)
+      /大米|盐|有货的上|蟹|桌|椅|酸奶|纯甄|安慕希|蒙牛|伊利/.test(text)
     ) {
       action = "notice";
     }
@@ -228,7 +228,7 @@ export function resolveText(text: string, datetime?: string | Date) {
     }
     if (type !== "coudan" && type !== "qiangquan") {
       if (
-        urls.find(item => item.includes(".jd.com/") || /\bt.cn\//.test(item))
+        urls.find((item) => item.includes(".jd.com/") || /\bt.cn\//.test(item))
       ) {
         type = "qiangquan";
       }
@@ -243,12 +243,12 @@ export function resolveText(text: string, datetime?: string | Date) {
       forcePrice,
       diejia,
       datetime: getDate(datetime),
-      jianlou: action === "coudan" && datetime ? 35 : undefined
+      jianlou: action === "coudan" && datetime ? 35 : undefined,
     };
   }
   if (/速度|锁单|试试|叠加/.test(text)) {
     return <Ret>{
-      action: "notice"
+      action: "notice",
     };
   }
 }
@@ -270,7 +270,7 @@ export function getDate(datetime?: string | Date) {
 }
 
 export async function getUrls({ urls, platform }: any): Promise<string[]> {
-  return Promise.all(urls.map(url => resolveUrl({ data: url }, platform)));
+  return Promise.all(urls.map((url) => resolveUrl({ data: url }, platform)));
 }
 
 export async function getDealedData(data: any) {
