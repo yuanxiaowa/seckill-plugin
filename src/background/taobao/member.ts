@@ -7,7 +7,7 @@ import { accounts } from "../common/setting";
 
 export async function isLogin() {
   return !(await isRedirectedUrl(
-    `https://i.taobao.com/my_taobao.htm?spm=a21bo.2017.754894437.3.5af911d9wQ8Njb&ad_id=&am_id=&cm_id=&pm_id=1501036000a02c5c3739`
+    `https://buyertrade.taobao.com/trade/itemlist/list_bought_items.htm?spm=a1z02.1.1997525045.2.HxoGVH`
   ));
 }
 
@@ -16,12 +16,16 @@ export async function login() {
   await page.goto(
     "https://login.taobao.com/member/login.jhtml?from=taobaoindex&f=top&style=&sub=true&redirect_url=https%3A%2F%2Fi.taobao.com%2Fmy_taobao.htm%3Fspm%3Da21bo.2017.754894437.3.5af911d9wQ8Njb%26ad_id%3D%26am_id%3D%26cm_id%3D%26pm_id%3D1501036000a02c5c3739"
   );
-  await page.evaluate(account => {
-    document.querySelector<HTMLInputElement>("#TPL_username_1,#fm-login-id")!.value =
-      account.username;
-    document.querySelector<HTMLInputElement>("#TPL_password_1,#fm-login-password")!.value =
-      account.password;
-    document.querySelector<HTMLButtonElement>("#J_SubmitStatic,button.fm-submit")!.click();
+  await page.evaluate((account) => {
+    document.querySelector<HTMLInputElement>(
+      "#TPL_username_1,#fm-login-id"
+    )!.value = account.username;
+    document.querySelector<HTMLInputElement>(
+      "#TPL_password_1,#fm-login-password"
+    )!.value = account.password;
+    document
+      .querySelector<HTMLButtonElement>("#J_SubmitStatic,button.fm-submit")!
+      .click();
   }, accounts.taobao);
   // await page.waitForNavigation();
   // page.close();
@@ -56,7 +60,7 @@ export async function getAddresses() {
     "mtop.taobao.mbis.getdeliveraddrlist",
     {
       data: {},
-      version: "1.0"
+      version: "1.0",
     }
   );
   if (code !== "0") {
@@ -93,13 +97,13 @@ export async function getMyCoupons({ page }) {
         url,
         quota,
         discount,
-        params
+        params,
       };
     })
     .get();
   return {
     page,
     items,
-    more: items.length > 0
+    more: items.length > 0,
   };
 }

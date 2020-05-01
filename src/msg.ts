@@ -94,8 +94,53 @@ export function init(config: any) {
 
 const r_taobao = /(?<!\w)\w{11}(?!\w)/g;
 const r_url = /((([A-Za-z]{3,9}:(?:\/\/)?)(?:[\-;:&=\+\$,\w]+@)?[A-Za-z0-9\.\-]+|(?:www\.|[\-;:&=\+\$,\w]+@)[A-Za-z0-9\.\-]+)((?:\/[\+~%\/\.\w\-_]*)?\??(?:[\-\+=&;%@\.\w_]*)#?(?:[\.\!\/\\\w]*))?)/g;
-const r_symbol = /[&%【】,，，\s￥(（¢)）\-~!/$​：。€]/g;
+const r_symbol = /[&%【】,，\s￥(（¢)）\-~!/$​：。€₳]/g;
 const r_image_file = /\[CQ:image,?file=[^\]]+\]/g;
+
+const ignore_text = [
+  "包邮",
+  "店铺",
+  "优惠",
+  "旗舰店",
+  "淘礼金",
+  "猫超",
+  "群有反馈",
+  "领取",
+  "速度",
+  "无门槛",
+  "京东",
+  "红包",
+  "先?领券",
+  "防身",
+  "不减则无",
+  "很快无",
+  "领了",
+  "可用",
+  "首单",
+  "红包",
+  "虹包",
+  "分享",
+  "大额",
+  "福利",
+  "中心",
+  "练手速?",
+  "预计",
+  "商品券",
+  "抽奖",
+  "试试",
+  "无视页面",
+  "预告",
+  "券",
+  "速度",
+  "限量",
+  "元",
+  "估计",
+  "随便买",
+  "收藏",
+  "运费",
+  "抢购",
+];
+const pattern_ignore_text = new RegExp(ignore_text.join("|"), "g");
 
 function getTidyText(text: string) {
   return text
@@ -106,10 +151,7 @@ function getTidyText(text: string) {
     .replace(/【.*?】|[.*?]/g, "")
     .replace(r_url, "")
     .replace(r_symbol, "")
-    .replace(
-      /群有反馈|领取|速度|无门槛|京东|红包|先?领券|防身|不减则无|领了|可用|首单|红包|虹包|分享|大额|福利|中心|练手速?|预计|商品券|抽奖|试试|无视页面|预告|券|速度|限量|元/g,
-      ""
-    )
+    .replace(pattern_ignore_text, "")
     .trim();
 }
 

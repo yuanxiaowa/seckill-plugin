@@ -8,10 +8,19 @@ export class ChromePage {
     public win?: chrome.windows.Window,
     public is_default = false
   ) {}
+  t = 0;
+  resetTimer() {
+    clearTimeout(this.t);
+    // @ts-ignore
+    this.t = setTimeout(() => {
+      this.close();
+    }, 1000 * 60 * 10);
+  }
   set url(url: string) {
     chrome.tabs.update(this.id, {
-      url
+      url,
     });
+    this.resetTimer();
   }
   get id() {
     return this.tab.id!;
@@ -54,14 +63,14 @@ export class ChromePage {
   }
 
   evaluate(fn: string | Function, ...args: any[]) {
-    var args_str = args.map(arg => JSON.stringify(arg)).join(",");
+    var args_str = args.map((arg) => JSON.stringify(arg)).join(",");
     var code = typeof fn !== "string" ? `(${fn.toString()})(${args_str})` : fn;
     console.log(code);
     return this.executeScript(code);
   }
 
   waitForResponse(filter: (url: string) => boolean) {
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       var listener = (details: chrome.webRequest.WebResponseCacheDetails) => {
         if (filter(details.url)) {
           resolve();
@@ -70,27 +79,27 @@ export class ChromePage {
       };
       this.on("webRequest.onCompleted", listener, {
         urls: ["*://*/*"],
-        tabId: this.tab.id
+        tabId: this.tab.id,
       });
     });
   }
   waitForNavigation() {
-    return new Promise<void>(resolve => {
+    return new Promise<void>((resolve) => {
       this.once("webNavigation.onCompleted", resolve);
     });
   }
   waitForResponseBody(filter: (url: string) => boolean) {
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       chrome.debugger.attach(
         {
-          tabId: this.id
+          tabId: this.id,
         },
         "1.0",
         () => {
           chrome.debugger.sendCommand(
             {
               //first enable the Network
-              tabId: this.id
+              tabId: this.id,
             },
             "Network.enable"
           );
@@ -102,11 +111,11 @@ export class ChromePage {
                 }
                 chrome.debugger.sendCommand(
                   {
-                    tabId: this.id
+                    tabId: this.id,
                   },
                   "Network.getResponseBody",
                   {
-                    requestId: params.requestId
+                    requestId: params.requestId,
                   },
                   ({ base64Encoded, body }: any) => {
                     resolve(body);
@@ -135,11 +144,11 @@ export class ChromePage {
   }
 
   executeScript(code: string) {
-    return new Promise<any>(resolve => {
+    return new Promise<any>((resolve) => {
       chrome.tabs.executeScript(
         this.id,
         {
-          code
+          code,
         },
         ([data]) => {
           resolve(data);
@@ -148,11 +157,12 @@ export class ChromePage {
     });
   }
   close() {
+    clearTimeout(this.t);
     if (this.is_default) {
       this.pending = false;
       return;
     }
-    return new Promise(resolve => chrome.tabs.remove(this.id, resolve));
+    return new Promise((resolve) => chrome.tabs.remove(this.id, resolve));
   }
 
   private static default_page?: ChromePage;
@@ -162,9 +172,10 @@ export class ChromePage {
       return;
     }
     ChromePage.events_inited = true;
-    chrome.tabs.onRemoved.addListener(tabId => {
+    chrome.tabs.onRemoved.addListener((tabId) => {
       if (ChromePage.default_page) {
         if (tabId === ChromePage.default_page.id) {
+          ChromePage.default_page.close();
           ChromePage.default_page = undefined;
         }
       }
@@ -188,27 +199,27 @@ export class ChromePage {
     return new ChromePage(tab, win);
   }
   static createTab(windowId?: number) {
-    return new Promise<chrome.tabs.Tab>(resolve => {
+    return new Promise<chrome.tabs.Tab>((resolve) => {
       chrome.tabs.create(
         {
           windowId,
-          active: false
+          active: false,
         },
         resolve
       );
     });
   }
   static createWindow() {
-    return new Promise<chrome.windows.Window>(resolve => {
+    return new Promise<chrome.windows.Window>((resolve) => {
       chrome.windows.create(
         {
           left: -300,
           top: 1000,
           width: 300,
           height: 100,
-          type: "popup"
+          type: "popup",
         },
-        window => {
+        (window) => {
           window!.alwaysOnTop = false;
           resolve(window);
         }
@@ -222,7 +233,7 @@ export async function excutePageAction<T = any>(
   {
     code,
     autoclose = true,
-    close_delay = 1000
+    close_delay = 1000,
   }: {
     code: string;
     autoclose?: boolean;
@@ -247,7 +258,7 @@ export async function excuteRequestAction<T = any>(
     code,
     test,
     urls,
-    autoclose = true
+    autoclose = true,
   }: {
     code: string;
     test: (url: string) => boolean;
@@ -256,7 +267,7 @@ export async function excuteRequestAction<T = any>(
   }
 ) {
   var page = await ChromePage.create();
-  return new Promise<T>(resolve => {
+  return new Promise<T>((resolve) => {
     var listener = async (
       details: chrome.webRequest.WebResponseCacheDetails
     ) => {
@@ -274,7 +285,7 @@ export async function excuteRequestAction<T = any>(
     };
     page.on("webRequest.onCompleted", listener, {
       urls,
-      tabId: page.id
+      tabId: page.id,
     });
     page.url = url;
   });

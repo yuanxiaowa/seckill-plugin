@@ -34,13 +34,7 @@
         </el-tabs>
       </el-tab-pane>
     </el-tabs>
-    <iframe
-      ref="ifr"
-      :key="id"
-      :src="status_url"
-      frameborder="0"
-      style="opacity:0"
-    ></iframe>
+    <iframe ref="ifr" :key="id" :src="status_url" frameborder="0" style="opacity:0"></iframe>
     <el-backtop target=".page-component__scroll"></el-backtop>
   </div>
 </template>
@@ -60,7 +54,7 @@ import CouponCenter from "./components/CouponCenter.vue";
 const urls = [
   "https://home.jd.com/",
   "https://home.m.jd.com/myJd/newhome.action?sceneval=2&ufc=&",
-  "https://main.m.taobao.com/mytaobao/index.html?spm=a215s.7406091.toolbar.i2"
+  "https://cart.taobao.com/cart.htm?spm=0.0.0.0.TUmZxr&from=mini&ad_id=&am_id=&cm_id=&pm_id=1501036000a02c5c3739"
 ];
 
 @Component({
