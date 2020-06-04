@@ -247,9 +247,9 @@ export function resolveText(text: string, datetime?: string | Date) {
     };
   }
   if (/速度|锁单|试试|叠加/.test(text)) {
-    return <Ret>{
-      action: "notice",
-    };
+    // return <Ret>{
+    //   action: "notice",
+    // };
   }
 }
 

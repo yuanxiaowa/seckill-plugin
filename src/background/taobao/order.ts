@@ -22,14 +22,14 @@ function transformOrderData(
     data,
     linkage,
     hierarchy: { structure, root },
-    endpoint
+    endpoint,
   } = orderdata;
   if (operator !== "address_1") {
-    let invalids = structure[root].filter(name => name.startsWith("invalid"));
+    let invalids = structure[root].filter((name) => name.startsWith("invalid"));
     if (invalids.length > 0) {
       throw {
         message: `${args.title} 有失效宝贝`,
-        code: 2
+        code: 2,
       };
     }
     let price = data.realPay_1
@@ -39,7 +39,7 @@ function transformOrderData(
       if (Number(args.expectedPrice) < Number(price) - 0.1) {
         throw {
           message: `${args.title} 价格太高，期望${args.expectedPrice}，实际${price}`,
-          code: 2
+          code: 2,
         };
       }
     }
@@ -106,7 +106,7 @@ function transformOrderData(
   if (operator === "address_1") {
     let input = linkage.input;
     if (!input) {
-      input = Object.keys(orderData).filter(key => orderData[key].submit);
+      input = Object.keys(orderData).filter((key) => orderData[key].submit);
     }
     orderData = input.reduce(
       (state, key) => {
@@ -114,7 +114,7 @@ function transformOrderData(
         return state;
       },
       {
-        address_1
+        address_1,
       }
     );
     let baseDeliverAddressDO = JSON.parse(
@@ -124,7 +124,7 @@ function transformOrderData(
     let selectedId = address_1.hidden.extensionMap.selectedId;
     let info = {
       value: selectedId,
-      addressId: selectedId
+      addressId: selectedId,
     };
     let desc =
       baseDeliverAddressDO.fullName +
@@ -136,21 +136,21 @@ function transformOrderData(
     address_1.fields.cornerType = "both";
     [
       address_1.fields,
-      ...address_1.events.itemClick.map(item => item.fields.params)
-    ].forEach(item => {
+      ...address_1.events.itemClick.map((item) => item.fields.params),
+    ].forEach((item) => {
       item.info = info;
       item.desc = desc;
     });
     common = {
       compress: linkage.common.compress,
       queryParams: linkage.common.queryParams,
-      validateParams: linkage.common.validateParams
+      validateParams: linkage.common.validateParams,
     };
   } else {
     common = {
       compress: linkage.common.compress,
       submitParams: linkage.common.submitParams,
-      validateParams: linkage.common.validateParams
+      validateParams: linkage.common.validateParams,
     };
     if (new_structure) {
       structure = new_structure;
@@ -169,14 +169,14 @@ function transformOrderData(
       data: JSON.stringify(orderData),
       endpoint: JSON.stringify(endpoint),
       hierarchy: JSON.stringify({
-        structure
+        structure,
       }),
       linkage: JSON.stringify({
         common,
-        signature: linkage.signature
+        signature: linkage.signature,
       }),
-      operator
-    })
+      operator,
+    }),
     // ua
   };
   return postdata;
@@ -210,13 +210,13 @@ export async function submitOrder(args: ArgOrder<any>, retryCount = 0) {
         {
           exParams: JSON.stringify({
             tradeProtocolFeatures: "5",
-            userAgent: UA.wap
-          })
+            userAgent: UA.wap,
+          }),
         },
         args.data
       ),
       method: "post",
-      advance: 1500
+      advance: 1500,
     });
   } catch (e) {
     console.error(`\n😵获取订单信息出错：${args.title}`, e);
@@ -230,8 +230,8 @@ export async function submitOrder(args: ArgOrder<any>, retryCount = 0) {
                 {
                   exParams: JSON.stringify({
                     tradeProtocolFeatures: "5",
-                    userAgent: UA.wap
-                  })
+                    userAgent: UA.wap,
+                  }),
                 },
                 args.data
               )
@@ -260,12 +260,12 @@ export async function submitOrder(args: ArgOrder<any>, retryCount = 0) {
       let data = await requestData("mtop.trade.order.adjust.h5", {
         data: {
           params,
-          feature: `{"gzip":"false"}`
+          feature: `{"gzip":"false"}`,
         },
         method: "post",
-        ttid: "#t#ip##_h5_2019"
+        ttid: "#t#ip##_h5_2019",
       });
-      ["endpoint", "linkage" /* , "hierarchy" */].forEach(key => {
+      ["endpoint", "linkage" /* , "hierarchy" */].forEach((key) => {
         if (data[key]) {
           data1[key] = data[key];
         }
@@ -346,7 +346,7 @@ export async function submitOrder(args: ArgOrder<any>, retryCount = 0) {
           console.log("\n" + _n + "捡漏结束，去通知下单..." + args.title);
           args.bus.$emit("continue");
         }
-        await new Promise(resolve => {
+        await new Promise((resolve) => {
           args.bus!.$once("continue", resolve);
         });
         startDate = new Date();
@@ -365,12 +365,12 @@ export async function submitOrder(args: ArgOrder<any>, retryCount = 0) {
         data: postdata,
         method: "post",
         qs: {
-          [data1.global.secretKey]: data1.global.secretValue
+          [data1.global.secretKey]: data1.global.secretValue,
         },
         referer: `https://main.m.taobao.com/order/index.html?${qs_lib.stringify(
           args.data
         )}`,
-        origin: "https://main.m.taobao.com"
+        origin: "https://main.m.taobao.com",
       });
       logFile(ret, `手机订单提交成功`);
       console.log(`\n😃${_n} ----------手机订单提交成功：${args.title}`);
@@ -443,7 +443,7 @@ export async function submitOrder(args: ArgOrder<any>, retryCount = 0) {
         platform: "taobao-mobile",
         comment: args.title,
         handler: handleOrderData,
-        time: startTime + 1000 * 60 * args.jianlou!
+        time: startTime + 1000 * 60 * args.jianlou!,
       },
       16,
       `\n🐱${_n}刷到库存了${t}---${args.title}`
@@ -473,12 +473,12 @@ function getNextDataByGoodsInfo({ delivery, skuId, itemId }, quantity: number) {
     buyNow: true,
     exParams: JSON.stringify({
       addressId: delivery.areaSell === "true" ? delivery.addressId : undefined,
-      buyFrom: "tmall_h5_detail"
+      buyFrom: "tmall_h5_detail",
     }),
     itemId,
     quantity,
     serviceId: null,
-    skuId
+    skuId,
   };
 }
 
@@ -501,7 +501,7 @@ export async function buyDirect(
   return submitOrder(
     Object.assign(args, {
       data: getNextDataByGoodsInfo(data, args.quantity),
-      title: data.title
+      title: data.title,
     })
   );
 }
@@ -511,14 +511,14 @@ export async function coudan(data: CoudanArg): Promise<any> {
     data.urls.map((url, i) =>
       addCart({
         url,
-        quantity: data.quantities[i]
+        quantity: data.quantities[i],
       })
     )
   );
   var list = await getCartList();
   var datas: any[] = [];
   list.forEach(({ items }) => {
-    items.forEach(item => {
+    items.forEach((item) => {
       if (ids.includes(item.id)) {
         datas.push(item);
       }
@@ -551,10 +551,10 @@ export async function cartBuy(
     data: {
       buyNow: "false",
       buyParam: items.map(({ settlement }) => settlement).join(","),
-      spm: "a222m.7628550.0.0"
+      spm: "a222m.7628550.0.0",
     },
     title: items.map(({ title }) => title).join("~"),
-    ...args
+    ...args,
   });
 }
 
@@ -566,7 +566,6 @@ function pay(url: string, pass: string) {
     url = "https:" + url;
   }
   var code = `
-  setTimeout(() => {
     console.log("enter1")
     var $eles = document.querySelectorAll(".am-button.am-button-blue")
     if ($eles.length>1) {
@@ -580,12 +579,12 @@ function pay(url: string, pass: string) {
       pwd.value += pass[i];
       pwd.dispatchEvent(new Event("input"))
     }
-  }, 100)
   `;
   console.log(url, code);
   excutePageAction(url, {
     code,
     // autoclose: false
-    close_delay: 3000
+    close_delay: 3000,
+    run_delay: 2000,
   });
 }

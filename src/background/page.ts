@@ -234,15 +234,17 @@ export async function excutePageAction<T = any>(
     code,
     autoclose = true,
     close_delay = 1000,
+    run_delay = 0,
   }: {
     code: string;
     autoclose?: boolean;
     close_delay?: number;
+    run_delay?: number;
   }
 ) {
   var page = await ChromePage.create();
   await page.goto(url);
-  await delay(800);
+  await delay(800 + run_delay);
   var data = await page.executeScript(code);
   if (autoclose) {
     setTimeout(() => {
