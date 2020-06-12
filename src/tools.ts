@@ -153,6 +153,9 @@ export function resolveText(text: string, datetime?: string | Date) {
       }
     } else if (text.includes("领首单")) {
       action = "qiangquan";
+      urls.push(
+        "https://detail.m.tmall.com/item.htm?spm=a1z0d.6639537.1997196601.4.1cf47484dF4Tlp&id=598424373996"
+      );
     } else if (/叠加(?!红包|首单|淘金币)/.test(text)) {
       let r = /(\d+)-(\d+)/g;
       let quote = 0;
