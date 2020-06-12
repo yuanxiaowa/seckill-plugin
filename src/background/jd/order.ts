@@ -19,7 +19,7 @@ export async function waitForStock(
   var data = await getStock(args, {});
   return {
     success: JSON.stringify(data).includes("无货"),
-    data
+    data,
   };
 }
 
@@ -44,7 +44,7 @@ export async function buyDirect(
       Object.assign(
         {
           title: data.item.skuName,
-          data: res
+          data: res,
         },
         args
       ),
@@ -56,8 +56,8 @@ export async function buyDirect(
       [
         {
           skuId,
-          num: String(args.quantity)
-        }
+          num: String(args.quantity),
+        },
       ],
       args.jianlou
     ).then(() => {
@@ -73,11 +73,11 @@ export function cartBuy(data: any, p?: Promise<void>) {
     Object.assign(
       {
         data: {
-          submit_url: "https://trade.jd.com/shopping/order/getOrderInfo.action"
+          submit_url: "https://trade.jd.com/shopping/order/getOrderInfo.action",
           // submit_url: "https://p.m.jd.com/norder/order.action"
         },
         other: {},
-        is_pc: true
+        is_pc: true,
       },
       data
     ),
@@ -119,7 +119,7 @@ export async function submitOrder(
       await p;
     }
     page.goto(args.data.submit_url);
-    await page.waitForResponse(url => url.includes("userasset"));
+    await page.waitForResponse((url) => url.includes("userasset"));
     await delay(300);
     page.evaluate(
       function f(pass, expectedPrice) {
@@ -146,7 +146,7 @@ export async function submitOrder(
         var btn = Array.from(
           document.querySelectorAll<HTMLDivElement>(".mod_btns")
         )
-          .filter(ele => ele.style.display !== "none")
+          .filter((ele) => ele.style.display !== "none")
           .reverse()[0]
           .querySelector<HTMLLinkElement>("a")!;
         // var data = {
@@ -410,13 +410,13 @@ export async function submitOrderPc(
         var skuNumList: any = [];
         if (meta_text) {
           let meta_data = JSON.parse(meta_text);
-          skuNumList = meta_data.map(item => ({
+          skuNumList = meta_data.map((item) => ({
             skuId: item.skuId,
-            num: item.num
+            num: item.num,
           }));
         } else {
           skuNumList = Array.from(document.querySelectorAll(".goods-item"))
-            .map(item => {
+            .map((item) => {
               var skuId = item.getAttribute("goods-id")!;
               if (!skuId) {
                 return;
@@ -427,7 +427,7 @@ export async function submitOrderPc(
                 .substring(1);
               return {
                 skuId,
-                num
+                num,
               };
             })
             .filter(Boolean);
@@ -450,12 +450,12 @@ export async function submitOrderPc(
             provinceId: area_ele.getAttribute("provinceId"),
             cityId: area_ele.getAttribute("cityId"),
             countyId: area_ele.getAttribute("countyId"),
-            townId: area_ele.getAttribute("townId")
+            townId: area_ele.getAttribute("townId"),
           },
           coordnateRequest: {
             longtitude: area_ele.getAttribute("gcLng"),
-            latitude: area_ele.getAttribute("gcLat")
-          }
+            latitude: area_ele.getAttribute("gcLat"),
+          },
         };
         function check() {
           return fetch(`https://trade.jd.com/api/v1/batch/stock`, {
@@ -463,19 +463,19 @@ export async function submitOrderPc(
             body: JSON.stringify(data),
             headers: {
               Accept: "application/json",
-              "Content-Type": "application/json"
-            }
+              "Content-Type": "application/json",
+            },
           })
-            .then(res => res.json())
+            .then((res) => res.json())
             .then(
               ({ result }) =>
-                !Object.keys(result).find(key =>
+                !Object.keys(result).find((key) =>
                   result[key].status.includes("无货")
                 )
             );
         }
         function handler() {
-          check().then(b => {
+          check().then((b) => {
             if (!b) {
               return handler();
             }
@@ -486,12 +486,13 @@ export async function submitOrderPc(
           console.log(new Date(), "去下单");
           btn.click();
           setTimeout(() => {
-            handler();
+            // handler();
+            submit();
             var ele = document.querySelector<HTMLDivElement>(".ui-dialog");
             if (ele) {
               ele.parentNode!.removeChild(ele);
             }
-          }, 5000);
+          }, 200);
         }
         let input_pass = document.querySelector<HTMLInputElement>(
           ".quark-pw-result-input"
@@ -535,10 +536,10 @@ export async function getNextDataByGoodsInfo(
         .join("-"),
       type: "0",
       lg: "0",
-      supm: "0"
+      supm: "0",
     });
   return {
-    submit_url
+    submit_url,
   };
 }
 
@@ -555,8 +556,8 @@ export async function coudan(data: ArgCoudan): Promise<any> {
     {
       qs: {
         wids: data.urls.map(getSkuId).join(","),
-        nums: data.quantities.join(",")
-      }
+        nums: data.quantities.join(","),
+      },
     }
   );
   return cartBuy(data);

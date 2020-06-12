@@ -11,24 +11,24 @@ import { excuteRequestAction } from "../page";
 export const handlers: CouponHandler[] = [
   {
     test: startsWith("https://a.m.taobao.com/"),
-    api: async url => ({
+    api: async (url) => ({
       success: true,
-      url: getGoodsUrl(/(\d+)/.exec(url)![1])
-    })
+      url: getGoodsUrl(/(\d+)/.exec(url)![1]),
+    }),
   },
   {
     test: startsWith("https://uland.taobao.com/coupon/edetail"),
     api: getCouponEdetailFromApi,
-    page: getCouponEdetailFromPage
+    page: getCouponEdetailFromPage,
   },
   {
     test: startsWith("https://uland.taobao.com/taolijin/edetail"),
     api: getTaolijinFromApi,
-    page: getTaolijinFromPage
+    page: getTaolijinFromPage,
   },
   {
     test: startsWith("https://uland.taobao.com/quan/detail"),
-    page: getQuanDetailFromPage
+    page: getQuanDetailFromPage,
   },
   {
     test: startsWith("http://a.m.tmall.com/i"),
@@ -39,19 +39,19 @@ export const handlers: CouponHandler[] = [
       obj.searchParams.set("id", /\d+/.exec(url)![0]);
       return {
         success: true,
-        url: obj.toString()
+        url: obj.toString(),
       };
-    }
+    },
   },
   {
     test: startsWith(
       "https://market.m.taobao.com/apps/aliyx/coupon/detail.html"
     ),
-    api: getMarketCoupon
+    api: getMarketCoupon,
   },
   {
     test: startsWith("https://uland.taobao.com/quan/detail"),
-    api: getInnerStoreCoupon
+    api: getInnerStoreCoupon,
   },
   // mulCoupon: {
   //   test: startsWith("https://pages.tmall.com/wow/a/act/tmall"),
@@ -60,8 +60,12 @@ export const handlers: CouponHandler[] = [
   // },
   {
     test: startsWith("https://taoquan.taobao.com/coupon/unify_apply.htm"),
-    api: getUnifyCoupon
-  }
+    api: getUnifyCoupon,
+  },
+  {
+    test: includes("id=598424373996"),
+    api: getShoudan,
+  },
   /* invitation1: {
     test: startsWith("https://fans.m.tmall.com/"),
     api: getInvitation
@@ -76,6 +80,15 @@ function getInputValue(name: string, text: string) {
   return new RegExp(`name="${name}" [^>]*value="([^"]*)"`).exec(text)![1];
 }
 
+// https://detail.m.tmall.com/item.htm?spm=a1z0d.6639537.1997196601.4.1cf47484dF4Tlp&id=598424373996
+export async function getShoudan(url: string) {
+  await excuteRequestAction(url, {
+    code: 'document.querySelector(".tax-operator .c-jf").click()',
+    test: includes("mtop.tmall.detail.couponpage"),
+    urls: ["*://*.taobao.com/*", "*://*.tmall.com/*"],
+  });
+}
+
 export async function getUnifyCoupon(url: string) {
   var data = await request.get(url);
   var _tb_token_ = getInputValue("_tb_token_", data);
@@ -84,10 +97,10 @@ export async function getUnifyCoupon(url: string) {
     url,
     {
       _tb_token_,
-      ua
+      ua,
     },
     {
-      referer: url
+      referer: url,
     }
   );
   return data;
@@ -100,7 +113,7 @@ export async function getUnifyCoupon(url: string) {
  */
 export async function getMulCoupons(url: string) {
   var {
-    resultValue: { data, fri, sysInfo }
+    resultValue: { data, fri, sysInfo },
   } = await requestData(
     "mtop.tmall.kangaroo.core.service.route.PageRecommendService",
     {
@@ -108,21 +121,21 @@ export async function getMulCoupons(url: string) {
         url,
         cookie: "sm4=320500;hng=CN|zh-CN|CNY|156",
         device: "phone",
-        backupParams: "device"
+        backupParams: "device",
       },
-      version: "1.0"
+      version: "1.0",
     }
   );
   // 需要钱的券
   var goodsCoupons: any[] = [];
   var keys = Object.keys(data);
-  keys.forEach(key => {
+  keys.forEach((key) => {
     if (data[key] && data[key].coupons) {
       goodsCoupons.push(...data[key].coupons);
     }
   });
   var {
-    resultValue: { data }
+    resultValue: { data },
   } = await requestData(
     "mtop.tmall.kangaroo.core.service.route.PageRecommendService",
     {
@@ -134,12 +147,12 @@ export async function getMulCoupons(url: string) {
         sequence: 2,
         excludes: keys.join(";"),
         device: "phone",
-        backupParams: "excludes,device"
+        backupParams: "excludes,device",
       },
-      version: "1.0"
+      version: "1.0",
     }
   );
-  return Object.keys(data).map(key => {
+  return Object.keys(data).map((key) => {
     if (!data[key]) {
       return;
     }
@@ -149,7 +162,7 @@ export async function getMulCoupons(url: string) {
     } else if (coupons) {
       // 店铺券
       return Promise.all(
-        coupons.map(item =>
+        coupons.map((item) =>
           requestData(
             "mtop.alibaba.marketing.couponcenter.applycouponforchannel",
             {
@@ -157,11 +170,11 @@ export async function getMulCoupons(url: string) {
                 activityId: /activityId=(\w+)/.exec(item.couponUrl)![1],
                 sellerId: item.sellerId,
                 ua: "",
-                asac: "1A17718T967KGL79J6T03W"
+                asac: "1A17718T967KGL79J6T03W",
               },
-              version: "1.0"
+              version: "1.0",
             }
-          ).catch(e => e)
+          ).catch((e) => e)
         )
       );
     }
@@ -198,11 +211,11 @@ export async function getInnerStoreCoupon(url: string) {
       {
         sellerId: searchParams.get("sellerId"),
         activityId: searchParams.get("activityId"),
-        pid: searchParams.get("pid") || "mm_33231688_7050284_23466709"
+        pid: searchParams.get("pid") || "mm_33231688_7050284_23466709",
       },
       setting.mteeInfo
     ),
-    version: "1.0"
+    version: "1.0",
   });
   var success = res.success;
   var msg = "领取成功";
@@ -221,7 +234,7 @@ export async function getInnerStoreCoupon(url: string) {
   return {
     success,
     msg,
-    manual
+    manual,
   };
 }
 
@@ -260,15 +273,15 @@ export async function getMarketCoupon(url: string) {
         shortName: searchParams.get("short_name"),
         supplierId: sellerId,
         originalSellerId: "",
-        marketPlace: ""
+        marketPlace: "",
       },
-      version: "3.0"
+      version: "3.0",
     }
   );
   return {
     url: `https://shop.m.taobao.com/shop/shop_index.htm?user_id=${sellerId}&spm=a212db.index.dt_5.i2`,
     store: true,
-    success: res.error === "true"
+    success: res.error === "true",
   };
 }
 
@@ -276,7 +289,7 @@ export async function getQuanDetailFromPage(url: string) {
   await excuteRequestAction(url, {
     code: 'document.querySelector("#getCouponBtn").click()',
     test: includes("mtop.alimama.union.hsf.mama.coupon.get"),
-    urls: ["*://*.taobao.com/*"]
+    urls: ["*://*.taobao.com/*"],
   });
 }
 
@@ -285,9 +298,9 @@ export async function getCouponEdetailFromPage(url: string) {
     code:
       '[...document.querySelectorAll(".btn-name")].forEach(ele => ele.click());console.log(document.querySelector("a"));document.querySelector("a").getAttribute("href");',
     test: includes("mtop.alimama.union.xt.biz.quan.api.entry"),
-    urls: ["*://*.taobao.com/*"]
+    urls: ["*://*.taobao.com/*"],
   });
-  return resolveUrl(href).then(url => ({ url, success: true }));
+  return resolveUrl(href).then((url) => ({ url, success: true }));
 }
 
 export async function getCouponEdetailFromApi(url: string) {
@@ -304,10 +317,10 @@ export async function getCouponEdetailFromApi(url: string) {
           e: searchParams.get("e"),
           activityId: searchParams.get("activityId"),
           pid,
-          type: "nBuy"
-        })
+          type: "nBuy",
+        }),
       },
-      version: "1.0"
+      version: "1.0",
     }
   );
   let [data] = res[res.meta.resultListPath];
@@ -342,14 +355,14 @@ export async function getCouponEdetailFromApi(url: string) {
                 mteeAsac: "1A19322J4Z3PLXO583LRB6",
                 mteeType: "sdk",
                 mteeUa:
-                  "121#51jlkzrBlTwlVl2fxBYfllXYecEfKujV9yIhoz6uKTdJV35EEqFPll9YOc8MKujVlwuYxzB55z1RNlrJEIiIlQXYOcFNv+JbVmgY+1Y5KM9VKyrnEkDIll9YOc8fDujllwKY+zPIDM9lOQrJEmD5lCoYOcfd7QWgzKuYlBCgebCs8ySm/0rOX9L0COe2CpxSpX0lk654M3BmbgibCN+XQBIgJQdynnCSR2b0CZeZTpNN2MS0CNhFFtK0bZJinjxSpXb0C6048u/mCbiDkeHaF960C6ibnnC9pCi0C60TVurmbgi0xoAhC9pcbfE0tnqopX7dC6748u/msMtADvumt5WceyRNnIbT/q6UyzZBFHNTuLrYW6eZa4y+t9I9ETlxlG4y9TTuvGdx23zR3n7IqqHZNsyoyfA/cLpkCy5fzmvDeqGsjxMjB8btFw3ak2451aWuuqn2THrqP9Ndw5Ov9LmgooI0oIv29G9mC+K4ZjQ5in9vJBnMqv/pUOVe8kmA9kCgfdOAnOlpELK8T0mYKVdxwtTJIiTNAY6NseS5KSpvPXDW1rEHTNgrkJ0CnR0USyXKRym/ysQjSMq5ITZOW1IbJ9DJxybGjboSEaGeKk9IUgIoGc1s6rpR5fzIkSh4MWZP3rFEnM6MrFWFh/QVtC2Qw+4HUlJsiFKeKsQGBio8uoN4k69D8XqDs+5boZ4XHg9a4kiL3Bl00q90QBLHACM19O9miITzYGSfFw6ONlzurlsES+LJxHTeKb5Mn4ff6B+1oXy6lelT3i5kkAmsiSh1j8GkldG1jAnpM923YioArcm76iEMKxZRHgwvYJel8n7FT0A4VJZ0M/w7Y2h85z0UvjdR+H53ZWZxzvMTHvdS9M9arOLOcekZzox4TRLnHkxtkLsbDtuDvVDQhjk8q9zGFxv4ND4vm2/f0qO6qbJjxKbADU8YRqiB7g4M7ein2bi1+DD1Uy24U46k8O/kUcJvc9D8BAp180qL/I6tbJgy55NS0Sz1Ay0vbk7runjyS6jwlV/+FGWxuAUW1PD0DqSKlsIFQ/WW8UA9MEaQBTSJkyqR2T9zMiBTsh3HjYOiYiCY1lGrHnYNIdKgWsQPeSVGbL39whDQhgvdhdnQmLHkOq7HavRDFo7pn0glEmw2KNY9UXbXR19D7mN5y8bmHjh0JPsElhXRjKc9pOlePcvIJBYovZ9u58SjtyjtA/S1hNwHDXMm7hD9hSxjJclmZp629mecvXVOVC70DrsJOB3u54QXLeWCqaMxuXPMR5C0SFedq0xvTrzRyd2YtHLV13qmd/C7MzXKuWsSfQhZI26zemPUYr/FQ6inJBWjwRaxUw=="
+                  "121#51jlkzrBlTwlVl2fxBYfllXYecEfKujV9yIhoz6uKTdJV35EEqFPll9YOc8MKujVlwuYxzB55z1RNlrJEIiIlQXYOcFNv+JbVmgY+1Y5KM9VKyrnEkDIll9YOc8fDujllwKY+zPIDM9lOQrJEmD5lCoYOcfd7QWgzKuYlBCgebCs8ySm/0rOX9L0COe2CpxSpX0lk654M3BmbgibCN+XQBIgJQdynnCSR2b0CZeZTpNN2MS0CNhFFtK0bZJinjxSpXb0C6048u/mCbiDkeHaF960C6ibnnC9pCi0C60TVurmbgi0xoAhC9pcbfE0tnqopX7dC6748u/msMtADvumt5WceyRNnIbT/q6UyzZBFHNTuLrYW6eZa4y+t9I9ETlxlG4y9TTuvGdx23zR3n7IqqHZNsyoyfA/cLpkCy5fzmvDeqGsjxMjB8btFw3ak2451aWuuqn2THrqP9Ndw5Ov9LmgooI0oIv29G9mC+K4ZjQ5in9vJBnMqv/pUOVe8kmA9kCgfdOAnOlpELK8T0mYKVdxwtTJIiTNAY6NseS5KSpvPXDW1rEHTNgrkJ0CnR0USyXKRym/ysQjSMq5ITZOW1IbJ9DJxybGjboSEaGeKk9IUgIoGc1s6rpR5fzIkSh4MWZP3rFEnM6MrFWFh/QVtC2Qw+4HUlJsiFKeKsQGBio8uoN4k69D8XqDs+5boZ4XHg9a4kiL3Bl00q90QBLHACM19O9miITzYGSfFw6ONlzurlsES+LJxHTeKb5Mn4ff6B+1oXy6lelT3i5kkAmsiSh1j8GkldG1jAnpM923YioArcm76iEMKxZRHgwvYJel8n7FT0A4VJZ0M/w7Y2h85z0UvjdR+H53ZWZxzvMTHvdS9M9arOLOcekZzox4TRLnHkxtkLsbDtuDvVDQhjk8q9zGFxv4ND4vm2/f0qO6qbJjxKbADU8YRqiB7g4M7ein2bi1+DD1Uy24U46k8O/kUcJvc9D8BAp180qL/I6tbJgy55NS0Sz1Ay0vbk7runjyS6jwlV/+FGWxuAUW1PD0DqSKlsIFQ/WW8UA9MEaQBTSJkyqR2T9zMiBTsh3HjYOiYiCY1lGrHnYNIdKgWsQPeSVGbL39whDQhgvdhdnQmLHkOq7HavRDFo7pn0glEmw2KNY9UXbXR19D7mN5y8bmHjh0JPsElhXRjKc9pOlePcvIJBYovZ9u58SjtyjtA/S1hNwHDXMm7hD9hSxjJclmZp629mecvXVOVC70DrsJOB3u54QXLeWCqaMxuXPMR5C0SFedq0xvTrzRyd2YtHLV13qmd/C7MzXKuWsSfQhZI26zemPUYr/FQ6inJBWjwRaxUw==",
               },
               setting.mteeInfo
             )
           ),
-          floorId: "13352"
+          floorId: "13352",
         },
-        version: "1.0"
+        version: "1.0",
       }
     );
     let {
@@ -360,11 +373,11 @@ export async function getCouponEdetailFromApi(url: string) {
             coupon: {
               // 0:成功 4:抽风 1:买家领取单张券限制
               retStatus,
-              msg
-            }
-          }
-        ]
-      }
+              msg,
+            },
+          },
+        ],
+      },
     } = res;
   }
 
@@ -372,7 +385,7 @@ export async function getCouponEdetailFromApi(url: string) {
     success: retStatus === 0 || retStatus === 1,
     url: getGoodsUrl(itemId),
     msg,
-    manual: retStatus === 4
+    manual: retStatus === 4,
   };
 }
 
@@ -381,9 +394,9 @@ export async function getTaolijinFromPage(url: string) {
     code:
       '[...document.querySelectorAll(".btn-text")].forEach(ele => ele.click());document.querySelector(".product-info-detail").getAttribute("href");',
     test: includes("mtop.alimama.vegas.center.flb.coupon.query"),
-    urls: ["*://*.taobao.com/*"]
+    urls: ["*://*.taobao.com/*"],
   });
-  return resolveUrl(href).then(url => ({ url, success: true }));
+  return resolveUrl(href).then((url) => ({ url, success: true }));
 }
 
 export async function getTaolijinFromApi(url: string) {
@@ -414,19 +427,19 @@ export async function getTaolijinFromApi(url: string) {
     data: {
       eh,
       activityId: searchParams.get("activityId") || undefined,
-      isMobile: false
+      isMobile: false,
     },
     version: "1.0",
-    referer: url
+    referer: url,
   });
   let {
     coupon: {
       // string 0:可领取 6:已失效
       couponStatus,
-      couponKey
+      couponKey,
     },
     couponItem: { itemId, clickUrl },
-    rightsInstance
+    rightsInstance,
   } = resdata;
   // logFile(resdata, "淘礼金");
   if (rightsInstance && rightsInstance.startTime) {
@@ -452,10 +465,10 @@ export async function getTaolijinFromApi(url: string) {
                 mteeUa:
                   "121#DZwlkkSZeHMlVlhOGBhGllXY3cY6vujVdqFgxgk5PMxhO6WJEGCIKwa0Oc8fDujlVmgY+zP5DMtlL2b0D445lwlYKarfKuj9LnN9S7LIKMLWA3rJEtj5ll9YOc8fDujllwgY+a/5KM9VOQrJEmD5lwLYAcT+DujVla+AMjlKAQ9PD0g6bqRVpSCvU8WubZ3546ocFtFbMXrDnj29p2D0C6e783aGRdwrYHHXFt4bbZi0JjdeN4jVCZe4GG/mbgiek+IaFtFbbZsbnjxSpXb0k65T8uBhbZs0CeHXF9WbCZsbnTx26MY0C5OfSm2kluVirN1mF9F7bvaFxqxSRZb0C6bDVlHzPQ8RDqiYVUc0hs7cu8ozJ/JYX3BIXj1yF2y4mm8m4CxQMuNJKHryKmWHeqxyWsycKJSY3iHQFpXcJrsJyU6pigImFS82F9pMxxhfJhFetGT2W3XcKHGeDnIFrKtQnUIobnu4BRfvwHKSiyN70hDtznQkmTKPATNtVmz6mFazXr2UboSL1cGNPMPjLHQGUNpNBfIQynYpAdyvmiokWe6ddKtDk9EJftMTiSYhAxlxMmN0WgnqppOvjbGZeeVcyiANW3mYfOx2v+o41jK7/3j2FjMkk0JYqSjv6Y3K2lTHVIxQ1FimWKRULXvhHqCTm0ZTlHzM1T8CTSAJ0ndCXn4sBuZg/+o0q8SKfcOLQiOrdDf9uDtOp8bBy0dWw61YGaELFJF0x/qC8gxgfjh61yY2k3HRjpAYNEa7gn7O9TscURpvys6yWUo7WmUhLH22jaH/N2JSvgKjIFmHF0lduZyYZ5h/MOkmqWnvcHOl+ztSPJZX2dl9YLWCjkQSwBZl/9/4W9H5Wt3kY3IIUJ6BTeNPojs9YqKMvmBVVSEtuxNxbwLwsW0T+6/G31k5/j9AHrTFXSH6tHH5wWOdP+97szBsLoE7xy4PnC3dK9cwoFkEO5fFe8xaOF0VwsRoxsFMyBoKd6tbCwr3G9INHKU3rucbI7gCFj6F3yfrKabHx0GPZZtdSiuaBRGg+9go32kq3wOzrF5G7AZC6LBpOPA9N2Yw/C8EqpBFIe7JYUkl40lL3sSIrijuaBMKI6dfLuv8BmAhlrGPSeg3WsOeabe/OI+uez+WO8TKntY2S1/Ilsh5b9Waql/gCcXUANneKU3tuQwg1DPhhiu8qZOf",
                 umidToken:
-                  "TE57CFF6813C4BBE049101EFE049454632A8DA785372116D901100B250B"
+                  "TE57CFF6813C4BBE049101EFE049454632A8DA785372116D901100B250B",
               },
               version: "1.0",
-              referer: url
+              referer: url,
             }
           );
           var coupon: {
@@ -497,16 +510,16 @@ export async function getTaolijinFromApi(url: string) {
                 unid: searchParams.get("activityId"),
                 relationId: searchParams.get("activityId"),
                 activityId: searchParams.get("activityId"),
-                from: searchParams.get("activityId")
+                from: searchParams.get("activityId"),
               }),
               mteeUa:
                 "121#K1MlkkarjVwlVlh3GBhGllXY3cY6vujVdqFgxgk5PMxhO6WJEGCIKwa0Oc8fDujlVmgY+zP5DMtlL2b0D445lwlYKarfKuj9LnN9S7LIKMLWA3rJEtj5ll9YOc8fDujllwgY+a/5KM9VOQrJEmD5lwLYAcT+DujVla+AMjlKAQ9PD0g6bqRVpSCvU8WubZ3546ocFtFbMXrDnj29p2D0C6e783aGRdwrYHHXFt4bbZi0JjdeN4jVCZe4GG/mbgiek+IaFtFbbZsbnjxSpXb0k65T8uBhbZs0CeHXF9WbCZsbnTx26MY0C5OfSm2kluVirN1mF9F7bvaFxqxSRZb0C60SVw13+Q8RD++pi11OHiv++BjgnvxwPDUS9+b/Ti8Hu/w7d32M0kAevwJMYZjVwkMS/BNs/yJ1smgEKNSJsQ+JJaxAltaIUMaZ8U8JxQbVJz6R4ZvZvzUdSn0APaVEVa+84EZstJRb3K3/aNYc6a0jd35pPZ96dnOBL9EUhFAxYJq/n9p/0DCaCrP1tIDifgB7d/2qv7CwC/KxWE0SJ9QtOMokkNOqoQBj5EEhzMX9H0kh3mFdhhUCSrHVseTG7+J94hkE6tCi9PcUXNTVmFUIJLoIRkIywDsM8DNLxGG2GLxgucMnoNMPb52pmQRnc+2v2r37AFw9yV2ildfvUb7ypqzkRQD7YDgIsXLiJqrzcqcc3UJ8pAeyA2gVIoy2XafLZsssHA0JOZxYSAl/kg2EteWLWgnCyr+8/kQkw/EuWVILbRv0eTkJn5qVISTCXDkL2BNkPZ51PR8oAjQvdxGSUp5NSV2OTdPf/NLANdik2PdezhQ+fpb98ajVk/uQMjOQxVKqBhWZdggSqjihA5tFaIl9RGbjT3Bb2JVTKtwqlwiXpN6AYW+B7BopJJgpKxOkWuK8gnH1fn7NecWAY794Og5o+BwF3JlmSb7uQdFhuCvCvzP67PHDlHbnDWh707QIgMpItSCn+gW1QYMmB+yVB8HYEiBu4lf7pBV5PqBipWkIAPi9GfA/xFT6+M+6RLNWQah0adZtiazI1Bsko5Ak6rfSzL3UOLf7AJ7ARzJVRJoihsuT+RaiWIG9ZAsdhFWxU3kZoMQXdGonUPBJ/o7WoLqxeH1WTPHrbsbUvpKj2M1jDVQnVuWPr2uqeFoL1McMz5FBYphh3lx54jlsTTvbfT6a3TXBoQ==",
               pid: rightsInstance.pid || "",
               umidToken:
-                "TE57CFF6813C4BBE049101EFE049454632A8DA785372116D901100B250B"
+                "TE57CFF6813C4BBE049101EFE049454632A8DA785372116D901100B250B",
             },
             version: "1.0",
-            referer: url
+            referer: url,
           });
           // logFile(res, "淘礼金-领礼金");
           msg += "," + res.drawRetDesc;
@@ -524,7 +537,7 @@ export async function getTaolijinFromApi(url: string) {
     return {
       success,
       url: getGoodsUrl(itemId),
-      msg
+      msg,
     };
   }
 }

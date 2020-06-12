@@ -151,6 +151,8 @@ export function resolveText(text: string, datetime?: string | Date) {
       } else {
         action = "qiangquan";
       }
+    } else if (text.includes("领首单")) {
+      action = "qiangquan";
     } else if (/叠加(?!红包|首单|淘金币)/.test(text)) {
       let r = /(\d+)-(\d+)/g;
       let quote = 0;
@@ -214,7 +216,9 @@ export function resolveText(text: string, datetime?: string | Date) {
         action = "notice";
       }
     } else if (
-      /大米|盐|有货的上|蟹|桌|椅|酸奶|纯甄|安慕希|蒙牛|伊利/.test(text)
+      /大米|盐|有货的上|蟹|桌|椅|酸奶|纯甄|安慕希|蒙牛|伊利|罗马仕|充电宝/.test(
+        text
+      )
     ) {
       action = "notice";
     }
