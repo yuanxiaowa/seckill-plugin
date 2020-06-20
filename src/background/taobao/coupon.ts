@@ -66,6 +66,14 @@ export const handlers: CouponHandler[] = [
     test: includes("id=598424373996"),
     api: getShoudan,
   },
+  {
+    test: includes("618.tmall.com/union"),
+    api: getHongbao,
+  },
+  {
+    test: startsWith("https://pages.tmall.com/wow/a/act/ju/dailygroup"),
+    api: getDailygroup,
+  },
   /* invitation1: {
     test: startsWith("https://fans.m.tmall.com/"),
     api: getInvitation
@@ -540,4 +548,113 @@ export async function getTaolijinFromApi(url: string) {
       msg,
     };
   }
+}
+
+/**
+ * 618红包
+ * @param url
+ * @example https://618.tmall.com/union?disableNav=YES&wh_alimama=true&ali_trackid=2:mm_124416268_30902206_113114651:1592576760_140_1077142655&spm=a2159r.13376465.0.0&scm=20140618.1.01010001.s101c6&ut_sk=1.utdid_null_1592566640051.TaoPassword-Outside.lianmeng-app
+ */
+export async function getHongbao(url: string) {
+  // #J_MM_RED_COVER_1_0,#J_MM_RED_RESULT_1_0
+  // var data = {
+  //   "https://618.tmall.com/union?disableNav": "YES",
+  //   wh_alimama: "true",
+  //   ali_trackid: "2:mm_124416268_30902206_113114651:1592576760_140_1077142655",
+  //   spm: "a2159r.13376465.0.0",
+  //   scm: "20140618.1.01010001.s101c6",
+  //   ut_sk: "1.utdid_null_1592566640051.TaoPassword-Outside.lianmeng-app",
+  // };
+  url =
+    "https://618.tmall.com/union?disableNav=YES&wh_alimama=true&ali_trackid=2:mm_124416268_30902206_113114651:1592578854_194_302382944&tbkShareUId=842437230&from=tbk1111fenxiangyoushang&fromScene=289&tbkShareId=789292564";
+  const urlObj = new URL(url);
+  const ali_trackid = urlObj.searchParams.get("ali_trackid")!;
+  const ali_trackid_arr = ali_trackid.split(":")!;
+  // {"api":"mtop.alimama.vegas.draw","data":{"awards":[{"couponId":"1913491764753","extend":{"awardTips":"手机淘宝-红包卡券查看和使用","awardImg":"https://img.alicdn.com/tfs/TB1hkiwHYj1gK0jSZFuXXcrHpXa-213-192.png","effectiveTimeType":"ABSOLUTE","biggerAwardImg":"https://img.alicdn.com/tfs/TB1hkiwHYj1gK0jSZFuXXcrHpXa-213-192.png","awardUnit":"元","awardName":"天猫魔盒优惠券"},"id":"7989002342","rightsFace":"20","rightsSubType":"3","rightsType":"2","useEndDate":"2020-06-20 23:59:59","useStartDate":"2020-06-16 00:00:00"}],"chance":{"chanceLeft":"1","totalChance":"3"},"drawRetCode":"0","drawRetDesc":"中奖了","extra":{"traceId":"0b51191915925773552112670e91fa","totalValueAmount":"20"}},"ret":["SUCCESS::接口调用成功"],"v":"1.0"}
+  // {"api":"mtop.alimama.vegas.draw","data":{"chance":{"chanceLeft":"0","totalChance":"3"},"drawRetCode":"1","drawRetDesc":"未中奖","drawRetSubCode":"30","extra":{"traceId":"0b51070315925779235271320e5a56"}},"ret":["SUCCESS::接口调用成功"],"v":"1.0"}
+  // {"api":"mtop.alimama.vegas.draw","data":{"chance":{"chanceLeft":"0","totalChance":"3"},"drawRetCode":"5","drawRetDesc":"你的抽奖机会已用完，请明天再来","drawRetSubCode":"20","extra":{"traceId":"0b51070315925779265711596e5a56"}},"ret":["SUCCESS::接口调用成功"],"v":"1.0"}
+  var data: {
+    chance: {
+      chanceLeft: string;
+      totalChance: string;
+    };
+    drawRetCode: string;
+    drawRetDesc: string;
+  } = await requestData("mtop.alimama.vegas.draw", {
+    data: {
+      eh: "dnaDiFU8YyV1Z2W8b6J6wQ9kR/tTPZ/fME4BxDdS+QWVFbJpqFlsww==",
+      extend: JSON.stringify({
+        union_lens:
+          "recoveryid:a211oj.14653409_1592576969344_8932235560140236_PaTqF;pvid:a211oj.14653409_1592576969344_8932235560140236_PaTqF",
+        scence: "wap",
+        spm: "a211oj.14653409",
+        clickId: ali_trackid_arr[2],
+        mode: "CLICK_DRAW",
+        pvid:
+          "a211oj.14653409_1592576969345_7289289145575855_PaTqFqUX0zQCAbR1oOIiqm3Y",
+        preSend: false,
+      }),
+      mode: "CLICK_DRAW",
+      pid: ali_trackid_arr[1],
+      ua:
+        "124#qV86LJEKxG0xA7CijkMLmeKVVpRFx4SskGpMs89hk2En5mh68+kaU28FDX1fM4AfOFfHtEpm+X4WmszJuy6HwVSIuf01H6OxzND3ywsIyRmC3WkXumTzdjBUQRFHiDgVPSUjimISDn2xIoLXnB2t0HkVsjuCBEsJtiSo2lr/eH2Q3kIeIqXtg5Go1ZIZlMLIgKvtIZ/LbwiJm4WA/C9dXbpo1Z/flMX2gKPXInYLlwYnmfWeIqXLg5S41ZIZlUX2g7vtIZ/plwY2m4+ZI8LLgTSa1nIxbquhdLCtIqbLlw/ng1iHSNJgWQ8d1Z2eb0jExedSvwi5uEq9HyPVLzyfQhMJSGEBYzDeLD2fk6tazY7vmUyfDbmDMUKoL3c/wM3qvU8sQPlBoQZnKAMyuv5u7qucboWaCYtrqxpE6Zj9jDxRIMoicwaajRX7fgn7bVlFu3nwVYVunm0JdDyYO1vgbkOafZRvLfNjNGkfLmoE+R10vTwhRC/NboA8N5rkXsK4UIpyX+THfG1HcQ0lS5+WK7WSt8uDrK0J7FLx+WNDfgANMsuFMN638XOASiXR/NyKD1zHiu5wnHGT6FVktTe+5UZs6YVJmCoC4jW5DE3IOONSWhVzd+YTq4o/alKTHXnDOPhZPOGS9qqmUNDLStBkkbi13mK3D4toWprDkYpkIHmwg65GgTc9q9mqHtkSwHzSUUGT7JmjJiRYPL/YknQcKATDp1wIPDzI8vyUb1rW6ZqzE9X5PU2jA3/Qf5hJApGhaR8f55K48RwvW8LLNcc1yke1TYhR9/uTHACI2Zwf6NTL9ZXflrA63Vk10FlgAKqLSI5UEGNvwElO7BXioDVV6kcP0+5PXmnL+w58g/lovAhdtYfRxqsxy2AQa47PmnIoyHaNBAuDM6ypQk==",
+      umidToken: "T13D5130D4E8782F1B228536D59D77846CDB924DD8CB3A64E17A6E3F506",
+    },
+    version: "1.0",
+    referer: url,
+  });
+  console.log(data);
+  if (+data.chance.chanceLeft > 0) {
+    // return getHongbao(url);
+  }
+  console.log(data.drawRetDesc);
+}
+
+/**
+ *
+ * @param url
+ * @example https://pages.tmall.com/wow/a/act/ju/dailygroup/1092/wupr?__share__id__=1&spm=a2159r.13376465.0.0&share_crt_v=1&wh_pid=daily-202332&clickid=I220_238159034415923266013162775&ali_trackid=2%3Amm_97642752_435350426_108464350060%3A1592326583_100_881165657&from=qianx&sp_tk=77%2BlWkdsMTFGYlFTY2zvv6U%3D&sourceType=other&suid=0A433C2C-65CF-4BCA-9A08-517F91388AA5&un=c0aeec34afc20560e13bd8fde7d968fb&eRedirect=1&ttid=201200%40taobao_iphone_9.8.0&sourceType=other&suid=b77f02de-b3cf-4faa-bbaa-106c7b98f8f8&ut_sk=1.XlihFhWfs%2BsDAHIO7mTHGFB7_21646297_1592572696187.TaoPassword-QQ.2688
+ */
+export async function getDailygroup(url: string) {
+  // {"api":"mtop.latour2.strategy.show","data":{"attributes":{"serverTimeMs":1592582834156},"data":{"currentPage":1,"hasNextPage":false,"showBenefits":[{"amount":1000,"amountUnit":"分","asac":"2A20612ABVW2I686NUDVSP","benefitPoolId":181368107,"canWin":false,"code":"976e7d51edb2444290ab074699ba3e80","displayAmount":"10","displayAmountUnit":"元","displayStartFee":"11","effectiveEnd":"2020-06-20 23:59:59","effectiveStart":"2020-06-16 00:00:00","effectiveTimeMode":"ABSOLUTE","endDate":"2020-06-20 23:59:59","feature":{"campaignId":"86437","demeterId":"88651","description":"限活动商品专用","templateCode":"4178376962","source":"tmallIndustry","title":"湖州商品","uuid":"27bb7e22af4f47f388bccec3d3ff2d9e","industryId":"999999999","sellerId":"2204100802286","couponTag":"458660004","fundingType":"1","campaignName":"湖州商品","channelId":"41834001","useDesc":"限活动商品专用"},"hadWin":false,"hasInventory":false,"increments":[{"effectiveTime":"2020-06-20 10:00:00"}],"items":[{"auctionTag":"130 203 331 385 907 1163 1478 1483 2049 2059 3079 3394 3466 3911 3974 3979 4166 4491 4939 5895 6603 6849 7494 7883 8258 8326 8578 8583 10439 11083 11339 14210 16779 18379 18763 21442 21762 21826 22155 23105 23746 25282 28353 29122 30337 30977 31489 33217 33346 34369 35713 36161 37122 37569 39233 40897 44609 46914 49218 49282 53121 65281 70465 82306 84801 87425 101762 107522 107842 112001 112386 115329 116546 118338 119234 119298 120577 120962 123521 123649 123905 131713 137281 143746 150146 150465 161793 161921 166402 175490 180161 188609 188673 200002 200321 201409 202050 202434 203521 212546 225410 243906 249090 249858 249922 253570 268418 277250 281666 282498 282562 282754 282818 282882 284802 288386 288962 292674 299394 299458 350466 351362 364482 366402 368386 369154 371074 386242 388354 398594 404546 427458 455554 481986 491074 496770 508418 508674 519106 520130 766146 766274 766722 766786 766978 767042 767106 768066 768258 775554 776578 1235074 1286402 1294146 1301314 1326786 1327042 1349442 1435778 1436034 1437442 1443906 1473090 1478146 1508354 1508482 1513730 1517698 1518018 1518082 1553410 1581442 1590082 1608450 1618306 100027125","discountPrice":"99.90","failover":false,"huaxianPrice":"360.00","inventory":1619,"itemId":15032271059,"mainPic":"//img.alicdn.com/i3/711841968/O1CN01qPCZ1I1QPO3xVO9kR_!!0-item_pic.jpg","reservePrice":"360.00","sellerId":711841968,"tagPrice":"0.00","title":"欧诗漫面膜补水保湿玻尿酸女收缩毛孔免洗非蚕丝旗舰店官方正品","whiteImgUrl":"//img.alicdn.com/bao/upload/TB1RTVbiK3tHKVjSZSgXXX4QFXa.png"}],"material":{},"outerTemplateId":"4178376962","owner":{"userId":"offical","userType":"xiaoer"},"sendLifeCycleState":"running","showRules":[{"passed":true,"type":"WIN_LIMIT"}],"source":"lafite2","startDate":"2020-06-15 22:48:00","startFee":1100,"test":false,"title":"湖州商品10元购物券","type":"plCoupon","typeDesc":"品类券"},{"amount":2000,"amountUnit":"分","asac":"2A20612ABVW2I686NUDVSP","benefitPoolId":181368107,"canWin":false,"code":"5d620a41c65e4b0bb9f6ad7ff32e29eb","displayAmount":"20","displayAmountUnit":"元","displayStartFee":"50","effectiveEnd":"2020-06-20 23:59:59","effectiveStart":"2020-06-16 00:00:00","effectiveTimeMode":"ABSOLUTE","endDate":"2020-06-20 23:59:59","feature":{"campaignId":"86437","demeterId":"88652","description":"限活动商品专用","templateCode":"4177272961","source":"tmallIndustry","title":"湖州商品","uuid":"f727238cd78c4941bf3325effbacc948","industryId":"999999999","sellerId":"2204100802286","couponTag":"458660004","fundingType":"1","campaignName":"湖州商品","channelId":"41834001","useDesc":"限活动商品专用"},"hadWin":false,"hasInventory":false,"increments":[{"effectiveTime":"2020-06-20 10:00:00"}],"items":[{"auctionTag":"203 331 385 907 1163 1478 1483 2049 2059 3015 3079 3394 3466 3911 3974 3979 4166 4422 4491 4939 5895 6603 6849 7298 7494 7883 8326 8578 10439 11083 11339 14210 16779 18379 18763 21442 21762 21826 22155 25282 26626 28353 29122 30337 30401 30593 30849 30977 31489 33217 33346 34369 35713 36033 36097 36161 37569 39233 40897 46914 49218 49282 65281 67521 70465 79489 82306 84801 87425 87490 90369 100609 101762 107842 112001 112386 115329 116546 118338 119234 119298 120577 120962 123521 123649 123905 131713 137281 143746 145857 150146 166402 175490 180161 188162 188609 188801 200002 200321 202050 203521 212546 241218 243906 246978 249090 249858 250178 253570 257922 268418 277250 281666 282498 284802 285186 288386 288962 299394 299458 317634 331650 348546 349442 350466 363650 364482 364610 366402 368450 369154 371074 386242 388354 398594 427458 459586 491074 508674 519106 520130 766146 766274 766722 766786 766978 767042 767106 768066 768258 1286274 1286466 1326786 1327042 1345922 1367938 1435778 1436034 1443906 1473090 1478146 1508354 1512962 1513730 1550466 1590082 1618306 100027125","discountPrice":"99.90","failover":false,"huaxianPrice":"480.00","inventory":2464,"itemId":17523468725,"mainPic":"//img.alicdn.com/i2/759213442/O1CN01PvnkJe1bITqyeV1ET_!!0-item_pic.jpg","reservePrice":"480.00","sellerId":759213442,"tagPrice":"0.00","title":"欧诗漫补水保湿玻尿酸面膜女收缩毛孔紧致祛痘淡化痘印旗舰店官网","whiteImgUrl":"//img.alicdn.com/bao/upload/TB1Wge7XQWE3KVjSZSyXXXocXXa.png"}],"material":{},"outerTemplateId":"4177272961","owner":{"userId":"offical","userType":"xiaoer"},"sendLifeCycleState":"running","showRules":[{"passed":true,"type":"WIN_LIMIT"}],"source":"lafite2","startDate":"2020-06-15 22:48:00","startFee":5000,"test":false,"title":"湖州商品20元购物券","type":"plCoupon","typeDesc":"品类券"},{"amount":5000,"amountUnit":"分","asac":"2A20612ABVW2I686NUDVSP","benefitPoolId":181368107,"canWin":false,"code":"04a6517630664c7a92c82a635275f29e","displayAmount":"50","displayAmountUnit":"元","displayStartFee":"100","effectiveEnd":"2020-06-20 23:59:59","effectiveStart":"2020-06-16 00:00:00","effectiveTimeMode":"ABSOLUTE","endDate":"2020-06-20 23:59:59","feature":{"campaignId":"86437","demeterId":"88653","description":"限活动商品专用","templateCode":"4175848995","source":"tmallIndustry","title":"湖州商品","uuid":"cbb6b0728951498db357c9ef10483dc9","industryId":"999999999","sellerId":"2204100802286","couponTag":"458660004","fundingType":"1","campaignName":"湖州商品","channelId":"41834001","useDesc":"限活动商品专用"},"hadWin":false,"hasInventory":false,"increments":[{"effectiveTime":"2020-06-20 10:00:00"}],"items":[{"auctionTag":"130 203 331 385 907 1163 1478 1483 2049 2059 3015 3394 3466 3911 3974 3979 4166 4491 4939 5895 6603 6849 7494 7495 7879 7883 8326 11079 11083 11339 16321 16779 18379 18763 20545 21442 21762 21826 22155 22337 25282 26689 28353 28802 29890 30337 30593 30849 30977 31489 33217 34369 35713 36161 37569 37633 39233 40897 46914 67521 68673 70465 73089 84801 90369 91457 91841 101761 101762 107585 112001 115329 118338 123905 131713 143746 144385 161729 161793 175746 177857 179969 188609 188865 189121 194306 199553 200002 200321 202050 205890 212546 225858 249858 249986 257986 268418 273282 277250 281602 284802 288386 288962 294338 299394 346114 348546 363970 364482 364610 366402 388354 422402 422530 427458 432834 459586 498626 519106 520130 521602 1282050 1322626 1443906 1473026 1478274 1499202 1513602 1513730 1549186 1549570 1550466 1553154 1553794 1590082 1618306 100027125","discountPrice":"119.00","failover":false,"huaxianPrice":"150.00","inventory":1814,"itemId":617442203915,"mainPic":"//img.alicdn.com/i1/441622457/O1CN01mc51Dt1U1LjpsJvXs_!!441622457-0-lubanu-s.jpg","reservePrice":"150.00","sellerId":441622457,"tagPrice":"0.00","title":"欧诗漫女王面膜玻尿酸补水保湿修护焕白提亮熬夜去暗","whiteImgUrl":"//img.alicdn.com/bao/upload/TB1A68CKkL0gK0jSZFAXXcA9pXa.png"}],"material":{},"outerTemplateId":"4175848995","owner":{"userId":"offical","userType":"xiaoer"},"sendLifeCycleState":"running","showRules":[{"passed":true,"type":"WIN_LIMIT"}],"source":"lafite2","startDate":"2020-06-15 22:48:00","startFee":10000,"test":false,"title":" 湖州商品50元购物券","type":"plCoupon","typeDesc":"品类券"}],"showStrategy":{"algorithmFailover":false,"allRulePassed":true,"asac":"2A20612ABVW2I686NUDVSP","code":"89b5b5abab53476283b813175cde66a9","issueScheduleTimes":[{"endTime":1592668799000,"startTime":1592229720000}],"material":{},"mode":"DRAW"},"trackingData":{"traceId":"0b14282d15925828340524178eb295"}},"success":true},"ret":["SUCCESS::调用成功"],"v":"1.0"}
+  var {
+    data: { showBenefits },
+  }: {
+    data: {
+      currentPage: string;
+      hasNextPage: string;
+      showBenefits: {
+        code: string;
+        displayAmount: string;
+        displayStartFee: string;
+      }[];
+    };
+  } = await requestData("mtop.latour2.strategy.show", {
+    data: {
+      filterCrowd: "true",
+      currentPage: 1,
+      pageSize: 20,
+      strategyCode: "89b5b5abab53476283b813175cde66a9",
+      channel: "lafite_HZGWQ",
+      withItem: "true",
+      filterEmptyInventory: "false",
+      withIncrement: "true",
+      failoverAlgorithmResult: true,
+    },
+    version: "1.0",
+  });
+  // {"api":"mtop.latour2.strategy.issue","data":{"attributes":{"serverTimeMs":1592579811467,"trackingData":{"traceId":"0b51061d15925798114416218ee9a2","sampleType":"1"}},"code":"LATOUR2-INVENTORY-06","msg":"库存不足|所有分桶库存均已不足！","success":false},"ret":["SUCCESS::调用成功"],"v":"1.0"}
+  showBenefits.forEach(async (item) => {
+    await requestData("mtop.latour2.strategy.issue", {
+      data: {
+        strategyCode: "89b5b5abab53476283b813175cde66a9",
+        selectedBenefitCode: item.code,
+        channel: "lafite_HZGWQ",
+        asac: "2A20612ABVW2I686NUDVSP",
+        ua:
+          "124#oUWIy07WxG0xA9Fj1xyCteKVVpRFx4SskGpMsoiJW3tTEF49ilorncB9UvaXGzc2V5PHmNQ5EwtGdYg3ylcT5OLlDnUvzQgEtZvJMC0xzND3ywsIyRmC3WkXuHQRR9iuETvelSGUPiFsaFtMslC5RBKfmyhwB9UOYa/kJNTkDfSX/gl/30toWEjO5vctWQmgOxH9InYLlTYIm4WZIqXp6Tz46WEotFY2g7OHJnYplmi19jrUJ8Lpg91d1ZIZbUang7OBInYLlwYnmfWeIqsXgTzo1nIelUX2g7vtIn/plw/nm4+ZIDLbgTGc7ZW9yq/2DbOBIZzjxqjlN3CzIqXLg5/XAzSD3jeN6PdPrQ8yS5Nof45xQfaBn/g+9XJTSQqpN5rEp5a/gSvLo5220BDIbe4wnIjSnw60NGF8AUL7WiZb7IP1edTsROXHbaTY9PTBiQWhIizSJJ7fefg7f4OO9Ck9flfSY81o1GdeAiPnXbVb3zm7MVEcpAIROJR2PzBm+MC+vELX1PKbdckeBHWHjl3E4okFbOYRf0ftUE22RMVAyQWF7WfMqizIwN/ozt76u1RceDzkReFEjMbB5k0TZkH6CCzOp29at9Qp/2VWfCVpLJQKNhMV5kKWZJuKewgHAlleBIg1rg5neR20ew+c3hZoi1EAkqovlRCTlm4ymCiZ4EUetBQJsGniI8WPGgbCAC4hLobTHLmtdrpqOdexnOBYj+Fa2/jfaNrz5PZsbk+nF/KSqmqAcI6JXd4QjfdRV+nNDhnbvNrrXNcmouA9757bOoyLplblNBhexoBKisWHUx7zvdjRakq8Ibo2PVD2BM/6yEzgYGfiBg5QBPdGaCHC8qcilb2q71GLW+PvlwbbddRrTjyIqdphaXGHEGScqoXwMN9HokxSmwsh5+vN5PJZXYze7kdTTseToyDukc/0QqCxBPUCEC+df3K1vtnfnAQQ/rr6VjsNhUewMD/Ptt1Xch/tLGH4WH5j034c6pq+aU50CXum6X4iz7FaTS1iuEm7DfgF/pNg8igCQI7uHVImQb7NVzzZFvoX+mFwUdy4BU3JpeKKDQlzq+5Fzd0E8Az0bRYrB+ZaPZ1fXUEqGN4ZYhVkFPMt4TSxeDFSirrd2CLHkr2eHZNFqI0+m2AD0D6y/0mS4fF76N6/G5d/Ic91YjpcXonPAUiYjwwOKhPwjO3ZbK+v643fvFXiLR8XPCLQFiyOU1l6sqUP4gA3lX/CsHiDPUZXLr8popa/4X3j+AnFTyukZSdVx2YZ",
+      },
+      version: "1.0",
+    });
+  });
 }

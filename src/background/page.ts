@@ -269,11 +269,16 @@ export async function excuteRequestAction<T = any>(
   }
 ) {
   var page = await ChromePage.create();
+  var getted = false;
   return new Promise<T>((resolve) => {
     var listener = async (
       details: chrome.webRequest.WebResponseCacheDetails
     ) => {
       if (test(details.url)) {
+        if (getted) {
+          return;
+        }
+        getted = true;
         page.off("webRequest.onCompleted", listener);
         await delay(800);
         let data = page.executeScript(code);

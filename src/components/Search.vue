@@ -56,6 +56,11 @@
             <el-input v-model="form_data.end_price" />
           </el-form-item>
         </el-col>
+        <el-col :span="12">
+          <el-form-item label="额外参数">
+            <el-input v-model="extra_params" type="textarea" v-storage="getStorager()" />
+          </el-form-item>
+        </el-col>
       </el-form-item>
       <el-form-item>
         <el-button @click="search">获取</el-button>
@@ -63,7 +68,12 @@
         <el-button v-if="form_data.platform==='jingdong'" @click="doubleCoudan">0撸</el-button>
       </el-form-item>
     </el-form>
-    <el-table ref="tb" max-height="400" :data="filtered_table_data" @selection-change="onSelectionChange">
+    <el-table
+      ref="tb"
+      max-height="400"
+      :data="filtered_table_data"
+      @selection-change="onSelectionChange"
+    >
       <el-table-column type="selection" width="55"></el-table-column>
       <el-table-column label="商品名称">
         <template slot-scope="{row}">
@@ -219,8 +229,30 @@ export default class Search extends Vue {
     //   await coudan({ data: ids }, "jingdong");
     // }
   }
+  getStorager() {
+    return {
+      name: "search_extra_params",
+      value: this.extra_params,
+      setValue: (v: string) => {
+        this.extra_params = v;
+      }
+    };
+  }
+  extra_params = "g_couponGroupId=12786776025";
   async refresh() {
-    var ret = await goodsList(Object.assign({}, this.params, this.form_data));
+    var extra_params = this.extra_params
+      .trim()
+      .split(/\r?\n/)
+      .map(item => item.trim())
+      .filter(Boolean)
+      .reduce((state, item) => {
+        var [key, value] = item.split("=");
+        state[key] = value;
+        return state;
+      }, {});
+    var ret = await goodsList(
+      Object.assign({}, this.params, extra_params, this.form_data)
+    );
     this.tableData = ret.items;
     this.more = ret.more;
   }
@@ -269,7 +301,7 @@ export default class Search extends Vue {
   }
 
   get filtered_table_data() {
-    if (!this.only_double) {
+    if (!this.only_double || this.form_data.platform === "taobao") {
       return this.tableData;
     }
     return this.tableData

@@ -175,9 +175,8 @@ function getPlatform(text: string) {
   }
 })
 export default class Buy extends Vue {
-  text = `0.1
-苹果手机壳
-(vvcpYAuV4dU)`;
+  text = `账号体检中心
+￥meVo1ve5Vi9￥`;
   datetime = "";
   num = 1;
   platform: "auto" | Platform = "auto";
