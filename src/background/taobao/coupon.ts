@@ -605,7 +605,7 @@ export async function getHongbao(url: string) {
   });
   console.log(data);
   if (+data.chance.chanceLeft > 0) {
-    // return getHongbao(url);
+    return getHongbao(url);
   }
   console.log(data.drawRetDesc);
 }

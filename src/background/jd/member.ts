@@ -7,7 +7,7 @@ export async function isLoginMobile() {
   var { retcode } = await request.jsonp(
     `https://wq.jd.com/user_new/info/GetJDUserInfoUnion?orgFlag=JD_PinGou_New&callSource=mainorder&channel=4&isHomewhite=0&sceneval=2&_=${Date.now()}&sceneval=2&g_login_type=1&callback=GetJDUserInfoUnion&g_ty=ls`,
     {
-      referer: "https://home.m.jd.com/myJd/newhome.action"
+      referer: "https://home.m.jd.com/myJd/newhome.action",
     }
   );
   return retcode === 0;
@@ -43,17 +43,17 @@ export async function loginMobile() {
 }
 
 export async function isLoginPc() {
-  return !(await isRedirectedUrl("https://home.jd.com/"));
+  return !(await isRedirectedUrl("https://order.jd.com/center/list.action"));
 }
 
 export async function loginPc() {
   var page = await newPage();
-  await page.goto("https://passport.jd.com/uc/login");
+  await page.goto("https://order.jd.com/center/list.action");
   if (!accounts.jingdong.password) {
     return;
   }
   await delay(1000);
-  await page.evaluate(account => {
+  await page.evaluate((account) => {
     var sw = document.querySelector<HTMLLinkElement>(".login-tab-r a")!;
     if (!sw.classList.contains("active")) {
       sw.click();
@@ -73,7 +73,7 @@ export async function loginPc() {
 
 var mobile_logined = false;
 export function checkStatusMobile() {
-  isLoginMobile().then(b => {
+  isLoginMobile().then((b) => {
     console.log("m", b);
     if (!b) {
       loginMobile();
@@ -82,7 +82,7 @@ export function checkStatusMobile() {
 }
 var pc_logined = false;
 export function checkStatusPc() {
-  isLoginPc().then(b => {
+  isLoginPc().then((b) => {
     console.log("p", b);
     if (!b) {
       loginPc();
@@ -100,22 +100,22 @@ export async function getMyCoupons() {
     "https://wq.jd.com/activeapi/queryjdcouponlistwithfinance?state=3&wxadd=1&_=1566400385806&sceneval=2&g_login_type=1&callback=queryjdcouponcb3&g_ty=ls",
     {
       referer:
-        "https://wqs.jd.com/my/coupon/index.shtml?ptag=7155.1.18&sceneval=2"
+        "https://wqs.jd.com/my/coupon/index.shtml?ptag=7155.1.18&sceneval=2",
     }
   );
   var text2 = /\(([\s\S]*)\);/.exec(text)![1];
   var {
-    coupon: { useable }
+    coupon: { useable },
   } = JSON.parse(text2);
-  return useable.map(item =>
+  return useable.map((item) =>
     Object.assign(
       {
         title: item.couponTitle,
         params: {
           couponbatch: item.batchid,
           ptag: "37070.3.11",
-          coupon_shopid: item.shopId
-        }
+          coupon_shopid: item.shopId,
+        },
       },
       item
     )
