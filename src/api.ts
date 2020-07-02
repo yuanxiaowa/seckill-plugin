@@ -8,9 +8,38 @@ import { Notification } from "element-ui";
 import { super_user } from "./config";
 export * from "./api_common";
 
+var taobao: any = {};
 if (process.env.NODE_ENV === "production") {
   // @ts-ignore
-  var taobao: any = chrome.extension.getBackgroundPage()!.taobao;
+  taobao = chrome.extension.getBackgroundPage()!.taobao;
+} else if (window.parent !== window) {
+  const mp: Record<string, Function> = {};
+  window.addEventListener("message", (e) => {
+    if (!e.data || !e.data.id) {
+      return;
+    }
+    var { id, data } = e.data;
+    mp[id](data);
+    delete mp[id];
+  });
+  taobao = new Proxy(taobao, {
+    get(target, name) {
+      return (...args) => {
+        var id = Math.random().toString();
+        window.parent.postMessage(
+          JSON.stringify({
+            id,
+            name,
+            args,
+          }),
+          "chrome-extension://gbifmajjnoldpbblbhdkigdfkajbekjg"
+        );
+        return new Promise((resolve) => {
+          mp[id] = resolve;
+        });
+      };
+    },
+  });
 }
 
 function handleError(e: Error) {
@@ -71,7 +100,7 @@ export function qiangquan(
       Object.assign(
         {
           t,
-          platform
+          platform,
         },
         data
       )

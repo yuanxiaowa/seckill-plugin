@@ -13,8 +13,17 @@
           <el-radio label="jingdong">京东</el-radio>
         </el-radio-group>
       </el-form-item>
-      <el-form-item label="关键字">
-        <el-input v-model="form_data.keyword"></el-input>
+      <el-form-item>
+        <el-col :span="12">
+          <el-form-item label="关键字">
+            <el-input v-model="form_data.keyword"></el-input>
+          </el-form-item>
+        </el-col>
+        <el-col :span="12" v-if="form_data.platform==='taobao'">
+          <el-form-item>
+            <el-checkbox v-model="is_juhuasuan">聚划算</el-checkbox>
+          </el-form-item>
+        </el-col>
       </el-form-item>
       <el-form-item>
         <el-col :span="12">
@@ -66,6 +75,14 @@
         <el-button @click="search">获取</el-button>
         <el-button @click="showCouponDialog">优惠券搜索</el-button>
         <el-button v-if="form_data.platform==='jingdong'" @click="doubleCoudan">0撸</el-button>
+        <el-row>
+          <el-col :span="12">
+            <el-input v-model="filter_kw"></el-input>
+          </el-col>
+          <el-col :span="12">
+            <el-input v-model="filter_not_kw"></el-input>
+          </el-col>
+        </el-row>
       </el-form-item>
     </el-form>
     <el-table
@@ -82,7 +99,14 @@
         </template>
       </el-table-column>
       <el-table-column label="价格">
-        <template slot-scope="{row}">￥{{row.price}}</template>
+        <template slot-scope="{row}">
+          <template v-if="is_juhuasuan&&row.mjContent">
+            <b style="color:red">￥{{row.mjContent.promInfos[0].discount/1000*row.price}}</b>
+            /
+            <span style="color:#aaa">前{{row.mjContent.quantityLimit}}件</span>
+          </template>
+          ￥{{row.price}}
+        </template>
       </el-table-column>
       <el-table-column v-if="only_double" label="凑199数量">
         <template slot-scope="{row}">
@@ -98,7 +122,8 @@
       </el-table-column>
     </el-table>
     <div>
-      <el-button :disabled="form_data.page<=1" @click="go(-1)">上一页</el-button>
+      <el-checkbox>数据附加</el-checkbox>
+      <el-button v-if="!is_attach" :disabled="form_data.page<=1" @click="go(-1)">上一页</el-button>
       <el-button v-if="more" @click="go(1)">下一页</el-button>
     </div>
     <el-dialog :visible.sync="show_coupon">
@@ -127,12 +152,16 @@ export default class Search extends Vue {
   url = "";
   coupons: any[] = [];
   show_coupon = false;
-  only_double = true;
+  only_double = false;
+  is_juhuasuan = true;
+  is_attach = true;
 
   params: any = {};
+  filter_kw = "";
+  filter_not_kw = "裤|衣|耳环|T恤|百草味|鞋|外套|真皮|包包|大嘴猴";
 
   form_data = {
-    platform: "jingdong",
+    platform: "taobao",
     keyword: "",
     start_price: 0,
     end_price: 9999,
@@ -174,7 +203,7 @@ export default class Search extends Vue {
   }
   search() {
     this.form_data.page = 1;
-    this.refresh();
+    this.refresh(true);
   }
   async doubleCoudan() {
     // var f = async (quantity: number) => {
@@ -239,7 +268,7 @@ export default class Search extends Vue {
     };
   }
   extra_params = "g_couponGroupId=12786776025";
-  async refresh() {
+  async refresh(force_update = false) {
     var extra_params = this.extra_params
       .trim()
       .split(/\r?\n/)
@@ -251,9 +280,21 @@ export default class Search extends Vue {
         return state;
       }, {});
     var ret = await goodsList(
-      Object.assign({}, this.params, extra_params, this.form_data)
+      Object.assign(
+        {
+          is_juhuasuan: this.is_juhuasuan,
+          force_update
+        },
+        this.params,
+        extra_params,
+        this.form_data
+      )
     );
-    this.tableData = ret.items;
+    if (!force_update && this.is_attach) {
+      this.tableData = this.tableData.concat(ret.items);
+    } else {
+      this.tableData = ret.items;
+    }
     this.more = ret.more;
   }
 
@@ -301,18 +342,53 @@ export default class Search extends Vue {
   }
 
   get filtered_table_data() {
+    const filter_kws = this.filter_kw
+      .trim()
+      .split(/\s+|\|/)
+      .filter(Boolean)
+      .map(item => item.toLowerCase());
+    const filter_not_kws = this.filter_not_kw
+      .trim()
+      .split(/\s+|\|/)
+      .filter(Boolean)
+      .map(item => item.toLowerCase());
+    let datas = this.tableData;
+
     if (!this.only_double || this.form_data.platform === "taobao") {
-      return this.tableData;
+      if (filter_kws.length > 0) {
+        datas = datas.filter(item =>
+          filter_kws.some(kw => item.title.toLowerCase().includes(kw))
+        );
+      }
+      if (filter_not_kws.length > 0) {
+        datas = datas.filter(
+          item =>
+            !filter_not_kws.some(kw => item.title.toLowerCase().includes(kw))
+        );
+      }
+      return datas;
     }
-    return this.tableData
-      .filter(
-        ({ pfdt }) => pfdt.t === "2" && pfdt.m === "199" && pfdt.j === "100"
-      )
-      .map(item => {
-        item.num = Math.ceil(199 / item.price);
-        item.coudan_price = item.num * item.price;
-        return item;
-      });
+    datas = datas.filter(
+      ({ pfdt, title }) =>
+        pfdt.t === "2" && pfdt.m === "199" && pfdt.j === "100"
+    );
+
+    if (filter_kws.length > 0) {
+      datas = datas.filter(item =>
+        filter_kws.some(kw => item.title.toLowerCase().includes(kw))
+      );
+    }
+    if (filter_not_kws.length > 0) {
+      datas = datas.filter(
+        item =>
+          !filter_not_kws.some(kw => item.title.toLowerCase().includes(kw))
+      );
+    }
+    return datas.map(item => {
+      item.num = Math.ceil(199 / item.price);
+      item.coudan_price = item.num * item.price;
+      return item;
+    });
   }
 }
 </script>

@@ -1,6 +1,7 @@
 import { requestData } from "./tools";
 import { ArgSearch } from "./structs";
 import { request } from "../common/request";
+import { getJuhuasuanList } from "./juhuasuan";
 
 export const getItemId = (url: string) => /id=(\d+)/.exec(url)![1];
 export function getGoodsUrl(id) {
@@ -15,7 +16,7 @@ export async function getGoodsDetail(url: string) {
    */
   var { apiStack, item } = await requestData("mtop.taobao.detail.getdetail", {
     data: { itemNumId: itemId },
-    version: "6.0"
+    version: "6.0",
   });
   let { skuBase, skuCore } = JSON.parse(apiStack[0].value);
   let sku_ret;
@@ -26,7 +27,7 @@ export async function getGoodsDetail(url: string) {
     let sortOrders = props
       .map(({ values }, index) => ({
         sortOrder: +values[0].sortOrder,
-        index
+        index,
       }))
       .sort((a, b) => a.sortOrder - b.sortOrder)
       .map(({ index }) => index);
@@ -35,17 +36,17 @@ export async function getGoodsDetail(url: string) {
         pid: props[i].pid,
         name: props[i].name,
         children: props[i].values
-          .map(item => {
+          .map((item) => {
             var data: any = {
               value: item.vid,
-              label: item.name
+              label: item.name,
             };
             vids[i] = props[i].pid + ":" + item.vid;
             if (i < props.length - 1) {
               Object.assign(data, f(i + 1, vids));
             } else {
-              let vid_str = sortOrders.map(i => vids[i]).join(";");
-              let sku = skus.find(item => item.propPath === vid_str);
+              let vid_str = sortOrders.map((i) => vids[i]).join(";");
+              let sku = skus.find((item) => item.propPath === vid_str);
               if (!sku) {
                 return;
               }
@@ -57,13 +58,13 @@ export async function getGoodsDetail(url: string) {
               data.children = [
                 {
                   label: `￥${price.priceText}, ${quantity}`,
-                  value: skuId
-                }
+                  value: skuId,
+                },
               ];
             }
             return data;
           })
-          .filter(Boolean)
+          .filter(Boolean),
       };
       return parent;
     }
@@ -82,7 +83,7 @@ export async function getGoodsInfo(url: string, skuId?: string) {
   var itemId = getItemId(url);
   var data = await requestData("mtop.taobao.detail.getdetail", {
     data: { itemNumId: itemId },
-    version: "6.0"
+    version: "6.0",
   });
   return transformMobileGoodsInfo(data, skuId);
 }
@@ -168,7 +169,7 @@ function transformMobileGoodsInfo({ apiStack, item }, skuId?: string) {
           title: p.title,
           quota,
           discount,
-          amount
+          amount,
         };
       }
     );
@@ -183,7 +184,7 @@ function transformMobileGoodsInfo({ apiStack, item }, skuId?: string) {
     skuId,
     delivery,
     price: +price.price.priceText,
-    cuxiao
+    cuxiao,
   };
 }
 
@@ -193,6 +194,9 @@ function transformMobileGoodsInfo({ apiStack, item }, skuId?: string) {
  */
 export async function getGoodsList(data: ArgSearch) {
   var page = data.page;
+  if (data.is_juhuasuan) {
+    return getJuhuasuanList({ page, force_update: data.force_update });
+  }
   var q = data.keyword;
   delete data.page;
   delete data.keyword;
@@ -204,7 +208,7 @@ export async function getGoodsList(data: ArgSearch) {
       q,
       page_no: page,
       spm: "a220m.6910245.a2227oh.d100",
-      from: "mallfp..m_1_searchbutton"
+      from: "mallfp..m_1_searchbutton",
     },
     data
   );
@@ -213,17 +217,17 @@ export async function getGoodsList(data: ArgSearch) {
     {
       // page_size=20&sort=s&page_no=1&spm=a3113.8229484.coupon-list.7.BmOFw0&g_couponFrom=mycoupon_pc&g_m=couponuse&g_couponId=2995448186&g_couponGroupId=121250001&callback=jsonp_90716703
       qs,
-      referer: "https://list.tmall.com/coudan/search_product.htm"
+      referer: "https://list.tmall.com/coudan/search_product.htm",
     }
   );
   return {
     total: total_page,
     page,
-    items: item.map(item =>
+    items: item.map((item) =>
       Object.assign(item, {
         url: "https:" + item.url,
-        img: "https:" + item.img
+        img: "https:" + item.img,
       })
-    )
+    ),
   };
 }

@@ -111,7 +111,7 @@ export function resolveText(text: string, datetime?: string | Date) {
       action = "coudan";
       forcePrice = true;
     } else if (
-      /(?<!\d|第..)0(?=元|[!\d])|0撸|零撸|免单|不是(0|零)不要买|实付0|直接(够)买就是0|到手0/.test(
+      /(?<!\d|第..)0(?=元|[!\d])|0撸|零撸|免单(?!群)|不是(0|零)不要买|实付0|直接(够)买就是0|到手0/.test(
         text
       )
     ) {

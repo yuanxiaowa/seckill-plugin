@@ -48,6 +48,7 @@ export type ArgSearch = {
   keyword: string;
   start_price?: string;
   coupon_tag_id?: string;
+  juhuasuan?: boolean;
 } & Record<string, any>;
 
 export type CoudanArg = {
