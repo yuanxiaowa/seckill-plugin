@@ -104,6 +104,7 @@
             <b style="color:red">￥{{row.mjContent.promInfos[0].discount/1000*row.price}}</b>
             /
             <span style="color:#aaa">前{{row.mjContent.quantityLimit}}件</span>
+            <span>[{{row.mjContent.startTime}}]</span>
           </template>
           ￥{{row.price}}
         </template>

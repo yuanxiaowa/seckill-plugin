@@ -1,4 +1,5 @@
 import { requestData } from "./tools";
+import moment from "moment";
 
 let prevTime = 0;
 let prevData: any;
@@ -60,16 +61,35 @@ export async function getJuhuasuanList({ page = 1, force_update }) {
       version: "1.0",
     }
   );
+  let now = moment(moment().format(moment.HTML5_FMT.DATE));
   return {
     more: data.length > 0,
     page,
-    items: data.map((item) => ({
-      ...item,
-      mjContent: item.mjContent && JSON.parse(item.mjContent),
-      url: "https:" + item.itemUrl,
-      img: "https:" + item.picUrl,
-      price: item.actPrice,
-      title: item.shortName,
-    })),
+    items: data.map((item) => {
+      var mjContent = item.mjContent;
+      if (mjContent) {
+        mjContent = JSON.parse(item.mjContent);
+        let startTime = moment(mjContent.startTime);
+        let d = moment(startTime.format(moment.HTML5_FMT.DATE)).diff(
+          now,
+          "day"
+        );
+        let str =
+          {
+            0: "今天",
+            1: "明天",
+            2: "后天",
+          }[d] || "dd/MM";
+        mjContent.startTime = startTime.format("HH:mm/" + str);
+      }
+      return {
+        ...item,
+        mjContent,
+        url: "https:" + item.itemUrl,
+        img: "https:" + item.picUrl,
+        price: item.actPrice,
+        title: item.shortName,
+      };
+    }),
   };
 }
