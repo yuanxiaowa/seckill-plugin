@@ -1,5 +1,6 @@
 import { requestData } from "./tools";
 import moment from "moment";
+import { formatUrl } from "../common/tool";
 
 let prevTime = 0;
 let prevData: any;
@@ -80,14 +81,14 @@ export async function getJuhuasuanList({ page = 1, force_update }) {
             1: "明天",
             2: "后天",
           }[d] || "dd/MM";
-        mjContent.startTime = startTime.format("HH:mm/" + str);
+        mjContent.startTime_str = startTime.format("HH:mm/" + str);
       }
       return {
         ...item,
         mjContent,
-        url: "https:" + item.itemUrl,
-        img: "https:" + item.picUrl,
-        price: item.actPrice,
+        url: formatUrl(item.itemUrl),
+        img: formatUrl(item.picUrl),
+        price: +item.actPrice,
         title: item.shortName,
       };
     }),

@@ -4,6 +4,8 @@ import $ from "jquery";
 import { fromPairs } from "ramda";
 import { newPage } from "../page";
 import { accounts } from "../common/setting";
+import moment from "moment";
+import { formatUrl } from "../common/tool";
 
 export async function isLogin() {
   return !(await isRedirectedUrl(
@@ -69,41 +71,123 @@ export async function getAddresses() {
   return JSON.parse(returnValue);
 }
 
-export async function getMyCoupons({ page }) {
+export async function getMyCoupons({ page, type }) {
+  var ctype =
+    {
+      0: "0",
+      1: "1",
+    }[type] || "44,61,65,66,247";
   var html = await request.get(
-    `https://taoquan.taobao.com/coupon/list_my_coupon.htm?sname=&ctype=44,61,65,66,247&sortby=&order=desc&page=${page}`
+    `https://taoquan.taobao.com/coupon/list_my_coupon.htm?${page}`,
+    {
+      qs: {
+        sname: "",
+        ctype,
+        sortby: "",
+        order: "desc",
+        page,
+      },
+    }
   );
-  var $root = $(`<div>${/<body[^>]*>([\s\S]*)<\/body>/.exec(html)![1]}</div>`);
-  var $eles = $root.find("#coupon-list .tmall-coupon-box");
-  var items = $eles
-    .map((_, ele) => {
-      var $ele = $(ele);
-      if (
-        $ele.hasClass("tmall-coupon-used") ||
-        $ele.hasClass("tmall-coupon-out")
-      ) {
-        return;
-      }
-      var url = $ele.find(".btn").attr("href")!;
-      var price_text = $ele.find(".key-detail").text();
-      var price_arr = /([\.\d]+)[^\.\d]*([\.\d]+)/g.exec(price_text)!;
-      var quota = Number(price_arr[1]);
-      var discount = Number(price_arr[2]);
-      var s_params = new URL(url);
-      var title = $ele.find(".sub-title").text();
-      var params = fromPairs([...s_params.searchParams.entries()]);
-      return {
-        title,
-        url,
-        quota,
-        discount,
-        params,
-      };
-    })
-    .get();
+  var items: any[] = [];
+  var $root = $(
+    `<div>${/<body[^>]*>([\s\S]*)<\/body>/.exec(html)![1]}</div>`
+  ).find("#coupon-list");
+  if (type == "0" || type == "1") {
+    let $eles = $root.find(".coupon-box");
+    let type_name = `[${type == "0" ? "店铺券" : "商品券"}]`;
+    items = $eles
+      .map((index, ele) => {
+        var $ele = $(ele);
+        var $shop = $ele.find(".shop-name");
+        const storeName = $shop.text().trim();
+        const storeUrl = $shop.attr("href")!;
+        const valideTime_arr = $ele
+          .find(".valid-date")
+          .text()
+          .trim()
+          .split(/\s+至\s+/);
+        var startTime = moment(valideTime_arr[0], "yyyy.MM.dd").format(
+          moment.HTML5_FMT.DATETIME_LOCAL
+        );
+        var endTime = moment(valideTime_arr[1], "yyyy.MM.dd")
+          .add("day", 1)
+          .format(moment.HTML5_FMT.DATETIME_LOCAL);
+        var url =
+          type == "0" ? storeUrl : $ele.find(".specified").attr("href")!;
+        var id = $ele.find(".J_Delete").attr("cid");
+        return {
+          id,
+          title: storeName + type_name,
+          url: formatUrl(url),
+          startTime,
+          endTime,
+          type: type_name,
+          quota: +$ele
+            .find(".use-cond")
+            .text()
+            .substring(1),
+          discount: +$ele.find(".amount")[0].lastChild!.textContent!.trim(),
+          store: {
+            name: storeName,
+            url: formatUrl(storeUrl),
+          },
+          canDelete: true,
+          params: {
+            cid: id,
+            ctype: type,
+          },
+        };
+      })
+      .get();
+  } else {
+    var $eles = $root.find(".tmall-coupon-box");
+    items = $eles
+      .map((_, ele) => {
+        var $ele = $(ele);
+        if (
+          $ele.hasClass("tmall-coupon-used") ||
+          $ele.hasClass("tmall-coupon-out") ||
+          $ele.hasClass("tmall-coupon-deleted")
+        ) {
+          return;
+        }
+        var url = $ele.find(".btn").attr("href")!;
+        var price_text = $ele.find(".key-detail").text();
+        var price_arr = /([\.\d]+)[^\.\d]*([\.\d]+)/g.exec(price_text)!;
+        var quota = Number(price_arr[1]);
+        var discount = Number(price_arr[2]);
+        var title = $ele.find(".sub-title").text();
+        var s_params = new URL(url);
+        var params = fromPairs([...s_params.searchParams.entries()]);
+        return {
+          title,
+          url,
+          quota,
+          discount,
+          params,
+          canDelete: false,
+          type: "天猫购物券",
+        };
+      })
+      .get();
+  }
+  console.log(items);
   return {
     page,
     items,
     more: items.length > 0,
   };
+}
+
+export async function deleteCoupon({ cid, ctype }) {
+  await request.get("https://taoquan.taobao.com/coupon/resultMessage.htm", {
+    qs: {
+      cid,
+      ctype,
+      action: "coupon/couponUnifyAction",
+      event_submit_doDeleteBuyerCoupon: "true",
+      _tb_token_: "e1b075ed3eee1",
+    },
+  });
 }

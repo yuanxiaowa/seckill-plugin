@@ -73,78 +73,45 @@
       </el-form-item>
       <el-form-item>
         <el-button @click="search">获取</el-button>
-        <el-button @click="showCouponDialog">优惠券搜索</el-button>
+
+        <Coupons :platform="form_data.platform" @select="chooseCoupon">
+          <el-button>优惠券搜索</el-button>
+        </Coupons>
         <el-button v-if="form_data.platform==='jingdong'" @click="doubleCoudan">0撸</el-button>
-        <el-row>
-          <el-col :span="12">
-            <el-input v-model="filter_kw"></el-input>
-          </el-col>
-          <el-col :span="12">
-            <el-input v-model="filter_not_kw"></el-input>
-          </el-col>
-        </el-row>
       </el-form-item>
     </el-form>
-    <el-table
+    <data-list-wrapper
       ref="tb"
-      max-height="400"
-      :data="filtered_table_data"
-      @selection-change="onSelectionChange"
+      :fetcher="fetcher"
+      :filters="{keys:['title']}"
+      :excludeFilters="{keys:['title'],default:defaultExcudeFilter}"
+      :extraFilter="filterDatas"
+      :columns="columns"
+      :max-height="500"
     >
-      <el-table-column type="selection" width="55"></el-table-column>
-      <el-table-column label="商品名称">
-        <template slot-scope="{row}">
-          <img :src="row.img" width="50" />
-          <a :href="row.url" target="_blank">{{row.title}}</a>
-        </template>
-      </el-table-column>
-      <el-table-column label="价格">
-        <template slot-scope="{row}">
-          <template v-if="is_juhuasuan&&row.mjContent">
-            <b style="color:red">￥{{row.mjContent.promInfos[0].discount/1000*row.price}}</b>
-            /
-            <span style="color:#aaa">前{{row.mjContent.quantityLimit}}件</span>
-            <span>[{{row.mjContent.startTime}}]</span>
-          </template>
-          ￥{{row.price}}
-        </template>
-      </el-table-column>
-      <el-table-column v-if="only_double" label="凑199数量">
-        <template slot-scope="{row}">
-          数量：{{coudan_price.num}}
-          <span>价格：{{row.coudan_price}}</span>
-          <el-button size="small" @click="toCoudan(row)">凑单</el-button>
-        </template>
-      </el-table-column>
-      <el-table-column width="120">
-        <template slot-scope="{row}">
-          <el-button @click="addCart(row)">加入购物车</el-button>
-        </template>
-      </el-table-column>
-    </el-table>
-    <div>
-      <el-checkbox>数据附加</el-checkbox>
-      <el-button v-if="!is_attach" :disabled="form_data.page<=1" @click="go(-1)">上一页</el-button>
-      <el-button v-if="more" @click="go(1)">下一页</el-button>
-    </div>
-    <el-dialog :visible.sync="show_coupon">
-      <div v-for="item of coupons" :key="item.id">
-        <el-button @click="chooseCoupon(item)" size="small">选择</el-button>
-        <span style="color:red;margin:1em">{{item.quota}}-{{item.discount}}</span>
-        <span>{{item.title}}</span>
-      </div>
-    </el-dialog>
+      <template slot-scope="{row}" slot="actions">
+        <el-button @click="addCart(row)" size="small">加入购物车</el-button>
+        <el-button @click="showQrcode(row)" size="small">查看二维码</el-button>
+      </template>
+    </data-list-wrapper>
   </div>
 </template>
 
-<script lang="ts">
+<script lang="tsx">
 import { Component, Prop, Vue } from "vue-property-decorator";
-import { goodsList, cartAdd, coudan, getMyCoupons } from "../api";
+import { goodsList, cartAdd, coudan } from "../api";
 import bus from "../bus";
 import { fromPairs } from "ramda";
 import storageMixin from "@/mixins/storage";
+import Coupons from "./Coupons.vue";
+import DataListWrapper from "./DataListWrapper.vue";
+import QRCode from "qrcode";
 
 @Component({
+  components: {
+    Coupons,
+    DataListWrapper
+  },
   mixins: [
     storageMixin({
       key: "extra_params",
@@ -155,27 +122,19 @@ import storageMixin from "@/mixins/storage";
 })
 export default class Search extends Vue {
   @Prop() value!: any[];
-  tableData: any[] = [];
-  multipleSelection: any[] = [];
-  more = false;
-  pending = false;
   url = "";
   coupons: any[] = [];
-  show_coupon = false;
   only_double = false;
   is_juhuasuan = true;
-  is_attach = true;
 
   params: any = {};
-  filter_kw = "";
-  filter_not_kw = "裤|衣|耳环|T恤|百草味|鞋|外套|真皮|包包|大嘴猴";
+  defaultExcudeFilter = "裤|衣|耳环|T恤|百草味|鞋|外套|真皮|包包|大嘴猴";
 
   form_data = {
     platform: "taobao",
     keyword: "",
     start_price: 0,
-    end_price: 9999,
-    page: 1
+    end_price: 9999
     // g_couponId: /* "117700001" */ "3485480227",
     // coupon_shopid: 0,
     // g_couponFrom: "mycoupon_pc",
@@ -184,6 +143,88 @@ export default class Search extends Vue {
     // couponbatch: "",
     // coupon_id: ""
   };
+
+  columns = [
+    {
+      label: "商品名称",
+      prop: "title",
+      render: this.renderTitle
+    },
+    {
+      label: "价格",
+      prop: "price",
+      width: 100,
+      formatter(row) {
+        return `￥${row.price}`;
+      }
+    },
+    {
+      label: "聚划算抢名额",
+      align: "center",
+      show: this.isJuhuasuan,
+      children: [
+        {
+          label: "价格",
+          prop: "price",
+          width: 100,
+          color: "red",
+          formatter(row) {
+            return `￥${(row.mjContent.promInfos[0].discount / 1000) *
+              row.price}`;
+          }
+        },
+        {
+          label: "名额",
+          width: 100,
+          prop: "mjContent.quantityLimit",
+          color: "#aaa"
+        },
+        {
+          label: "时间",
+          width: 150,
+          prop: "mjContent.startTime_str",
+          filters: [
+            { text: "今天", value: "今天" },
+            { text: "明天", value: "明天" },
+            { text: "后天", value: "后天" }
+          ],
+          "filter-method"(value, row) {
+            return row.mjContent.startTime_str.includes(value);
+          }
+        }
+      ]
+    }
+  ];
+
+  showQrcode(row) {
+    QRCode.toDataURL(row.url).then(url => {
+      this.$alert(
+        // @ts-ignore
+        <img src={url} />,
+        "二维码",
+        {
+          center: true,
+          closeOnClickModal: true,
+          closeOnPressEscape: true
+        }
+      );
+    });
+  }
+
+  isJuhuasuan() {
+    return this.is_juhuasuan;
+  }
+
+  renderTitle({ row }) {
+    return (
+      <span>
+        <img src={row.img} width="50" />
+        <a href={row.url} target="_blank">
+          {row.title}
+        </a>
+      </span>
+    );
+  }
   onBlur() {
     if (!this.url) {
       return;
@@ -210,10 +251,6 @@ export default class Search extends Vue {
       },
       this.form_data.platform
     );
-  }
-  search() {
-    this.form_data.page = 1;
-    this.refresh(true);
   }
   async doubleCoudan() {
     // var f = async (quantity: number) => {
@@ -269,7 +306,12 @@ export default class Search extends Vue {
     // }
   }
   extra_params = "";
-  async refresh(force_update = false) {
+
+  search() {
+    (this.$refs.tb as DataListWrapper).reload();
+  }
+
+  fetcher({ page }, force_update) {
     var extra_params = this.extra_params
       .trim()
       .split(/\r?\n/)
@@ -280,7 +322,8 @@ export default class Search extends Vue {
         state[key] = value;
         return state;
       }, {});
-    var ret = await goodsList(
+    console.log(force_update);
+    return goodsList(
       Object.assign(
         {
           is_juhuasuan: this.is_juhuasuan,
@@ -291,46 +334,13 @@ export default class Search extends Vue {
         this.form_data
       )
     );
-    if (!force_update && this.is_attach) {
-      this.tableData = this.tableData.concat(ret.items);
-    } else {
-      this.tableData = ret.items;
-    }
-    this.more = ret.more;
   }
 
-  go(num: number) {
-    this.form_data.page += num;
-    this.refresh();
-  }
-
-  onSelectionChange(val: any) {
-    this.multipleSelection = val;
-  }
-
-  showCouponDialog() {
-    this.show_coupon = true;
-    this.getCoupons();
-  }
-
-  async getCoupons() {
-    var { items, page, more } = await getMyCoupons({
-      platform: this.form_data.platform
-    });
-    this.coupons = items.map(item =>
-      Object.assign(item, {
-        discount: Number(item.discount),
-        quota: Number(item.quota)
-      })
-    );
-  }
-
-  chooseCoupon(item) {
+  chooseCoupon({ params }) {
     // this.form_data.coupon_shopid = item.shopId;
     // this.form_data.coupon_id = item.couponid;
     // this.form_data.couponbatch = item.batchid;
-    this.params = Object.assign({}, item.params);
-    this.show_coupon = false;
+    this.params = params;
     this.search();
   }
 
@@ -342,49 +352,7 @@ export default class Search extends Vue {
     });
   }
 
-  get filtered_table_data() {
-    const filter_kws = this.filter_kw
-      .trim()
-      .split(/\s+|\|/)
-      .filter(Boolean)
-      .map(item => item.toLowerCase());
-    const filter_not_kws = this.filter_not_kw
-      .trim()
-      .split(/\s+|\|/)
-      .filter(Boolean)
-      .map(item => item.toLowerCase());
-    let datas = this.tableData;
-
-    if (!this.only_double || this.form_data.platform === "taobao") {
-      if (filter_kws.length > 0) {
-        datas = datas.filter(item =>
-          filter_kws.some(kw => item.title.toLowerCase().includes(kw))
-        );
-      }
-      if (filter_not_kws.length > 0) {
-        datas = datas.filter(
-          item =>
-            !filter_not_kws.some(kw => item.title.toLowerCase().includes(kw))
-        );
-      }
-      return datas;
-    }
-    datas = datas.filter(
-      ({ pfdt, title }) =>
-        pfdt.t === "2" && pfdt.m === "199" && pfdt.j === "100"
-    );
-
-    if (filter_kws.length > 0) {
-      datas = datas.filter(item =>
-        filter_kws.some(kw => item.title.toLowerCase().includes(kw))
-      );
-    }
-    if (filter_not_kws.length > 0) {
-      datas = datas.filter(
-        item =>
-          !filter_not_kws.some(kw => item.title.toLowerCase().includes(kw))
-      );
-    }
+  filterDatas(datas) {
     return datas.map(item => {
       item.num = Math.ceil(199 / item.price);
       item.coudan_price = item.num * item.price;

@@ -1,79 +1,75 @@
 <template>
   <div>
-    <el-button
-      @click="pullData"
-      size="small"
-    >拉取</el-button>
-    <el-button
-      @click="qiangquan(multipleSelection)"
-      :disabled="multipleSelection.length===0"
-      size="small"
-    >抢券</el-button>
+    <el-button @click="pullData" size="small">拉取</el-button>
     <el-checkbox v-model="is_new">即将开始的</el-checkbox>
-    <el-table
-      :data="filter_datas"
-      style="width: 100%"
-      max-height="500"
-      @selection-change="multipleSelection=$event"
+    <data-list-wrapper
+      ref="tb"
+      :fetcher="fetcher"
+      :extraFilter="extraFilter"
+      :filters="{keys:['title','discount']}"
+      :columns="columns"
     >
-      <el-table-column
-        type="selection"
-        width="55"
-      ></el-table-column>
-      <el-table-column
-        prop="title"
-        label="名称"
-      ></el-table-column>
-      <el-table-column
-        label="抵扣"
-        width="200"
-      >
-        <template slot-scope="{row}">
-          {{row.quota}}-{{row.discount}}
-        </template>
-      </el-table-column>
-      <el-table-column
-        label="时间"
-        width="180"
-        prop="tStr"
-      >
-
-      </el-table-column>
-      <el-table-column width="180">
-        <template slot-scope="{row}">
-          <el-button
-            size="small"
-            @click="qiangquan([row])"
-          >抢券</el-button>
-        </template>
-      </el-table-column>
-    </el-table>
+      <template slot-scope="{row}" slot="actions">
+        <el-button size="small" @click="qiangquan([row])">抢券</el-button>
+      </template>
+      <template slot-scope="{selections}" slot="selection">
+        <el-button @click="qiangquan(selections)" :disabled="selections.length===0" size="small">抢券</el-button>
+      </template>
+    </data-list-wrapper>
   </div>
 </template>
 
-<script lang="ts">
+<script lang="tsx">
 import { Component, Prop, Vue, Emit } from "vue-property-decorator";
 import { invoke } from "@/api";
+import DataListWrapper from "./DataListWrapper.vue";
 
 @Component({
-  components: {}
+  components: { DataListWrapper }
 })
 export default class CouponCenter extends Vue {
-  datas: any[] = [];
   is_new = true;
-  multipleSelection = [];
-  async pullData() {
-    this.datas = await invoke("getCouponCenterItems");
+
+  columns = [
+    {
+      prop: "title",
+      label: "名称"
+    },
+    {
+      prop: "discount",
+      label: "折扣",
+      render({ row }) {
+        return `${row.quota}-${row.discount}`;
+      }
+    },
+    {
+      prop: "tStr",
+      label: "时间"
+    }
+  ];
+
+  async fetcher({ page }) {
+    var items = await invoke("getCouponCenterItems");
+    return {
+      items,
+      page,
+      more: false
+    };
   }
+
+  pullData() {
+    (this.$refs.tb as DataListWrapper).reload();
+  }
+
   qiangquan(items: any[]) {
     items.forEach(item => invoke("getCouponCenterCoupon", item));
   }
-  get filter_datas() {
+  extraFilter(items) {
     if (!this.is_new) {
-      return this.datas;
+      return items;
     }
     var now = Date.now();
-    return this.datas.filter(item => item.t > now);
+    return items.filter(item => item.t > now);
   }
 }
 </script>

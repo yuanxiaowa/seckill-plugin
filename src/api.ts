@@ -189,6 +189,10 @@ export function getMyCoupons(params) {
   return taobao.getMyCoupons(params, params.platform).catch(handleError);
 }
 
+export function deleteCoupon(params) {
+  return taobao.deleteCoupon(params, params.platform).catch(handleError);
+}
+
 export function getPlusQuanpinList() {
   return taobao.getPlusQuanpinList().catch(handleError);
 }

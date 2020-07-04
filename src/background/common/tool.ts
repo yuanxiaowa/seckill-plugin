@@ -6,7 +6,7 @@ export function getJsonpData<T = any>(body: string): T {
 }
 
 export function delay(t = 1000) {
-  return new Promise<void>(resolve => setTimeout(resolve, t));
+  return new Promise<void>((resolve) => setTimeout(resolve, t));
 }
 
 export function daily(f: Function) {
@@ -41,7 +41,7 @@ export function mermorize(handler: () => any, delay = 1000) {
 }
 
 export async function excuteTasks(tasks) {
-  tasks.forEach(async task => {
+  tasks.forEach(async (task) => {
     if (task.nextTime) {
       let f = async () => {
         await task.doTask();
@@ -79,7 +79,7 @@ export async function excuteTasks(tasks) {
         period({
           handler,
           t: task.period,
-          title: task.title
+          title: task.title,
         });
       } else {
         daily(handler);
@@ -90,7 +90,7 @@ export async function excuteTasks(tasks) {
         period({
           handler,
           t: task.period,
-          title: task.title
+          title: task.title,
         });
       } else if (task.period) {
         daily(async function f() {
@@ -112,4 +112,11 @@ export async function excuteTasks(tasks) {
       }
     }
   });
+}
+
+export function formatUrl(url: string) {
+  if (!/^\w+:\/\//.test(url)) {
+    return "https:" + url;
+  }
+  return url;
 }

@@ -4,27 +4,28 @@ import * as R from "ramda";
 import {
   buyDirect as taobao_buyDirect,
   cartBuy as taobao_cartBuy,
-  coudan
+  coudan,
 } from "./taobao/order";
 import {
   getCartList as taobao_getCartList,
   addCart as taobao_add_cart,
-  updateCart
+  updateCart,
 } from "./taobao/cart";
 import { resolveUrl as taobao_resolve_url, getUserName } from "./taobao/tools";
 import {
   addCart as jd_add_cart,
-  getCartList as jd_getCartList
+  getCartList as jd_getCartList,
 } from "./jd/cart";
 import {
   getGoodsDetail as jd_getGoodsDetail,
-  getGoodsList as taobao_getGoodsList
+  getGoodsList as taobao_getGoodsList,
 } from "./taobao/goods";
 import {
   checkStatus as taobao_check_status,
   getAddresses,
   getMyCoupons as taobao_getMyCoupons,
-  logout
+  deleteCoupon as taobao_deleteCoupon,
+  logout,
 } from "./taobao/member";
 import { checkStatus as jd_check_status } from "./jd/member";
 import { handlers as taobao_coupons_handlers } from "./taobao/coupon";
@@ -36,13 +37,16 @@ import {
   get_config,
   get_accounts,
   accounts,
-  set_accounts
+  set_accounts,
 } from "./common/setting";
 import { sysTaobaoTime } from "./common/time";
 import { resolveUrl as jd_resolve_url } from "./jd/tools";
 import { handlers as jd_coupons_handlers } from "./jd/coupon";
 import { getGoodsList as jd_getGoodsList } from "./jd/goods";
-import { getMyCoupons as jd_getMyCoupons } from "./jd/member";
+import {
+  getMyCoupons as jd_getMyCoupons,
+  deleteCoupon as jd_deleteCoupon,
+} from "./jd/member";
 import { seckillList } from "./taobao/seckill";
 import { getBillionList, getBillion } from "./jd/billion";
 import { getPlusQuanpin, getPlusQuanpinList } from "./jd/plus";
@@ -51,7 +55,7 @@ import { buyDirect as jd_buyDirect, cartBuy as jd_cartBuy } from "./jd/order";
 
 import {
   getCouponCenterCoupon,
-  getCouponCenterItems
+  getCouponCenterItems,
 } from "./jd/coupon-center";
 import "./jd/task";
 import "./baidu";
@@ -59,7 +63,7 @@ import "./baidu";
 async function qiangquan({
   data,
   t,
-  platform
+  platform,
 }: {
   data: string;
   t?: string;
@@ -80,7 +84,7 @@ async function qiangquan({
               name: "抢券",
               time: t,
               platform,
-              comment: ""
+              comment: "",
             },
             time
           );
@@ -105,7 +109,7 @@ async function buy(args: any, t: string, platform: string) {
           name: "抢单",
           time: t,
           platform,
-          comment: args._comment
+          comment: args._comment,
         },
         time
       );
@@ -127,7 +131,7 @@ async function buy_from_cart(args: any, t: string, platform: string) {
           name: "抢单",
           time: t,
           platform: "taobao",
-          comment: args._comment
+          comment: args._comment,
         },
         time
       );
@@ -175,7 +179,7 @@ async function getTasks() {
   return R.map(
     (item: any) =>
       Object.assign(item, {
-        time: moment(item.time).format(moment.HTML5_FMT.TIME)
+        time: moment(item.time).format(moment.HTML5_FMT.TIME),
       }),
     R.sort(
       (a, b) => moment(a.time).valueOf() - moment(b.time).valueOf(),
@@ -214,7 +218,7 @@ const taobao = {
       return jd_getCartList();
     }
     return {
-      items: await taobao_getCartList()
+      items: await taobao_getCartList(),
     };
   },
   cartDel,
@@ -246,7 +250,13 @@ const taobao = {
     if (platform === "taobao") {
       return taobao_getMyCoupons(arg);
     }
-    return jd_getMyCoupons();
+    return jd_getMyCoupons(arg);
+  },
+  deleteCoupon(args, platform: string) {
+    if (platform === "taobao") {
+      return taobao_deleteCoupon(args);
+    }
+    return jd_deleteCoupon(args);
   },
   getSeckillList(args) {
     return seckillList(args.url);
@@ -263,7 +273,7 @@ const taobao = {
           name: "抢券",
           platform: "jingdong",
           comment: "京东plus券",
-          time: t.valueOf()
+          time: t.valueOf(),
         },
         t.valueOf()
       );
@@ -273,7 +283,7 @@ const taobao = {
   logout,
   getRedirectedUrl,
   getCouponCenterItems,
-  getCouponCenterCoupon
+  getCouponCenterCoupon,
 };
 
 // @ts-ignore

@@ -1,7 +1,9 @@
 import { request, isRedirectedUrl } from "../common/request";
 import { newPage } from "../page";
 import { accounts } from "../common/setting";
-import { delay } from "../common/tool";
+import { delay, formatUrl } from "../common/tool";
+import { getCookie } from "./tools";
+import moment from "moment";
 
 export async function isLoginMobile() {
   var { retcode } = await request.jsonp(
@@ -95,7 +97,7 @@ export function checkStatus() {
   checkStatusMobile();
 }
 
-export async function getMyCoupons() {
+export async function getMyCoupons({ page }) {
   var text = await request.get(
     "https://wq.jd.com/activeapi/queryjdcouponlistwithfinance?state=3&wxadd=1&_=1566400385806&sceneval=2&g_login_type=1&callback=queryjdcouponcb3&g_ty=ls",
     {
@@ -107,17 +109,46 @@ export async function getMyCoupons() {
   var {
     coupon: { useable },
   } = JSON.parse(text2);
-  return useable.map((item) =>
-    Object.assign(
-      {
-        title: item.couponTitle,
-        params: {
-          couponbatch: item.batchid,
-          ptag: "37070.3.11",
-          coupon_shopid: item.shopId,
-        },
+  return {
+    items: useable.map((item) => ({
+      ...item,
+      title: item.couponTitle,
+      url: formatUrl(item.linkStr),
+      params: {
+        couponbatch: item.batchid,
+        ptag: "37070.3.11",
+        coupon_shopid: item.shopId,
+        couponid: item.couponid,
       },
-      item
-    )
+      startTime: moment(+item.beginTime).format(
+        moment.HTML5_FMT.DATETIME_LOCAL
+      ),
+      endTime: moment(+item.endTime).format(moment.HTML5_FMT.DATETIME_LOCAL),
+      discount: +item.discount,
+      quota: +item.quota,
+      store: {
+        name: item.shopName,
+        url: formatUrl(item.linkStr),
+      },
+      canDelete: true,
+    })),
+    page,
+    more: false,
+  };
+}
+
+export async function deleteCoupon({ couponid }) {
+  return request.form(
+    "https://quan.jd.com/lock_coupon.action?r=0.23514173076717948",
+    {
+      couponId: couponid,
+      pin: await getCookie("pin"),
+    },
+    {
+      headers: {
+        "X-Requested-With": "XMLHttpRequest",
+      },
+      referer: "https://quan.jd.com/user_quan.action",
+    }
   );
 }
