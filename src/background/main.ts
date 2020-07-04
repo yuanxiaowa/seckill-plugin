@@ -52,6 +52,7 @@ import { getBillionList, getBillion } from "./jd/billion";
 import { getPlusQuanpin, getPlusQuanpinList } from "./jd/plus";
 import { getRedirectedUrl } from "./common/request";
 import { buyDirect as jd_buyDirect, cartBuy as jd_cartBuy } from "./jd/order";
+import tb from "./taobao";
 
 import {
   getCouponCenterCoupon,
@@ -284,6 +285,7 @@ const taobao = {
   getRedirectedUrl,
   getCouponCenterItems,
   getCouponCenterCoupon,
+  getCommentList: tb.getCommentList,
 };
 
 // @ts-ignore

@@ -112,7 +112,7 @@ export function getAddresses(platform: string) {
   return taobao.getAddresses(platform).catch(handleError);
 }
 export function commentList(data: any, platform: string): Promise<any> {
-  return taobao.commentList(data, platform).catch(handleError);
+  return taobao.getCommentList(data, platform).catch(handleError);
 }
 export function comment(data: any, platform: string): Promise<any> {
   return taobao.comment(data, platform).catch(handleError);

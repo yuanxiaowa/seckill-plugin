@@ -148,7 +148,8 @@ export default class Search extends Vue {
     {
       label: "商品名称",
       prop: "title",
-      render: this.renderTitle
+      render: this.renderTitle,
+      width: 300
     },
     {
       label: "价格",

@@ -14,30 +14,17 @@
         </el-radio-group>
       </el-form-item>
       <el-form-item>
-        <el-button @click="onClick">获取</el-button>
-        <el-button @click="comment" :disabled="multipleSelection.length===0" :loading="pending">评价选中</el-button>
+        <el-button @click="reload">获取</el-button>
       </el-form-item>
     </el-form>
-    <el-table ref="tb" :data="tableData" @selection-change="onSelectionChange">
-      <el-table-column type="selection" width="55"></el-table-column>
-      <el-table-column label="商品名称">
-        <template slot-scope="{row}">
-          <div v-for="item of row.items" :key="item.id">
-            <img :src="item.img" width="50" />
-            <a :href="item.url" target="_blank">{{item.title}}</a>
-          </div>
-        </template>
-      </el-table-column>
-      <!-- <el-table-column width="120">
-        <template slot-scope="{row}">
-          <el-button>评价</el-button>
-        </template>
-      </el-table-column>-->
-    </el-table>
-    <div>
-      <el-button :disabled="page<=1" @click="go(-1)">上一页</el-button>
-      <el-button v-if="more" @click="go(1)">下一页</el-button>
-    </div>
+    <data-list-wrapper ref="tb" :fetcher="fetcher" :columns="columns">
+      <template slot-scope="{row}" slot="actions">
+        <el-button @click="comment([row])">评价</el-button>
+      </template>
+      <template slot-scope="{selections}" slot="selection">
+        <el-button :disabled="selections.length===0" @click="comment(selections)">评价</el-button>
+      </template>
+    </data-list-wrapper>
   </div>
 </template>
 <route-meta>
@@ -46,56 +33,67 @@
 }
 </route-meta>
 
-<script lang="ts">
+<script lang="tsx">
 import { Component, Prop, Vue } from "vue-property-decorator";
 import { commentList, comment } from "../api";
+import DataListWrapper from "@/components/DataListWrapper.vue";
 
-@Component
+@Component({
+  components: {
+    DataListWrapper
+  }
+})
 export default class Comment extends Vue {
   @Prop() value!: any[];
-  platform = "jingdong";
-  tableData: any[] = [];
-  multipleSelection: any[] = [];
-  more = false;
-  page = 1;
+  platform = "taobao";
+
   pending = false;
-  onClick() {
-    this.page = 1;
-    this.refresh();
+
+  columns = [
+    {
+      prop: "title",
+      label: "商品名称",
+      render: this.renderTitle
+    }
+  ];
+
+  renderTitle({ row }) {
+    return row.items.map(item => (
+      <div key={item.id}>
+        <img src={item.img} width="50" />
+        <a href={item.url} target="_blank">
+          {item.title}
+        </a>
+      </div>
+    ));
   }
-  async refresh() {
-    var ret = await commentList(
+
+  fetcher({ page }) {
+    return commentList(
       {
-        page: this.page,
+        page: page,
         type: 6
       },
       this.platform
     );
-    this.tableData = ret.items;
-    this.more = ret.more;
   }
 
-  go(num: number) {
-    this.page += num;
-    this.refresh();
+  reload() {
+    (this.$refs.tb as DataListWrapper).reload();
   }
 
-  async comment() {
+  async comment(datas) {
     this.pending = true;
     try {
       await comment(
         {
-          orderIds: this.multipleSelection.map(item => item.id)
+          orderIds: datas.map(item => item.id)
         },
         this.platform
       );
     } catch (e) {}
-    this.refresh();
+    this.reload();
     this.pending = false;
-  }
-
-  onSelectionChange(val: any) {
-    this.multipleSelection = val;
   }
 }
 </script>

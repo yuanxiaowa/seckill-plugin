@@ -229,15 +229,18 @@ export default class DataListWrapper extends Vue {
         {...{
           on: {
             "selection-change": this.handleSelectionChange
-          }
+          },
+
+          style: "width: 100%"
         }}
       >
         <el-table-column type="selection" width="55"></el-table-column>
         {this.columns.map(this.renderColumn)}
+        <el-table-column />
         <el-table-column
           fixed="right"
           label="操作"
-          width="200"
+          width={200}
           align="right"
           {...{
             scopedSlots: {

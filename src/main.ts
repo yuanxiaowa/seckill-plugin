@@ -5,6 +5,7 @@
  * @LastEditTime: 2019-08-23 15:17:47
  */
 import Vue from "vue";
+import router from "./router";
 import App from "./App.vue";
 import ElementUI from "element-ui";
 import "element-ui/lib/theme-chalk/index.css";
@@ -12,13 +13,13 @@ import "./msg";
 import "./filters";
 import "./directives";
 import "./components";
-// import router from "./router";
 
 Vue.use(ElementUI);
+Vue.prototype.$ELEMENT = { size: "small" };
 
 Vue.config.productionTip = false;
 
 new Vue({
-  // router,
+  router,
   render: (h) => h(App),
 }).$mount("#app");

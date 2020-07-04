@@ -7,33 +7,7 @@
 <template>
   <div class="page-component__scroll">
     <config />
-    <el-tabs type="border-card">
-      <el-tab-pane label="领券下单">
-        <buy></buy>
-      </el-tab-pane>
-      <el-tab-pane label="购物车">
-        <cart></cart>
-      </el-tab-pane>
-      <el-tab-pane label="搜索">
-        <search></search>
-      </el-tab-pane>
-      <el-tab-pane label="秒杀">
-        <seckill-list></seckill-list>
-      </el-tab-pane>
-      <el-tab-pane label="京东">
-        <el-tabs>
-          <el-tab-pane label="领券中心">
-            <coupon-center></coupon-center>
-          </el-tab-pane>
-          <el-tab-pane label="plus优惠券">
-            <jingdong-coupon></jingdong-coupon>
-          </el-tab-pane>
-          <el-tab-pane label="京东百亿补贴">
-            <jd-billion></jd-billion>
-          </el-tab-pane>
-        </el-tabs>
-      </el-tab-pane>
-    </el-tabs>
+    <router-view></router-view>
     <iframe ref="ifr" :key="id" :src="status_url" frameborder="0" style="opacity:0"></iframe>
     <el-backtop target=".page-component__scroll"></el-backtop>
   </div>
@@ -41,16 +15,8 @@
 
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
-import bus from "./bus";
-import Config from "./components/Config.vue";
-import Buy from "./components/Buy.vue";
-import Cart from "./components/Cart.vue";
-import Search from "./components/Search.vue";
-import SeckillList from "./components/SeckillList.vue";
-import JdBillion from "./components/JdBillion.vue";
-import JingdongCoupon from "./components/JingdongCoupon.vue";
-import CouponCenter from "./components/CouponCenter.vue";
 
+import Config from "./components/Config.vue";
 const urls = [
   "https://home.jd.com/",
   "https://home.m.jd.com/myJd/newhome.action?sceneval=2&ufc=&",
@@ -58,16 +24,7 @@ const urls = [
 ];
 
 @Component({
-  components: {
-    Config,
-    Buy,
-    Cart,
-    Search,
-    SeckillList,
-    JdBillion,
-    JingdongCoupon,
-    CouponCenter
-  }
+  components: { Config }
 })
 export default class App extends Vue {
   status_url = "";

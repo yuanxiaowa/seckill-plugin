@@ -5,28 +5,33 @@
  * @LastEditTime: 2019-09-06 14:45:34
  -->
 <template>
-  <div>
-    <el-collapse v-model="activeNames">
-      <!-- <el-collapse-item title="状态" name="0">
-        <status-comp />
-      </el-collapse-item>-->
-      <el-collapse-item title="领券下单" name="1">
-        <buy></buy>
-      </el-collapse-item>
-      <el-collapse-item title="购物车" name="2">
-        <cart></cart>
-      </el-collapse-item>
-      <el-collapse-item title="搜索" name="3">
-        <search></search>
-      </el-collapse-item>
-      <el-collapse-item title="秒杀列表" name="4">
-        <seckill-list></seckill-list>
-      </el-collapse-item>
-      <el-collapse-item title="京东优惠券" name="6">
-        <jingdong-coupon></jingdong-coupon>
-      </el-collapse-item>
-    </el-collapse>
-  </div>
+  <el-tabs type="border-card">
+    <el-tab-pane label="领券下单">
+      <buy></buy>
+    </el-tab-pane>
+    <el-tab-pane label="购物车">
+      <cart></cart>
+    </el-tab-pane>
+    <el-tab-pane label="搜索">
+      <search></search>
+    </el-tab-pane>
+    <el-tab-pane label="秒杀">
+      <seckill-list></seckill-list>
+    </el-tab-pane>
+    <el-tab-pane label="京东">
+      <el-tabs>
+        <el-tab-pane label="领券中心">
+          <coupon-center></coupon-center>
+        </el-tab-pane>
+        <el-tab-pane label="plus优惠券">
+          <jingdong-coupon></jingdong-coupon>
+        </el-tab-pane>
+        <el-tab-pane label="京东百亿补贴">
+          <jd-billion></jd-billion>
+        </el-tab-pane>
+      </el-tabs>
+    </el-tab-pane>
+  </el-tabs>
 </template>
 <route-meta>
 {
@@ -36,28 +41,27 @@
 
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
-import CartTable from "../components/CartTable.vue";
+import bus from "../bus";
 import Buy from "../components/Buy.vue";
 import Cart from "../components/Cart.vue";
-import JingdongCoupon from "../components/JingdongCoupon.vue";
-import StatusComp from "../components/StatusComp.vue";
 import Search from "../components/Search.vue";
 import SeckillList from "../components/SeckillList.vue";
+import JdBillion from "../components/JdBillion.vue";
+import JingdongCoupon from "../components/JingdongCoupon.vue";
+import CouponCenter from "../components/CouponCenter.vue";
 
 @Component({
   components: {
-    CartTable,
     Buy,
     Cart,
-    StatusComp,
-    JingdongCoupon,
     Search,
-    SeckillList
+    SeckillList,
+    JdBillion,
+    JingdongCoupon,
+    CouponCenter
   }
 })
-export default class HomePage extends Vue {
-  activeNames = ["2"];
-}
+export default class ShopView extends Vue {}
 </script>
 
 <style>
