@@ -123,10 +123,15 @@ import {
   resolveUrl,
   qiangquan as qiangquan_api
 } from "../api";
-import { qiangquan } from "../order";
+import { qiangquan } from "../msg/order";
 import bus from "../bus";
 import { sendMsg } from "../msg";
-import { resolveText, getDealedData, getDealedDataFromText } from "../tools";
+import {
+  resolveText,
+  getDealedData,
+  getDealedDataFromText
+} from "../msg/tools";
+import storageMixin from "@/mixins/storage";
 
 interface InfoItem {
   url: string;
@@ -172,11 +177,18 @@ function getPlatform(text: string) {
     TextRecorder,
     SkuPicker,
     AddressPicker
-  }
+  },
+  mixins: [
+    storageMixin({
+      key: "text",
+      skey: "goods-code",
+      defaultValue: `账号体检中心
+￥meVo1ve5Vi9￥`
+    })
+  ]
 })
 export default class Buy extends Vue {
-  text = `账号体检中心
-￥meVo1ve5Vi9￥`;
+  text = "";
   datetime = "";
   num = 1;
   platform: "auto" | Platform = "auto";

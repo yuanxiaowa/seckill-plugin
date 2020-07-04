@@ -67,7 +67,7 @@
         </el-col>
         <el-col :span="12">
           <el-form-item label="额外参数">
-            <el-input v-model="extra_params" type="textarea" v-storage="getStorager()" />
+            <el-input v-model="extra_params" type="textarea" />
           </el-form-item>
         </el-col>
       </el-form-item>
@@ -142,8 +142,17 @@ import { Component, Prop, Vue } from "vue-property-decorator";
 import { goodsList, cartAdd, coudan, getMyCoupons } from "../api";
 import bus from "../bus";
 import { fromPairs } from "ramda";
+import storageMixin from "@/mixins/storage";
 
-@Component
+@Component({
+  mixins: [
+    storageMixin({
+      key: "extra_params",
+      skey: "search_extra_params",
+      defaultValue: "g_couponGroupId=12786776025"
+    })
+  ]
+})
 export default class Search extends Vue {
   @Prop() value!: any[];
   tableData: any[] = [];
@@ -259,16 +268,7 @@ export default class Search extends Vue {
     //   await coudan({ data: ids }, "jingdong");
     // }
   }
-  getStorager() {
-    return {
-      name: "search_extra_params",
-      value: this.extra_params,
-      setValue: (v: string) => {
-        this.extra_params = v;
-      }
-    };
-  }
-  extra_params = "g_couponGroupId=12786776025";
+  extra_params = "";
   async refresh(force_update = false) {
     var extra_params = this.extra_params
       .trim()

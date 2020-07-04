@@ -16,22 +16,30 @@
 
 <script lang="ts">
 import { Component, Prop, Vue, Emit, Watch } from "vue-property-decorator";
+import storageMixin from "@/mixins/storage";
 
 @Component({
-  components: {}
+  components: {},
+  mixins: [
+    storageMixin({
+      key: "list",
+      skey() {
+        // @ts-ignore
+        return this.id;
+      },
+      defaultValue: "g_couponGroupId=12786776025",
+      onInit() {
+        // @ts-ignore
+        this.$emit("input", this.list[this.list.length - 1]);
+      }
+    })
+  ]
 })
 export default class ComponentName extends Vue {
   @Prop(String) value!: string;
   @Prop(String) id!: string;
 
   list: string[] = [];
-  mounted() {
-    var str = localStorage.getItem(this.id);
-    if (str) {
-      this.list = JSON.parse(str);
-      this.$emit("input", this.list[this.list.length - 1]);
-    }
-  }
 
   querySearch(queryString: string, cb: Function) {
     cb(this.list);
@@ -39,11 +47,10 @@ export default class ComponentName extends Vue {
 
   @Watch("value")
   onChange(v: string) {
-    if (this.list.includes(v)) {
+    if (v || this.list.includes(v)) {
       return;
     }
     this.list.push(v);
-    localStorage.setItem(this.id, JSON.stringify(this.list));
   }
 }
 </script>
