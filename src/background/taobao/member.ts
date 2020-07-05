@@ -108,11 +108,11 @@ export async function getMyCoupons({ page, type }) {
           .trim()
           .split(/\s+至\s+/);
         var startTime = moment(valideTime_arr[0], "yyyy.MM.DD").format(
-          "MM-DD hh:mm"
+          "MM-DD HH:mm"
         );
         var endTime = moment(valideTime_arr[1], "yyyy.MM.DD")
           .add("day", 1)
-          .format("MM-DD hh:mm");
+          .format("MM-DD HH:mm");
         var url =
           type == "0" ? storeUrl : $ele.find(".specified").attr("href")!;
         var id = $ele.find(".J_Delete").attr("cid");
