@@ -61,6 +61,7 @@
       @select-all="selectAll"
       @update-quantity="updateQuantity"
       @del-item="delItem"
+      v-loading="loading"
     ></cart-table>
   </div>
 </template>
@@ -100,11 +101,14 @@ export default class App extends Vue {
   jianlou = 30;
   no_interaction = false;
   addressId = "";
+  loading = false;
 
   async pullCartData(data: any) {
     this.tableData = [];
     if (!data) {
+      this.loading = true;
       data = await cartList(this.platform, this.from_pc);
+      this.loading = false;
     }
     this.tableData = data.items;
     this.other = data.other;

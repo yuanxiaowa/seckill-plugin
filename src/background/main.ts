@@ -286,6 +286,7 @@ const taobao = {
   getCouponCenterItems,
   getCouponCenterCoupon,
   getCommentList: tb.getCommentList,
+  getGoodsSkus: tb.getGoodsSkus,
 };
 
 // @ts-ignore

@@ -1,24 +1,29 @@
 <template>
-  <el-dialog :visible="value" @update:visible="$emit('input',$event)">
-    <div>
-      {{title}}
-      <el-tag type="danger">￥{{price}}</el-tag>
-      <span>{{quantity}}</span>
+  <el-dialog :visible="value" @update:visible="setVisible">
+    <div v-loading="loading">
+      <div>
+        {{title}}
+        <el-tag type="danger">￥{{price}}</el-tag>
+        <span style="margin:0 1em">库存: {{quantity}}</span>
+        <el-button @click="fetchData" icon="el-icon-refresh" circle></el-button>
+        <el-button v-if="options.length===0" @click="setVisible(false)" type="primary">确定</el-button>
+      </div>
+      <el-cascader
+        v-if="options.length>0"
+        v-model="data"
+        :options="options"
+        filterable
+        :props="{ expandTrigger: 'hover' }"
+        @change="onChange"
+      ></el-cascader>
+      <el-button v-if="data.length>0" @click="onChange(data)" type="primary">确定</el-button>
     </div>
-    <el-cascader
-      v-model="data"
-      :options="options"
-      filterable
-      :props="{ expandTrigger: 'hover' }"
-      @change="onChange"
-    ></el-cascader>
-    <el-button v-if="data.length>0" @click="onChange(data)">确定</el-button>
   </el-dialog>
 </template>
 
 <script lang="ts">
 import { Component, Prop, Vue, Emit, Watch } from "vue-property-decorator";
-import { goodsDetail } from "../api";
+import { getGoodsSkus } from "../api";
 
 @Component({
   components: {}
@@ -34,6 +39,11 @@ export default class SkuPicker extends Vue {
 
   options = [];
 
+  loading = false;
+
+  @Emit("input")
+  setVisible(b: boolean) {}
+
   @Watch("url")
   onUrlChange(url: string) {
     this.title = "";
@@ -48,7 +58,8 @@ export default class SkuPicker extends Vue {
   }
 
   async fetchData() {
-    var { skus, title, quantity, price } = await goodsDetail(
+    this.loading = true;
+    var { skus, title, quantity, price } = await getGoodsSkus(
       {
         url: this.url
       },
@@ -58,6 +69,7 @@ export default class SkuPicker extends Vue {
     this.quantity = quantity;
     this.price = price;
     this.options = (skus && skus.children) || [];
+    this.loading = false;
   }
 }
 </script>

@@ -149,6 +149,9 @@ export function goodsDetail(params: any, platform: string) {
   return taobao.goodsDetail(params, platform).catch(handleError);
 }
 
+export function getGoodsSkus(params: any, platform: string) {
+  return taobao.getGoodsSkus(params, platform).catch(handleError);
+}
 export function getConfig() {
   return taobao.getConfig().catch(handleError);
 }

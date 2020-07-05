@@ -105,7 +105,6 @@ import { fromPairs } from "ramda";
 import storageMixin from "@/mixins/storage";
 import Coupons from "./Coupons.vue";
 import DataListWrapper from "./DataListWrapper.vue";
-import QRCode from "qrcode";
 
 @Component({
   components: {
@@ -198,18 +197,7 @@ export default class Search extends Vue {
   ];
 
   showQrcode(row) {
-    QRCode.toDataURL(row.url).then(url => {
-      this.$alert(
-        // @ts-ignore
-        <img src={url} />,
-        "二维码",
-        {
-          center: true,
-          closeOnClickModal: true,
-          closeOnPressEscape: true
-        }
-      );
-    });
+    this.$showQrcode(row.url);
   }
 
   isJuhuasuan() {
@@ -323,7 +311,6 @@ export default class Search extends Vue {
         state[key] = value;
         return state;
       }, {});
-    console.log(force_update);
     return goodsList(
       Object.assign(
         {

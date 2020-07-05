@@ -4,7 +4,10 @@ declare module "*.vue" {
   export default Vue;
 }
 
-declare global {
-  function evalFile(filename: string, reload?: boolean): Promise<any>;
-  function evalFunction(code: string): Promise<any>;
+declare module "vue/types/vue" {
+  // 3. 声明为 Vue 补充的东西
+  interface Vue {
+    $getQrcodeUrl(src: string): Promise<string>;
+    $showQrcode(src: string, title?: string): void;
+  }
 }

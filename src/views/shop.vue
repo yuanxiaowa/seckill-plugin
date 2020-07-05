@@ -31,6 +31,9 @@
         </el-tab-pane>
       </el-tabs>
     </el-tab-pane>
+    <el-tab-pane label="解析">
+      <code-resolver></code-resolver>
+    </el-tab-pane>
   </el-tabs>
 </template>
 <route-meta>
@@ -49,6 +52,7 @@ import SeckillList from "../components/SeckillList.vue";
 import JdBillion from "../components/JdBillion.vue";
 import JingdongCoupon from "../components/JingdongCoupon.vue";
 import CouponCenter from "../components/CouponCenter.vue";
+import CodeResolver from "../components/CodeResolver.vue";
 
 @Component({
   components: {
@@ -58,7 +62,8 @@ import CouponCenter from "../components/CouponCenter.vue";
     SeckillList,
     JdBillion,
     JingdongCoupon,
-    CouponCenter
+    CouponCenter,
+    CodeResolver
   }
 })
 export default class ShopView extends Vue {}
