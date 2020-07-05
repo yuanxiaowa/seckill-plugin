@@ -191,7 +191,7 @@ export default class Search extends Vue {
             { text: "后天", value: "后天" }
           ],
           "filter-method"(value, row) {
-            return row.mjContent.startTime_str.includes(value);
+            return row.mjContent && row.mjContent.startTime_str.includes(value);
           }
         }
       ]
