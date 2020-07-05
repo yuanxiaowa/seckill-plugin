@@ -95,7 +95,7 @@ export async function getMyCoupons({ page, type }) {
   ).find("#coupon-list");
   if (type == "0" || type == "1") {
     let $eles = $root.find(".coupon-box");
-    let type_name = `[${type == "0" ? "店铺券" : "商品券"}]`;
+    let type_name = ""; // `[${type == "0" ? "店铺券" : "商品券"}]`;
     items = $eles
       .map((index, ele) => {
         var $ele = $(ele);
@@ -107,12 +107,12 @@ export async function getMyCoupons({ page, type }) {
           .text()
           .trim()
           .split(/\s+至\s+/);
-        var startTime = moment(valideTime_arr[0], "yyyy.MM.dd").format(
-          moment.HTML5_FMT.DATETIME_LOCAL
+        var startTime = moment(valideTime_arr[0], "yyyy.MM.DD").format(
+          "MM-DD hh:mm"
         );
-        var endTime = moment(valideTime_arr[1], "yyyy.MM.dd")
+        var endTime = moment(valideTime_arr[1], "yyyy.MM.DD")
           .add("day", 1)
-          .format(moment.HTML5_FMT.DATETIME_LOCAL);
+          .format("MM-DD hh:mm");
         var url =
           type == "0" ? storeUrl : $ele.find(".specified").attr("href")!;
         var id = $ele.find(".J_Delete").attr("cid");

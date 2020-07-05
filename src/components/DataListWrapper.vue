@@ -240,7 +240,7 @@ export default class DataListWrapper extends Vue {
         <el-table-column
           fixed="right"
           label="操作"
-          width={200}
+          width={150}
           align="right"
           {...{
             scopedSlots: {

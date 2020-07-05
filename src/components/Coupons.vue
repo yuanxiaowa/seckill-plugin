@@ -95,9 +95,12 @@ export default class Coupons extends Vue {
       width: 100
     },
     {
-      label: "过期时间",
-      prop: "endTime",
-      width: 130
+      label: "有效时间",
+      prop: "startTime",
+      width: 170,
+      formatter(row) {
+        return `${row.startTime}——${row.endTime}`;
+      }
     }
   ];
 
