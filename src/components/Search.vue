@@ -147,8 +147,7 @@ export default class Search extends Vue {
     {
       label: "商品名称",
       prop: "title",
-      render: this.renderTitle,
-      width: 300
+      render: this.renderTitle
     },
     {
       label: "价格",
@@ -169,6 +168,9 @@ export default class Search extends Vue {
           width: 100,
           color: "red",
           formatter(row) {
+            if (!row.mjContent) {
+              return;
+            }
             return `￥${(row.mjContent.promInfos[0].discount / 1000) *
               row.price}`;
           }

@@ -4,13 +4,13 @@ import axios from "axios";
 import qs_lib from "qs";
 
 export function getCookie(name: string) {
-  return new Promise<string>(resolve => {
+  return new Promise<string>((resolve) => {
     chrome.cookies.get(
       {
         name,
-        url: "https://www.taobao.com"
+        url: "https://www.taobao.com",
       },
-      cookie => resolve(cookie!.value)
+      (cookie) => resolve(cookie!.value)
     );
   });
 }
@@ -20,7 +20,11 @@ export function getToken() {
 }
 
 export async function getUserName() {
-  return eval(`"${decodeURIComponent((await getCookie("dnk")) || (await getCookie("__nk__")))}"`);
+  return eval(
+    `"${decodeURIComponent(
+      (await getCookie("dnk")) || (await getCookie("__nk__"))
+    )}"`
+  );
 }
 
 const appKey = "12574478";
@@ -35,7 +39,7 @@ export async function requestData(
     qs,
     referer,
     advance,
-    origin
+    origin,
   }: {
     data: any;
     method?: "get" | "post";
@@ -69,21 +73,21 @@ export async function requestData(
     LoginRequest: true,
     H5Request: true,
     post: method === "post" ? 1 : undefined,
-    ...qs
+    ...qs,
   };
   params.sign = md5([token, t, appKey, data_str].join("&"));
   if (method === "get") {
     params.data = data_str;
   } else {
     form = qs_lib.stringify({
-      data: data_str
+      data: data_str,
     });
   }
   var headers: any;
   if (referer) {
     headers = Object.assign(
       {
-        _referer: referer
+        _referer: referer,
       },
       headers
     );
@@ -91,7 +95,7 @@ export async function requestData(
   if (origin) {
     headers = Object.assign(
       {
-        _origin: origin
+        _origin: origin,
       },
       headers
     );
@@ -101,7 +105,7 @@ export async function requestData(
     method,
     params,
     data: form,
-    headers
+    headers,
   });
   data = res.data.data;
   var ret = res.data.ret;
@@ -119,7 +123,7 @@ export async function requestData(
 export async function resolveTaokouling(password: string) {
   var data = await requestData("com.taobao.redbull.getpassworddetail", {
     data: { password },
-    version: "1.0"
+    version: "1.0",
   });
   return data.url;
 }
@@ -145,8 +149,8 @@ export async function resolveUrl(url: string) {
       .replace(/&amp;/g, "&");
     let res2 = await axios.get(url1, {
       headers: {
-        _referer: url
-      }
+        _referer: url,
+      },
     });
     url = res2.request.responseURL;
     /* url = await axios.post(

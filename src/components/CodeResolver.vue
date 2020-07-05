@@ -11,6 +11,7 @@
     </el-form-item>
     <el-form-item label="二维码" v-if="result">
       <img width="250" :src="qrcode" alt />
+      <a :href="result" target="_blank">打开</a>
     </el-form-item>
   </el-form>
 </template>

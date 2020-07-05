@@ -2,7 +2,6 @@ import { requestData } from "./tools";
 import { ArgSearch } from "./structs";
 import { request } from "../common/request";
 import { getJuhuasuanList } from "./juhuasuan";
-import { props } from "ramda";
 
 export const getItemId = (url: string) => /id=(\d+)/.exec(url)![1];
 export function getGoodsUrl(id) {
