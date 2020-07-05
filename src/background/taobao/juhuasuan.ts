@@ -39,6 +39,8 @@ async function getMeta(force_update = false) {
 
 export async function getJuhuasuanList({ page = 1, force_update }) {
   const { pvuuid, campaignPageId } = await getMeta(force_update);
+  // 5912546
+  // 5831003
   const appId = 5835013;
   const {
     resultValue: {
@@ -53,7 +55,7 @@ export async function getJuhuasuanList({ page = 1, force_update }) {
         app: "",
         isbackup: true,
         backupParams: "page",
-        appId: "5835013",
+        appId,
         bizId: "99",
         terminalType: "1",
         _pvuuid: pvuuid,
@@ -67,6 +69,8 @@ export async function getJuhuasuanList({ page = 1, force_update }) {
     more: data.length > 0,
     page,
     items: data.map((item) => {
+      // itemStatus: "blank" 还未开始
+      // itemStatus: "avil" 已开始的
       var mjContent = item.mjContent;
       if (mjContent) {
         mjContent = JSON.parse(item.mjContent);
