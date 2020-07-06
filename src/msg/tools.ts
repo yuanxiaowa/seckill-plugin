@@ -198,6 +198,8 @@ export function resolveText(text: string, datetime?: string | Date) {
       )
     ) {
       action = "qiangquan";
+    } else if (text.includes("漏洞") && text.includes("卧槽")) {
+      return;
     } else if (
       /拼购([券卷]|日)|领[券卷]|新[券卷]|领全品|白条[券卷]|吱付[券卷]|支付[券卷]|可领|领取优惠[券卷]|无门槛|史低|漏洞|bug|抢[券卷]|快领|速度领|(\d+)?-\d+[券卷]|领(标题)?下方|领\d+折?[券卷]|防身|福利|(\d|一二三四五六七八九)(毛|分)/.test(
         text

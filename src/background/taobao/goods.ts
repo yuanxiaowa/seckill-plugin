@@ -262,7 +262,7 @@ function transformMobileGoodsInfo({ apiStack, item }, skuId?: string) {
 export async function getGoodsList(data: ArgSearch) {
   var page = data.page;
   if (data.is_juhuasuan) {
-    return getJuhuasuanList({ page, force_update: data.force_update });
+    return getJuhuasuanList({ page });
   }
   var q = data.keyword;
   delete data.page;

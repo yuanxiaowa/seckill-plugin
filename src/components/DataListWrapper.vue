@@ -13,10 +13,9 @@ import { getMyCoupons } from "../api";
 export default class DataListWrapper extends Vue {
   @Prop() columns!: any[];
   @Prop() actions!: { text: string; test?(props: any): boolean }[];
-  @Prop() fetcher!: (
-    { page: number },
-    forceUpdate?: boolean
-  ) => Promise<{
+  @Prop() fetcher!: ({
+    page: number
+  }) => Promise<{
     items: any[];
     more: boolean;
     page: number;
@@ -47,10 +46,12 @@ export default class DataListWrapper extends Vue {
   maxHeight!: number;
 
   page = 1;
-  more = false;
+  more = true;
   is_attach = false;
   items: any[] = [];
   loading = false;
+  hasLoaded = false;
+  isLoadingAll = false;
 
   multipleSelection: any[] = [];
 
@@ -69,36 +70,37 @@ export default class DataListWrapper extends Vue {
       var { items, more } = await this.fetcher({
         page: this.page
       });
-      if (this.is_attach) {
+      if (this.is_attach && this.page !== 1) {
         this.items = this.items.concat(items);
       } else {
         this.items = items;
       }
       this.more = more;
+      this.hasLoaded = true;
     } catch (e) {}
     this.loading = false;
   }
 
-  async reload() {
-    this.loading = true;
+  reload() {
     this.page = 1;
-    try {
-      var { items, more } = await this.fetcher(
-        {
-          page: this.page
-        },
-        true
-      );
-      this.items = items;
-      this.more = more;
-    } catch (e) {}
-    this.loading = false;
+    return this.search();
   }
 
   async loadAll() {
+    if (!this.more) {
+      return;
+    }
+    if (this.hasLoaded) {
+      this.page++;
+    }
+    this.isLoadingAll = true;
     while (true) {
       await this.search();
       if (!this.more) {
+        this.isLoadingAll = false;
+        return;
+      }
+      if (!this.isLoadingAll) {
         return;
       }
       this.page++;
@@ -301,11 +303,22 @@ export default class DataListWrapper extends Vue {
               </el-button>
             )}
             {this.more && (
-              <el-button onClick={() => this.go(1)}>下一页</el-button>
+              <el-button disabled={!this.more} onClick={() => this.go(1)}>
+                下一页
+              </el-button>
             )}
-            {this.is_attach && (
-              <el-button onClick={this.loadAll}>加载全部</el-button>
-            )}
+            {this.is_attach &&
+              (this.isLoadingAll ? (
+                <el-button
+                  onClick={() => {
+                    this.isLoadingAll = false;
+                  }}
+                >
+                  停止
+                </el-button>
+              ) : (
+                <el-button onClick={this.loadAll}>加载全部</el-button>
+              ))}
           </el-col>
         </el-row>
       </div>

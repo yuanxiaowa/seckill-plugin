@@ -37,8 +37,8 @@ async function getMeta(force_update = false) {
   return prevData;
 }
 
-export async function getJuhuasuanList({ page = 1, force_update }) {
-  const { pvuuid, campaignPageId } = await getMeta(force_update);
+export async function getJuhuasuanList({ page = 1 }) {
+  const { pvuuid, campaignPageId } = await getMeta(page === 1);
   // 5912546
   // 5831003
   const appId = 5835013;

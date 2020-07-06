@@ -302,7 +302,7 @@ export default class Search extends Vue {
     (this.$refs.tb as DataListWrapper).reload();
   }
 
-  fetcher({ page }, force_update) {
+  fetcher({ page }) {
     var extra_params = this.extra_params
       .trim()
       .split(/\r?\n/)
@@ -317,7 +317,7 @@ export default class Search extends Vue {
       Object.assign(
         {
           is_juhuasuan: this.is_juhuasuan,
-          force_update
+          page
         },
         this.params,
         extra_params,
