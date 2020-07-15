@@ -1,6 +1,6 @@
-import { requestData } from "./tools";
+import { requestData } from "../tools";
 import moment from "moment";
-import { formatUrl } from "../common/tool";
+import { formatUrl } from "../../common/tool";
 
 let prevTime = 0;
 let prevData: any;

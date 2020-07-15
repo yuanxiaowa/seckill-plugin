@@ -11,6 +11,6 @@ export interface CouponArg {
 
 export interface CouponHandler {
   test(url: string): boolean;
-  api?(url: string): Promise<CouponResult | void>;
-  page?(url: string): Promise<CouponResult | void>;
+  api?(url: string): Promise<(() => Promise<CouponResult>) | CouponResult>;
+  page?(url: string): Promise<(() => Promise<CouponResult>) | CouponResult>;
 }

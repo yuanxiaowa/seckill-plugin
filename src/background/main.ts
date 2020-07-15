@@ -1,34 +1,6 @@
 import moment from "moment";
 import * as R from "ramda";
 // import "./externals/intercept";
-import {
-  buyDirect as taobao_buyDirect,
-  cartBuy as taobao_cartBuy,
-  coudan,
-} from "./taobao/order";
-import {
-  getCartList as taobao_getCartList,
-  addCart as taobao_add_cart,
-  updateCart,
-} from "./taobao/cart";
-import { resolveUrl as taobao_resolve_url, getUserName } from "./taobao/tools";
-import {
-  addCart as jd_add_cart,
-  getCartList as jd_getCartList,
-} from "./jd/cart";
-import {
-  getGoodsDetail as jd_getGoodsDetail,
-  getGoodsList as taobao_getGoodsList,
-} from "./taobao/goods";
-import {
-  checkStatus as taobao_check_status,
-  getAddresses,
-  getMyCoupons as taobao_getMyCoupons,
-  deleteCoupon as taobao_deleteCoupon,
-  logout,
-} from "./taobao/member";
-import { checkStatus as jd_check_status } from "./jd/member";
-import { handlers as taobao_coupons_handlers } from "./taobao/coupon";
 import "./init";
 import { taskManager } from "./common/task-manager";
 import {
@@ -39,29 +11,55 @@ import {
   accounts,
   set_accounts,
 } from "./common/setting";
-import { sysTaobaoTime } from "./common/time";
-import { resolveUrl as jd_resolve_url } from "./jd/tools";
-import { handlers as jd_coupons_handlers } from "./jd/coupon";
-import { getGoodsList as jd_getGoodsList } from "./jd/goods";
-import {
-  getMyCoupons as jd_getMyCoupons,
-  deleteCoupon as jd_deleteCoupon,
-} from "./jd/member";
-import { seckillList } from "./taobao/seckill";
-import { getBillionList, getBillion } from "./jd/billion";
-import { getPlusQuanpin, getPlusQuanpinList } from "./jd/plus";
 import { getRedirectedUrl } from "./common/request";
-import { buyDirect as jd_buyDirect, cartBuy as jd_cartBuy } from "./jd/order";
 import tb from "./taobao";
+import jd from "./jd";
 
 import {
   getCouponCenterCoupon,
   getCouponCenterItems,
 } from "./jd/coupon-center";
 import "./jd/task";
-import "./baidu";
+// import "./baidu";
+import { HandlerWithAll } from "@/structs/api";
+import { ifElse, propIs } from "ramda";
 
-async function qiangquan({
+function wrappedDelay<TArgs = any, TReturn = any>({
+  name,
+  comment,
+  handler,
+}: {
+  name: string;
+  comment: string;
+  handler(args: TArgs): (() => Promise<TReturn>) | TReturn;
+}) {
+  return async ({ t, ...restArgs }: any): Promise<TReturn> => {
+    const f = await handler(restArgs);
+    if (t) {
+      let time = moment(t).valueOf();
+      let diff = time - Date.now();
+      if (diff > 0) {
+        await taskManager.registerTask(
+          {
+            name,
+            time: t,
+            platform: restArgs.platform,
+            comment,
+          },
+          time
+        );
+      }
+    }
+    if (typeof f === "function") {
+      // @ts-ignore
+      return f();
+    }
+    return f;
+  };
+}
+
+// @ts-ignore
+const qiangquan: HandlerWithAll["qiangquan"] = async function({
   data,
   t,
   platform,
@@ -70,78 +68,20 @@ async function qiangquan({
   t?: string;
   platform: string;
 }) {
-  var handlers =
-    platform === "jingdong" ? jd_coupons_handlers : taobao_coupons_handlers;
-
-  for (let handler of handlers) {
-    if (handler.test(data)) {
-      let h = (handler.page || handler.api)!;
-      if (t) {
-        let time = moment(t).valueOf();
-        let diff = time - Date.now();
-        if (diff > 0) {
-          let p = taskManager.registerTask(
-            {
-              name: "抢券",
-              time: t,
-              platform,
-              comment: "",
-            },
-            time
-          );
-          await p;
-          return h(data);
-        }
-      }
-      return h(data);
-    }
+  const handlers =
+    platform === "jingdong" ? jd.couponHandlers : tb.couponHandlers;
+  const handler = handlers.find((handler) => handler.test(data));
+  if (handler) {
+    return wrappedDelay({
+      name: "抢券",
+      comment: "",
+      handler() {
+        return (handler.page || handler.api)!(data);
+      },
+    })({ t });
   }
-  return { url: data };
-}
-
-async function buy(args: any, t: string, platform: string) {
-  var handler = platform === "jingdong" ? jd_buyDirect : taobao_buyDirect;
-  if (t) {
-    let time = moment(t).valueOf();
-    let diff = time - Date.now();
-    if (diff > 0) {
-      let p = taskManager.registerTask(
-        {
-          name: "抢单",
-          time: t,
-          platform,
-          comment: args._comment,
-        },
-        time
-      );
-      handler(args, p);
-      return;
-    }
-  }
-  return handler(args);
-}
-
-async function buy_from_cart(args: any, t: string, platform: string) {
-  var handler = platform === "jingdong" ? jd_cartBuy : taobao_cartBuy;
-  if (t) {
-    let time = moment(t).valueOf();
-    let diff = time - Date.now();
-    if (diff > 0) {
-      let p = taskManager.registerTask(
-        {
-          name: "抢单",
-          time: t,
-          platform: "taobao",
-          comment: args._comment,
-        },
-        time
-      );
-      handler(args, p);
-      return;
-    }
-  }
-  return handler(args);
-}
+  return { url: data, success: true };
+};
 
 async function getConfig() {
   return get_config();
@@ -153,7 +93,7 @@ async function setConfig(_config) {
   }
   set_config(_config);
   if (_config.is_main) {
-    jd_check_status();
+    jd.checkStatus();
   }
 }
 
@@ -166,14 +106,6 @@ async function setAccounts(_accounts) {
     return;
   }
   set_accounts(_accounts);
-}
-
-function cartDel(data) {
-  return updateCart(data, "deleteSome");
-}
-
-function cartUpdateQuantity(data) {
-  return updateCart(data, "update");
 }
 
 async function getTasks() {
@@ -192,80 +124,53 @@ async function getTasks() {
 async function cancelTask(id: number) {
   return taskManager.cancelTask(id);
 }
-
+const isJd = propIs("jingdong", "platform");
 const taobao = {
-  resolveUrl(url: string, platform: string) {
-    if (platform === "jingdong") {
-      return jd_resolve_url(url);
-    }
-    return taobao_resolve_url(url);
-  },
+  resolveUrl: ifElse(isJd, jd.resolveUrl, tb.resolveUrl),
   qiangquan,
-  buy,
-  cartBuy: buy_from_cart,
+  buy(args) {
+    return wrappedDelay({
+      name: "抢单",
+      comment: args._comment,
+      handler: ifElse(isJd, jd.buyDirect, tb.buyDirect),
+    })(args);
+  },
+  cartBuy(args) {
+    return wrappedDelay({
+      name: "从购物车抢单",
+      comment: args._comment,
+      handler: ifElse(isJd, jd.cartBuy, tb.cartBuy),
+    })(args);
+  },
   // getCartList: taobao_getCartList,
   getConfig,
   setConfig,
   getAccounts,
   setAccounts,
-  cartAdd(args, platform: string) {
-    if (platform === "jingdong") {
-      return jd_add_cart(args);
-    }
-    return taobao_add_cart(args);
-  },
-  async cartList(platform: string) {
-    if (platform === "jingdong") {
-      return jd_getCartList();
-    }
-    return {
-      items: await taobao_getCartList(),
-    };
-  },
-  cartDel,
-  cartUpdateQuantity,
-  async cartToggle() {},
-  coudan,
-  async checkStatus(platform: string) {
-    if (platform === "jingdong") {
-      return jd_check_status();
-    }
-    return taobao_check_status();
-  },
-  sysTime: sysTaobaoTime,
-  goodsList(data, platform: string) {
-    if (platform === "taobao") {
-      return taobao_getGoodsList(data);
-    }
-    return jd_getGoodsList(data);
-  },
-  goodsDetail({ url }, platform: string) {
-    if (platform === "taobao") {
-      return jd_getGoodsDetail(url);
-    }
-  },
+  cartAdd: ifElse(isJd, jd.addCart, tb.addCart),
+  cartList: ifElse(isJd, jd.getCartList, tb.getCartList),
+  cartDel: ifElse(isJd, jd.cartDel, tb.cartDel),
+  cartUpdateQuantity: ifElse(
+    isJd,
+    jd.cartUpdateQuantity,
+    tb.cartUpdateQuantity
+  ),
+  cartToggle: ifElse(isJd, jd.cartToggle, tb.cartToggle),
+  coudan: ifElse(isJd, jd.coudan, tb.coudan),
+  checkStatus: ifElse(isJd, jd.checkStatus, tb.checkStatus),
+  sysTime: ifElse(isJd, jd.sysTime, tb.sysTime),
+  goodsList: ifElse(isJd, jd.getGoodsList, tb.getGoodsList),
+  goodsDetail: ifElse(isJd, jd.getGoodsDetail, tb.getGoodsDetail),
   getTasks,
   cancelTask,
-  getAddresses,
-  getMyCoupons(arg, platform: string) {
-    if (platform === "taobao") {
-      return taobao_getMyCoupons(arg);
-    }
-    return jd_getMyCoupons(arg);
-  },
-  deleteCoupon(args, platform: string) {
-    if (platform === "taobao") {
-      return taobao_deleteCoupon(args);
-    }
-    return jd_deleteCoupon(args);
-  },
-  getSeckillList(args) {
-    return seckillList(args.url);
-  },
-  getJdMillionList: getBillionList,
-  getJdMillion: getBillion,
-  getUserName,
-  getPlusQuanpinList,
+  getAddresses: ifElse(isJd, jd.getAddresses, tb.getAddresses),
+  getMyCoupons: ifElse(isJd, jd.getMyCoupons, tb.getMyCoupons),
+  deleteCoupon: ifElse(isJd, jd.deleteCoupon, tb.deleteCoupon),
+  getSeckillList: tb.seckillList,
+  getJdMillionList: jd.getBillionList,
+  getJdMillion: jd.getBillion,
+  getUserName: tb.getUserName,
+  getPlusQuanpinList: jd.getPlusQuanpinList,
   async getPlusQuanpin(item) {
     if (item.datetime) {
       let t = moment(item.datetime);
@@ -279,9 +184,9 @@ const taobao = {
         t.valueOf()
       );
     }
-    return getPlusQuanpin(item);
+    return jd.getPlusQuanpin(item);
   },
-  logout,
+  logout: ifElse(isJd, jd.logout, tb.logout),
   getRedirectedUrl,
   getCouponCenterItems,
   getCouponCenterCoupon,

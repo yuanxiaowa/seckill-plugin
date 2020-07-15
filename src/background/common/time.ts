@@ -1,6 +1,8 @@
 import axios from "axios";
 import moment from "moment";
 import { DT, config } from "./setting";
+import tb from "../taobao";
+import jd from "../jd";
 
 export function getSysTime(url: string, transform: (data: any) => number) {
   return async () => {
@@ -17,7 +19,7 @@ export function getSysTime(url: string, transform: (data: any) => number) {
           var t = transform(data);
           resolve({
             dt: rtl - (end - t),
-            rtl
+            rtl,
           });
         } catch (e) {
           reject(e);
@@ -38,23 +40,14 @@ export function getSysTime(url: string, transform: (data: any) => number) {
     }
     return {
       dt: total / total_count,
-      rtl: total_rtl / total_count
+      rtl: total_rtl / total_count,
     };
   };
 }
 
-export const sysTaobaoTime = getSysTime(
-  "https://api.m.taobao.com/rest/api3.do?api=mtop.common.getTimestamp",
-  ({ data: { t } }) => t
-);
-export const sysJingdongTime = getSysTime(
-  "https://a.jd.com//ajax/queryServerData.html",
-  ({ serverTime }) => serverTime
-);
-
 var lastSysTime = {
   jingdong: 0,
-  taobao: 0
+  taobao: 0,
 };
 
 export async function sysPlatformTime(platform: string) {
@@ -62,7 +55,7 @@ export async function sysPlatformTime(platform: string) {
     return;
   }
   lastSysTime[platform] = Date.now();
-  var handler = platform === "taobao" ? sysTaobaoTime : sysJingdongTime;
+  var handler = platform === "taobao" ? tb.sysTime : jd.sysTime;
   console.log(platform + "开始同步时钟");
   var { dt, rtl } = await handler();
   console.log(
@@ -88,7 +81,7 @@ export const getDelayTime = (() => {
       return DT[platform];
     }
     let bt = 1000 * 60 * 10;
-    let p = new Promise<number>(resolve => {
+    let p = new Promise<number>((resolve) => {
       setTimeout(async () => {
         await sysPlatformTime(platform);
         setTimeout(() => {

@@ -79,12 +79,10 @@ bus.$on("coudan", async (data: any) => {
   }
 });
 bus.$on("unselect-all", (platform: Platform) => {
-  return cartToggleAll(
-    {
-      checked: false,
-    },
-    platform
-  );
+  return cartToggleAll({
+    checked: false,
+    platform,
+  });
 });
 bus.$on("sys-time", (text: string) => {
   var platform = text.includes("京东") ? "jingdong" : "taobao";

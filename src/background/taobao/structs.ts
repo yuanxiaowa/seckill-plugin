@@ -40,6 +40,11 @@ export interface ArgOrder<T> {
 
 export interface ArgCartBuy {
   items: any[];
+  jianlou?: number;
+  expectedPrice?: number;
+  no_interaction?: boolean;
+  addressId?: string;
+  other: any;
 }
 
 export type ArgSearch = {

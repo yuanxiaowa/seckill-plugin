@@ -107,7 +107,10 @@ export default class App extends Vue {
     this.tableData = [];
     if (!data) {
       this.loading = true;
-      data = await cartList(this.platform, this.from_pc);
+      data = await cartList({
+        platform: this.platform,
+        from_pc: this.from_pc
+      });
       this.loading = false;
     }
     this.tableData = data.items;
@@ -145,14 +148,12 @@ export default class App extends Vue {
     if (this.platform === "taobao") {
       return;
     }
-    await cartToggle(
-      {
-        items,
-        ...this.other,
-        checked
-      },
-      this.platform
-    );
+    await cartToggle({
+      items,
+      ...this.other,
+      checked,
+      platform: this.platform
+    });
   }
   async selectItem(item: any) {
     return this.updateChecked([item], item.checked);
@@ -203,12 +204,14 @@ export default class App extends Vue {
       noinvalid: this.noinvalid,
       jianlou: this.jianlou,
       no_interaction: this.no_interaction,
-      addressId: this.addressId
+      addressId: this.addressId,
+      t: this.datetime,
+      platform: this.platform
     };
     if (this.forcePrice) {
       data.expectedPrice = +this.expectedPrice;
     }
-    cartBuy(data, this.datetime, this.platform);
+    cartBuy(data);
   }
 }
 </script>

@@ -52,158 +52,162 @@ export function invoke(name: string, args?: any) {
 }
 
 export function getUserName(platform: string) {
-  return taobao.getUserName(platform).catch(handleError);
+  return invoke("getUserName", { platform });
 }
 
 export function logout(platform: string) {
-  return taobao.logout(platform).catch(handleError);
+  return invoke("logout", { platform });
 }
 
-export function cartList(platform: string, from_pc = false): Promise<any> {
-  return taobao.cartList(platform).catch(handleError);
+export function cartList(data): Promise<any> {
+  return invoke("cartList", data);
 }
-export function cartBuy(data: any, t: string, platform: string): Promise<any> {
-  return taobao.cartBuy(data, t, platform).catch(handleError);
+export function cartBuy(data): Promise<any> {
+  return invoke("cartList", data);
 }
-export function cartToggle(data: any, platform: string): Promise<any> {
-  return taobao.cartToggle(data, platform).catch(handleError);
+export function cartToggle(data: any): Promise<any> {
+  return invoke("cartToggle", data);
 }
-export function cartToggleAll(data: any, platform: string): Promise<any> {
-  return taobao.cartToggleAll(data, platform).catch(handleError);
+export function cartToggleAll(data: any): Promise<any> {
+  return invoke("cartToggleAll", data);
 }
 export function cartAdd(data: any, platform: string): Promise<any> {
-  return taobao.cartAdd(data, platform).catch(handleError);
+  return invoke("cartAdd", { ...data, platform });
 }
 export function cartDel(data: any, platform: string): Promise<any> {
-  return taobao.cartDel(data, platform).catch(handleError);
+  return invoke("cartDel", {
+    ...data,
+    platform,
+  });
 }
 export function cartUpdateQuantity(data: any, platform: string): Promise<any> {
-  return taobao.cartUpdateQuantity(data, platform).catch(handleError);
+  return invoke("cartUpdateQuantity", { ...data, platform });
 }
 export function buyDirect(
   data: any,
   t: string,
   platform: string
 ): Promise<any> {
-  return taobao.buy(data, t, platform).catch(handleError);
+  return invoke("buy", { ...data, t, platform });
 }
 export function coudan(data: any, platform: string): Promise<any> {
-  return taobao.coudan(data, platform).catch(handleError);
+  return invoke("coudan", { ...data, platform });
 }
 export function qiangquan(
   data: any,
   t: string,
   platform: string
 ): Promise<any> {
-  return taobao
-    .qiangquan(
-      Object.assign(
-        {
-          t,
-          platform,
-        },
-        data
-      )
-    )
-    .catch(handleError);
+  return invoke("qiangquan", {
+    ...data,
+    t,
+    platform,
+  });
 }
 
 export function getAddresses(platform: string) {
-  return taobao.getAddresses(platform).catch(handleError);
+  return invoke("getAddresses", { platform });
 }
 export function commentList(data: any, platform: string): Promise<any> {
-  return taobao.getCommentList(data, platform).catch(handleError);
+  return invoke("getCommentList", { data, platform });
 }
 export function comment(data: any, platform: string): Promise<any> {
-  return taobao.comment(data, platform).catch(handleError);
+  return invoke("comment", { data, platform });
 }
 export function resolveUrl(data: any, platform: string): Promise<any> {
-  return taobao.resolveUrl(data.data, platform).catch(handleError);
+  return invoke("resolveUrl", { data: data.data, platform });
 }
 export function getRedirectedUrl(url: string): Promise<string> {
-  return taobao.getRedirectedUrl(url).catch(handleError);
+  return invoke("getRedirectedUrl", { url });
 }
 
 export function getQrcode(url: string) {
-  return taobao.getQrcode(url).catch(handleError);
+  return invoke("getQrcode", { url });
 }
 export async function getSixtyCourseList(): Promise<any> {}
 
 export async function replyixtyCourse(params: any): Promise<any> {}
 
 export function checkStatus(platform: string, qq = super_user) {
-  return taobao.checkStatus(qq, platform).catch(handleError);
+  return invoke("checkStatus", { qq, platform });
 }
 
 export function sysTime(platform: string) {
-  return taobao.sysTime(platform).catch(handleError);
+  return invoke("sysTime", { platform });
 }
 
 export function goodsList(args: any) {
-  var platform = args.platform;
-  delete args.platform;
-  return taobao.goodsList(args, platform).catch(handleError);
+  return invoke("goodsList", args);
 }
 
 export function goodsDetail(params: any, platform: string) {
-  return taobao.goodsDetail(params, platform).catch(handleError);
+  return invoke("goodsDetail", {
+    ...params,
+    platform,
+  });
 }
 
 export function getGoodsSkus(params: any, platform: string) {
-  return taobao.getGoodsSkus(params, platform).catch(handleError);
+  return invoke("getGoodsSkus", {
+    ...params,
+    platform,
+  });
 }
 export function getConfig() {
-  return taobao.getConfig().catch(handleError);
+  return invoke("getConfig");
 }
 
 export function setConfig(data: any) {
-  return taobao.setConfig(data).catch(handleError);
+  return invoke("setConfig", data);
 }
 
 export function getAccounts() {
-  return taobao.getAccounts().catch(handleError);
+  return invoke("getAccounts");
 }
 
 export function setAccounts(data: any) {
-  return taobao.setAccounts(data).catch(handleError);
+  return invoke("setAccounts", data);
 }
 
 export function getTasks() {
-  return taobao.getTasks().catch(handleError);
+  return invoke("getTasks");
 }
 
 export function cancelTask(id: string) {
-  return taobao.cancelTask(id).catch(handleError);
+  return invoke("cancelTask", { id });
 }
 
 export function getCollection(params: any) {
-  return taobao.getCollection(params).catch(handleError);
+  return invoke("getCollection", params);
 }
 
 export function delCollection(data: any, platform: string) {
-  return taobao.delCollection(data).catch(handleError);
+  return invoke("delCollection", {
+    ...data,
+    platform,
+  });
 }
 
 export function getSeckillList(params) {
-  return taobao.getSeckillList(params, params.platform).catch(handleError);
+  return invoke("getSeckillList", params);
 }
 
 export function getMyCoupons(params) {
-  return taobao.getMyCoupons(params, params.platform).catch(handleError);
+  return invoke("getMyCoupons", params);
 }
 
 export function deleteCoupon(params) {
-  return taobao.deleteCoupon(params, params.platform).catch(handleError);
+  return invoke("deleteCoupon", params);
 }
 
 export function getPlusQuanpinList() {
-  return taobao.getPlusQuanpinList().catch(handleError);
+  return invoke("getPlusQuanpinList");
 }
 
 export function getPlusQuanpin(data) {
-  return taobao.getPlusQuanpin(data).catch(handleError);
+  return invoke("getPlusQuanpin", data);
 }
 
 export function testOrder(params: any) {
-  return taobao.testOrder(params).catch(handleError);
+  return invoke("testOrder", params);
 }

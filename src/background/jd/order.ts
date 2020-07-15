@@ -68,7 +68,7 @@ export async function buyDirect(
   }
   return next();
 }
-export function cartBuy(data: any, p?: Promise<void>) {
+export function cartBuy(data: any) {
   return submitOrder(
     Object.assign(
       {
@@ -80,8 +80,7 @@ export function cartBuy(data: any, p?: Promise<void>) {
         is_pc: true,
       },
       data
-    ),
-    p
+    )
   );
 }
 export async function getOrderPage() {
