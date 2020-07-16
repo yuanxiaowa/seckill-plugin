@@ -2,6 +2,7 @@
 import md5 from "js-md5";
 import axios from "axios";
 import qs_lib from "qs";
+import { request } from "../common/request";
 
 export function getCookie(name: string) {
   return new Promise<string>((resolve) => {
@@ -121,10 +122,18 @@ export async function requestData(
 }
 
 export async function resolveTaokouling(password: string) {
-  var data = await requestData("com.taobao.redbull.getpassworddetail", {
-    data: { password },
-    version: "1.0",
-  });
+  // var data = await requestData("com.taobao.redbull.getpassworddetail", {
+  //   data: { password },
+  //   version: "1.0",
+  // });
+  var { data } = await request.get(
+    "http://www.taofake.com/index/tools/gettkljm.html",
+    {
+      qs: {
+        tkl: password,
+      },
+    }
+  );
   return data.url;
 }
 
