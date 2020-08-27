@@ -318,41 +318,41 @@ export async function submitOrder(args: ArgOrder<any>, retryCount = 0) {
 
   var submit = async (retryCount = 0) => {
     try {
-      if (args.jianlou && !args.no_interaction) {
-        if (!args.bus) {
-          args.bus = new Vue();
-          console.log(`\n${_n}打开另一个捡漏-${args.title}`);
-          submitOrder(args, 1);
-        } else {
-          let b = false;
-          while (Date.now() - startDate.getTime() < config.delay_submit || b) {
-            console.log("\n" + _n + "不到时间,再刷:" + args.title);
-            try {
-              await delay(16);
-              await getNewestOrderData();
-              await doJianlou(_n + "(时间不够)");
-            } catch (e) {
-              b = true;
-              console.log("\n" + _n + "不到时间,出错:" + args.title, e.message);
-              if (e.message === "非法请求") {
-                console.error("......", args.title);
-                return;
-              }
-              if (e.skip) {
-                return;
-              }
-            }
-          }
-          console.log("\n" + _n + "捡漏结束，去通知下单..." + args.title);
-          args.bus.$emit("continue");
-        }
-        await new Promise((resolve) => {
-          args.bus!.$once("continue", resolve);
-        });
-        startDate = new Date();
-      } else {
-        await delay(config.delay_submit);
-      }
+      // if (args.jianlou && !args.no_interaction) {
+      //   if (!args.bus) {
+      //     args.bus = new Vue();
+      //     console.log(`\n${_n}打开另一个捡漏-${args.title}`);
+      //     submitOrder(args, 1);
+      //   } else {
+      //     let b = false;
+      //     while (Date.now() - startDate.getTime() < config.delay_submit || b) {
+      //       console.log("\n" + _n + "不到时间,再刷:" + args.title);
+      //       try {
+      //         await delay(16);
+      //         await getNewestOrderData();
+      //         await doJianlou(_n + "(时间不够)");
+      //       } catch (e) {
+      //         b = true;
+      //         console.log("\n" + _n + "不到时间,出错:" + args.title, e.message);
+      //         if (e.message === "非法请求") {
+      //           console.error("......", args.title);
+      //           return;
+      //         }
+      //         if (e.skip) {
+      //           return;
+      //         }
+      //       }
+      //     }
+      //     console.log("\n" + _n + "捡漏结束，去通知下单..." + args.title);
+      //     args.bus.$emit("continue");
+      //   }
+      //   await new Promise((resolve) => {
+      //     args.bus!.$once("continue", resolve);
+      //   });
+      //   startDate = new Date();
+      // } else {
+      //   await delay(config.delay_submit);
+      // }
       // let now = Date.now();
       /* let diff = 10 * 1000 - (now - prev_submit_time);
         if (diff > 0) {
@@ -395,9 +395,11 @@ export async function submitOrder(args: ArgOrder<any>, retryCount = 0) {
       ) {
         if (args.jianlou) {
           console.error("\n😝", e.message, _n + "正在捡漏重试：" + args.title);
-          await getNewestOrderData();
-          await doJianlou("(变更)");
-          return submit(retryCount);
+          // await getNewestOrderData();
+          // await doJianlou("(变更)");
+          // return submit(retryCount);
+
+          return submitOrder(args, retryCount + 1);
         }
       }
       if (retryCount >= 1) {
@@ -411,9 +413,10 @@ export async function submitOrder(args: ArgOrder<any>, retryCount = 0) {
       ) {
         if (args.jianlou) {
           console.log("\n😝", e.message, _n + "正在捡漏重试：" + args.title);
-          await getNewestOrderData();
-          await doJianlou("(挤爆)");
-          return submit(retryCount + 1);
+          // await getNewestOrderData();
+          // await doJianlou("(挤爆)");
+          // return submit(retryCount + 1);
+          return submitOrder(args, retryCount + 1);
         }
       } else if (
         e.message === "当前访问页面失效，可能您停留时间过长，请重新提交申请"

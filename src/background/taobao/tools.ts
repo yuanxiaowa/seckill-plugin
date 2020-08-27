@@ -3,21 +3,22 @@ import md5 from "js-md5";
 import axios from "axios";
 import qs_lib from "qs";
 import { request } from "../common/request";
+import { getJsonpData } from "../common/tool";
 
-export function getCookie(name: string) {
+export function getCookie(name: string, domain = "taobao") {
   return new Promise<string>((resolve) => {
     chrome.cookies.get(
       {
         name,
-        url: "https://www.taobao.com",
+        url: `https://www.${domain}.com`,
       },
       (cookie) => resolve(cookie!.value)
     );
   });
 }
 
-export function getToken() {
-  return getCookie("_m_h5_tk");
+export function getToken(domain: string) {
+  return getCookie("_m_h5_tk", domain);
 }
 
 export async function getUserName() {
@@ -41,6 +42,7 @@ export async function requestData(
     referer,
     advance,
     origin,
+    apiHost = "taobao",
   }: {
     data: any;
     method?: "get" | "post";
@@ -50,6 +52,7 @@ export async function requestData(
     referer?: string;
     advance?: number;
     origin?: string;
+    apiHost?: "tmall" | "taobao";
   }
 ) {
   var t = Date.now();
@@ -58,7 +61,7 @@ export async function requestData(
   }
   var data_str = JSON.stringify(data);
   var form: any;
-  var token = await getToken();
+  var token = await getToken(apiHost);
   token = token && token.split("_")![0];
   var params: any = {
     jsv: "2.5.1",
@@ -102,12 +105,13 @@ export async function requestData(
     );
   }
   var res = await axios.request({
-    url: `https://h5api.m.taobao.com/h5/${api}/${version}/`,
+    url: `https://h5api.m.${apiHost}.com/h5/${api}/${version}/`,
     method,
     params,
     data: form,
     headers,
   });
+
   data = res.data.data;
   var ret = res.data.ret;
   var arr_msg = ret[ret.length - 1].split("::");
