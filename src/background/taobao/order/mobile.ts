@@ -194,21 +194,6 @@ export async function submitOrderFromMobile(
   console.log(`\n😎----准备进入手机订单结算页：${args.title}`);
   var data1;
   try {
-    // {
-    //   jsv: "2.4.7",
-    //   appKey: appKey,
-    //   api: "mtop.trade.buildOrder.h5",
-    //   v: "3.0",
-    //   type: "originaljson",
-    //   timeout: "20000",
-    //   isSec: "1",
-    //   dataType: "json",
-    //   ecode: "1",
-    //   ttid: "#t#ip##_h5_2014",
-    //   AntiFlood: "true",
-    //   LoginRequest: "true",
-    //   H5Request: "true"
-    // }
     data1 = await requestData("mtop.trade.order.build.h5", {
       data: Object.assign(
         {
@@ -357,13 +342,6 @@ export async function submitOrderFromMobile(
       } else {
         await delay(config.delay_submit);
       }
-      // let now = Date.now();
-      /* let diff = 10 * 1000 - (now - prev_submit_time);
-        if (diff > 0) {
-          console.log("\n提交订单太快，稍等一下");
-          await delay(diff);
-        } */
-      // prev_submit_time = startTime = now;
       console.time(_n + "订单提交 " + startTime);
       let ret = await requestData("mtop.trade.order.create.h5", {
         data: postdata,

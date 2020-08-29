@@ -58,17 +58,17 @@ export async function checkStatus() {
 export async function preserveStatus() {}
 
 export async function getAddresses() {
-  var { code, message, returnValue } = await requestData(
-    "mtop.taobao.mbis.getdeliveraddrlist",
+  var { addressList } = await requestData(
+    "com.taobao.mtop.deliver.getAddressList",
     {
-      data: {},
-      version: "1.0",
+      data: { addrOption: "0", sortType: "0" },
+      version: "2.0",
+      apiHost: "tmall",
+      referer:
+        "https://buy.m.tmall.com/order/addressList.htm?enableStation=true&requestStationUrl=%2F%2Fstationpicker-i56.m.taobao.com%2Finland%2FshowStationInPhone.htm&_input_charset=utf8&hidetoolbar=true&bridgeMessage=true",
     }
   );
-  if (code !== "0") {
-    throw new Error(message);
-  }
-  return JSON.parse(returnValue);
+  return addressList;
 }
 
 export async function getMyCoupons({ page, type }) {
