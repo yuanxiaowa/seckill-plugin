@@ -6,12 +6,13 @@ async function requestData(params: {
   method?: "get" | "post";
 }) {
   var { data, errno, errmsg } = await request(
+    // @ts-ignore
     Object.assign(params, {
       dataType: "form",
       headers: {
         _cookie:
-          "BAIDUCUID=C6A33CF8ACBE7B3792BCE48CC99C755B2A789FABCFMFHPGLIID; BDUSS=JXTmdGRWZvRE9XT3JOLXFmbHRrWmhOaHZkRW9iSFNrUUlRSFU5dEdIOTdrNWhkSVFBQUFBJCQAAAAAAAAAAAEAAAAuNYEKeXVhbnhpYW93YQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHsGcV17BnFdTD; H_OAP_SIDS=10006002; BAIDUID=AE99098C6BACDC522EE1BE1A386AFB64:FG=1"
-      }
+          "BAIDUCUID=C6A33CF8ACBE7B3792BCE48CC99C755B2A789FABCFMFHPGLIID; BDUSS=JXTmdGRWZvRE9XT3JOLXFmbHRrWmhOaHZkRW9iSFNrUUlRSFU5dEdIOTdrNWhkSVFBQUFBJCQAAAAAAAAAAAEAAAAuNYEKeXVhbnhpYW93YQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHsGcV17BnFdTD; H_OAP_SIDS=10006002; BAIDUID=AE99098C6BACDC522EE1BE1A386AFB64:FG=1",
+      },
     })
   );
   if (errno !== 0) {
@@ -26,7 +27,7 @@ export const card_tasks = [
     async list() {
       var { userInfo } = await requestData({
         url:
-          "https://activity.baidu.com/activity/card/index?shareToken=&idfrom=jhy&a=JTdCJTIyY2hhbm5lbF9pZCUyMiUzQSUyMjEwOTlhJTIyJTJDJTIybW9kZWwlMjIlM0ElMjJpUGhvbmUlMjA3JTIwcGx1cyUyMCUzQ2lQaG9uZTklMkMyJTNFJTIyJTJDJTIyYnJhbmQlMjIlM0ElMjJpUGhvbmUlMjIlMkMlMjJvc192ZXJzaW9uJTIyJTNBJTIyMTMuMyUyMiU3RA%3D%3D&issmart=1&appid=17769955&zid=fzFC1YgNVo1yDEwSl2G1BCly3vUzNn91wlPNHvv_uY4mbwZ_DizQFwIJN6NpE0L5omekoINwFOkBLxIzETIIyog&smartversion=1.0.3&version=11.18.0.16&sdkVersion=3.140.13&t=1579245993&source=baiduboxapp&platform=1&thirdZid="
+          "https://activity.baidu.com/activity/card/index?shareToken=&idfrom=jhy&a=JTdCJTIyY2hhbm5lbF9pZCUyMiUzQSUyMjEwOTlhJTIyJTJDJTIybW9kZWwlMjIlM0ElMjJpUGhvbmUlMjA3JTIwcGx1cyUyMCUzQ2lQaG9uZTklMkMyJTNFJTIyJTJDJTIyYnJhbmQlMjIlM0ElMjJpUGhvbmUlMjIlMkMlMjJvc192ZXJzaW9uJTIyJTNBJTIyMTMuMyUyMiU3RA%3D%3D&issmart=1&appid=17769955&zid=fzFC1YgNVo1yDEwSl2G1BCly3vUzNn91wlPNHvv_uY4mbwZ_DizQFwIJN6NpE0L5omekoINwFOkBLxIzETIIyog&smartversion=1.0.3&version=11.18.0.16&sdkVersion=3.140.13&t=1579245993&source=baiduboxapp&platform=1&thirdZid=",
       });
       return [...userInfo.drawNum];
     },
@@ -47,22 +48,22 @@ export const card_tasks = [
           source: "baiduboxapp",
           platform: "1",
           sign: "dc8f9f8ace44c9a5cf061c9d8ac256ec",
-          thirdZid: ""
+          thirdZid: "",
         },
-        method: "post"
+        method: "post",
       });
-    }
+    },
   },
   {
     title: "任务",
     async list() {
       var { taskList } = await requestData({
         url:
-          "https://activity.baidu.com/activity/card/TaskList?al=1,0,0,0,1,0,1,1,0,0,0&pv=9&a=JTdCJTIyY2hhbm5lbF9pZCUyMiUzQSUyMjEwOTlhJTIyJTJDJTIybW9kZWwlMjIlM0ElMjJpUGhvbmUlMjA3JTIwcGx1cyUyMCUzQ2lQaG9uZTklMkMyJTNFJTIyJTJDJTIyYnJhbmQlMjIlM0ElMjJpUGhvbmUlMjIlMkMlMjJvc192ZXJzaW9uJTIyJTNBJTIyMTMuMyUyMiU3RA%3D%3D&issmart=1&appid=17769955&zid=fzFC1YgNVo1yDEwSl2G1BCly3vUzNn91wlPNHvv_uY4mbwZ_DizQFwIJN6NpE0L5omekoINwFOkBLxIzETIIyog&smartversion=1.0.3&version=11.18.0.16&sdkVersion=3.140.13&t=1579246014&source=baiduboxapp&platform=1"
+          "https://activity.baidu.com/activity/card/TaskList?al=1,0,0,0,1,0,1,1,0,0,0&pv=9&a=JTdCJTIyY2hhbm5lbF9pZCUyMiUzQSUyMjEwOTlhJTIyJTJDJTIybW9kZWwlMjIlM0ElMjJpUGhvbmUlMjA3JTIwcGx1cyUyMCUzQ2lQaG9uZTklMkMyJTNFJTIyJTJDJTIyYnJhbmQlMjIlM0ElMjJpUGhvbmUlMjIlMkMlMjJvc192ZXJzaW9uJTIyJTNBJTIyMTMuMyUyMiU3RA%3D%3D&issmart=1&appid=17769955&zid=fzFC1YgNVo1yDEwSl2G1BCly3vUzNn91wlPNHvv_uY4mbwZ_DizQFwIJN6NpE0L5omekoINwFOkBLxIzETIIyog&smartversion=1.0.3&version=11.18.0.16&sdkVersion=3.140.13&t=1579246014&source=baiduboxapp&platform=1",
       });
       return taskList
-        .filter(task => task.status === 0)
-        .map(item => {
+        .filter((task) => task.status === 0)
+        .map((item) => {
           var handler;
           if (item.taskId === "612") {
             handler = () =>
@@ -71,7 +72,7 @@ export const card_tasks = [
               );
           }
           return Object.assign(item, {
-            handler
+            handler,
           });
         });
     },
@@ -92,13 +93,13 @@ export const card_tasks = [
           t: "1579249805",
           source: "baiduboxapp",
           platform: "1",
-          thirdZid: ""
+          thirdZid: "",
         },
-        method: "post"
+        method: "post",
       });
       if (handler) {
         await handler();
       }
-    }
-  }
+    },
+  },
 ];

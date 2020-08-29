@@ -697,6 +697,7 @@ export const cartBuyFromMobile: BaseHandler["cartBuy"] = async function(
   //   await p;
   // }
   var items = args.items;
+  // @ts-ignore
   delete args.items;
 
   if (!args.other) {

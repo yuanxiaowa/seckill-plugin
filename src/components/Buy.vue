@@ -121,7 +121,7 @@ import {
   getQrcode,
   goodsList,
   resolveUrl,
-  qiangquan as qiangquan_api
+  qiangquan as qiangquan_api,
 } from "../api";
 import { qiangquan } from "../msg/order";
 import bus from "../bus";
@@ -129,7 +129,7 @@ import { sendMsg } from "../msg";
 import {
   resolveText,
   getDealedData,
-  getDealedDataFromText
+  getDealedDataFromText,
 } from "../msg/tools";
 import storageMixin from "@/mixins/storage";
 
@@ -176,16 +176,16 @@ function getPlatform(text: string) {
     DatePicker,
     TextRecorder,
     SkuPicker,
-    AddressPicker
+    AddressPicker,
   },
   mixins: [
     storageMixin({
       key: "text",
       skey: "goods-code",
       defaultValue: `账号体检中心
-￥meVo1ve5Vi9￥`
-    })
-  ]
+￥meVo1ve5Vi9￥`,
+    }),
+  ],
 })
 export default class Buy extends Vue {
   text = "";
@@ -269,7 +269,8 @@ export default class Buy extends Vue {
             url,
             quantity: this.num > 1 ? Number(this.num) : data.quantities[i],
             skus: this.getSkus(),
-            skuId: this.skuId
+            skuId: this.skuId,
+            jianlou: this.jianlou,
           },
           data.platform
         )
@@ -300,10 +301,10 @@ export default class Buy extends Vue {
           ignoreRepeat: true,
           no_interaction: this.no_interaction,
           other: {
-            memo: this.memo
+            memo: this.memo,
           },
           skuId: this.skuId,
-          addressId: this.addressId
+          addressId: this.addressId,
         },
         // @ts-ignore
         this.datetime || data.datetime,
@@ -315,7 +316,7 @@ export default class Buy extends Vue {
       if (this.price_coudan) {
         let [{ url }] = await goodsList({
           platform: data.platform,
-          start_price: this.price_coudan
+          start_price: this.price_coudan,
         });
         data.urls[data.urls.length] = url;
         data.quantities[data.urls.length] = 1;
@@ -342,7 +343,7 @@ export default class Buy extends Vue {
     );
     data.urls = urls
       .filter(Boolean)
-      .map(item => item.url)
+      .map((item) => item.url)
       .filter(Boolean);
     return data;
   }
@@ -372,7 +373,7 @@ export default class Buy extends Vue {
         if (msg) {
           let b = await this.$confirm(msg, {
             title: "提示",
-            closeOnClickModal: false
+            closeOnClickModal: false,
           });
           if (!b) {
             throw new Error("领券失败");
@@ -389,7 +390,7 @@ export default class Buy extends Vue {
     var urls = await qiangquan(data.urls, datetime, data.platform);
     data.urls = urls
       .filter(Boolean)
-      .map(item => item.url)
+      .map((item) => item.url)
       .filter(Boolean);
     return data;
   }

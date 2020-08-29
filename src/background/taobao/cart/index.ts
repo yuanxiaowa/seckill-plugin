@@ -54,6 +54,7 @@ export interface ParamsOfAddCart {
   quantity: number;
   skuId?: string;
   from_pc?: boolean;
+  jianlou?: number;
 }
 
 export function addCart(args: ParamsOfAddCart) {

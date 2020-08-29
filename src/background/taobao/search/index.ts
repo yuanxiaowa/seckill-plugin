@@ -6,7 +6,7 @@ import { request } from "@/background/common/request";
  * 搜索商品
  * @param data
  */
-export async function getGoodsList(data: ArgSearch) {
+export async function getGoodsList(data: Partial<ArgSearch>) {
   var page = data.page;
   if (data.is_juhuasuan) {
     return getJuhuasuanList({ page });

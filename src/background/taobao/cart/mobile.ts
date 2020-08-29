@@ -3,6 +3,7 @@ import { getGoodsInfo } from "../goods";
 import setting from "../setting";
 import { CartItem, addCart, updateCart, ParamsOfAddCart } from "../cart";
 import { VendorInfo } from "../cart";
+import { taskManager } from "@/background/common/task-manager";
 
 const spm = "a222m.7628550.0.0";
 export async function getRawCartListFromMobile() {
@@ -149,35 +150,54 @@ export async function getCartListFromMobile() {
 export async function addCartFromMobile(args: ParamsOfAddCart) {
   var itemId;
   var skuId;
+  var res;
   if (/skuId=(\d+)/.test(args.url)) {
     skuId = RegExp.$1;
     itemId = /id=(\d+)/.exec(args.url)![1];
   } else {
-    var res = await getGoodsInfo(args.url, args.skuId);
-    if (res.quantity === 0) {
+    res = await getGoodsInfo(args.url, args.skuId);
+    if (res.quantity === 0 && !args.jianlou) {
       throw new Error("无库存了");
     }
     skuId = res.skuId;
     itemId = res.itemId;
   }
-  var { cartId } = await requestData("mtop.trade.addbag", {
-    data: {
-      itemId,
-      quantity: args.quantity,
-      exParams: JSON.stringify({
-        addressId: "9607477385",
-        etm: "",
-        buyNow: "true",
-        _input_charset: "utf-8",
-        areaId: "320583",
-        divisionId: "320583",
-      }),
-      skuId,
-    },
-    method: "post",
-    version: "3.1",
-  });
-  return cartId;
+  async function handler() {
+    try {
+      var { cartId } = await requestData("mtop.trade.addbag", {
+        data: {
+          itemId,
+          quantity: args.quantity,
+          exParams: JSON.stringify({
+            addressId: "9607477385",
+            etm: "",
+            buyNow: "true",
+            _input_charset: "utf-8",
+            areaId: "320583",
+            divisionId: "320583",
+          }),
+          skuId,
+        },
+        method: "post",
+        version: "3.1",
+      });
+      return cartId;
+    } catch (e) {}
+  }
+  if (args.jianlou) {
+    return taskManager.registerTask(
+      {
+        name: "加入购物车捡漏",
+        platform: "taobao-mobile",
+        comment: res?.title,
+        handler,
+        time: Date.now() + 1000 * 60 * args.jianlou!,
+      },
+      0,
+      `\n🐱加入购物车刷到库存了`
+    );
+  }
+  return handler();
 }
 
 export async function updateCartFromMobile(
