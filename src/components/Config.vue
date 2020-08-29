@@ -21,6 +21,9 @@
       <el-form-item label="自动提交订单">
         <el-checkbox v-model="config.isSubmitOrder" @input="setConfig"></el-checkbox>
       </el-form-item>
+      <el-form-item label="监视重载">
+        <el-checkbox v-model="config.resubmit" @input="setConfig"></el-checkbox>
+      </el-form-item>
       <el-form-item label="延迟">
         <el-input-number v-model="config.delay_all" @input="setConfig"></el-input-number>
       </el-form-item>
@@ -62,8 +65,8 @@ import { init } from "@/msg";
   components: {
     Task,
     StatusComp,
-    AccountInfo
-  }
+    AccountInfo,
+  },
 })
 export default class Config extends Vue {
   config: any = {};
@@ -74,13 +77,13 @@ export default class Config extends Vue {
   }
 
   refreshUserName() {
-    getUserName("taobao").then(username => {
+    getUserName("taobao").then((username) => {
       this.username = username;
     });
   }
 
   pullConfig() {
-    getConfig().then(c => {
+    getConfig().then((c) => {
       /* if (c.is_main) {
       } */
       init(c);

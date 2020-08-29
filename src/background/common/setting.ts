@@ -4,7 +4,7 @@ export const UA = {
   wap:
     "Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A372 Safari/604.1",
   pc:
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.132 Safari/537.36"
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.132 Safari/537.36",
 };
 
 export const config = {
@@ -15,7 +15,8 @@ export const config = {
   qq: 870092104,
   is_main: false,
   accept_messages: true,
-  keywords: []
+  keywords: [],
+  resubmit: false,
 };
 
 export function get_config() {
@@ -31,13 +32,13 @@ export const accounts = {
   jingdong: {
     username: "",
     password: "",
-    paypass: ""
+    paypass: "",
   },
   taobao: {
     username: "",
     password: "",
-    paypass: ""
-  }
+    paypass: "",
+  },
 };
 
 export function get_accounts() {
@@ -51,5 +52,5 @@ export function set_accounts(_conf) {
 
 export const DT = {
   taobao: 0,
-  jingdong: 0
+  jingdong: 0,
 };

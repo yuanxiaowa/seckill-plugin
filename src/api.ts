@@ -63,7 +63,7 @@ export function cartList(data): Promise<any> {
   return invoke("cartList", data);
 }
 export function cartBuy(data): Promise<any> {
-  return invoke("cartList", data);
+  return invoke("cartBuy", data);
 }
 export function cartToggle(data: any): Promise<any> {
   return invoke("cartToggle", data);

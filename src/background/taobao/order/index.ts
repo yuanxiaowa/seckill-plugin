@@ -5,10 +5,10 @@ import {
 } from "./mobile";
 import { Handler } from "@/structs/api";
 import { cartBuyFromPc, buyDirectFromPc } from "./pc";
-import { ifElse, propIs } from "ramda";
+import { ifElse, propEq } from "ramda";
 
 export const buyDirect: Handler["buy"] = ifElse(
-  propIs(true, "from_pc"),
+  propEq("from_pc", true),
   buyDirectFromPc,
   buyDirectFromMobile
 );
@@ -18,7 +18,9 @@ export const coudan: Handler["coudan"] = function(args) {
 };
 
 export const cartBuy: Handler["cartBuy"] = ifElse(
-  propIs(true, "from_pc"),
+  propEq("from_pc", true),
   cartBuyFromPc,
   cartBuyFromMobile
 );
+
+export function logFile(a: any, b?: any, c?: any) {}

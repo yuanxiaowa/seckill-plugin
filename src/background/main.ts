@@ -31,15 +31,20 @@ function wrappedDelay<TArgs = any, TReturn = any>({
 }: {
   name: string;
   comment: string;
-  handler(args: TArgs): (() => Promise<TReturn>) | TReturn;
+  handler(
+    args: TArgs
+  ): ((() => Promise<TReturn>) | TReturn) & {
+    title?: string;
+  };
 }) {
   return async ({ t, ...restArgs }: any): Promise<TReturn> => {
     const f = await handler(restArgs);
+    let id;
     if (t) {
       let time = moment(t).valueOf();
       let diff = time - Date.now();
       if (diff > 0) {
-        await taskManager.registerTask(
+        const task = taskManager.registerTask(
           {
             name,
             time: t,
@@ -48,12 +53,18 @@ function wrappedDelay<TArgs = any, TReturn = any>({
           },
           time
         );
+        id = task.id;
+        await task;
       }
     }
     if (typeof f === "function") {
+      if (f.title && id) {
+        taskManager.setTitle(id, f.title);
+      }
       // @ts-ignore
       return f();
     }
+    // @ts-ignore
     return f;
   };
 }
@@ -121,12 +132,16 @@ async function getTasks() {
   );
 }
 
-async function cancelTask(id: number) {
+async function cancelTask({ id }: { id: number }) {
   return taskManager.cancelTask(id);
 }
-const isJd = propIs("jingdong", "platform");
+const isJd = R.propEq("jingdong", "platform");
 const taobao = {
-  resolveUrl: ifElse(isJd, jd.resolveUrl, tb.resolveUrl),
+  resolveUrl: ifElse(
+    isJd,
+    R.compose(jd.resolveUrl, R.prop("data")),
+    R.compose(tb.resolveUrl, R.prop("data"))
+  ),
   qiangquan,
   buy(args) {
     return wrappedDelay({

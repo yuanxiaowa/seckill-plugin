@@ -2,7 +2,7 @@ import Vue from "vue";
 import { ArgOrder } from "../structs";
 import { requestData, getUserName } from "../tools";
 import { getGoodsInfo } from "../goods";
-import { addCart, getCartList } from "../cart";
+import { addCart } from "../cart";
 import qs_lib from "querystring";
 import { config, UA, accounts } from "../../common/setting";
 import { delay } from "../../common/tool";
@@ -10,8 +10,9 @@ import { taskManager } from "../../common/task-manager";
 import { notify, sendQQMsg } from "../../common/message";
 import { excutePageAction } from "../../page";
 import { BaseHandler } from "@/structs/api";
-
-function logFile(a: any, b?: any, c?: any) {}
+import { logFile } from ".";
+import { getCartListFromMobile } from "../cart/mobile";
+import moment from "moment";
 
 function transformOrderData(
   orderdata: any,
@@ -183,10 +184,14 @@ function transformOrderData(
   return postdata;
 }
 
-export async function submitOrderFromMobile(
-  args: ArgOrder<any>,
-  retryCount = 0
-) {
+export async function submitOrderFromMobile(args: ArgOrder<any>) {
+  if (config.resubmit) {
+    return submitOrderResubmit(args);
+  }
+  return submitOrderStatic(args);
+}
+
+async function submitOrderStatic(args: ArgOrder<any>, retryCount = 0) {
   var startDate = new Date();
   var startTime = startDate.getTime();
   console.time("订单结算 " + args.title + startTime);
@@ -231,7 +236,7 @@ export async function submitOrderFromMobile(
     }
     if (e.name === "FAIL_SYS_TRAFFIC_LIMIT" || e.message.includes("被挤爆")) {
       console.log(`太挤了，正在重试：${args.title}`);
-      submitOrderFromMobile(args, retryCount + 1);
+      submitOrderStatic(args, retryCount + 1);
       return;
     }
     throw e;
@@ -311,7 +316,7 @@ export async function submitOrderFromMobile(
         if (!args.bus) {
           args.bus = new Vue();
           console.log(`\n${_n}打开另一个捡漏-${args.title}`);
-          submitOrderFromMobile(args, 1);
+          submitOrderStatic(args, 1);
         } else {
           let b = false;
           while (Date.now() - startDate.getTime() < config.delay_submit || b) {
@@ -401,7 +406,7 @@ export async function submitOrderFromMobile(
         e.message === "当前访问页面失效，可能您停留时间过长，请重新提交申请"
       ) {
         console.error(e);
-        return submitOrderFromMobile(args, retryCount);
+        return submitOrderStatic(args, retryCount);
       } else if (
         e.message !== "活动火爆，名额陆续开放，建议后续关注！" &&
         !e.message.startsWith("您已经从购物车购买过此商品")
@@ -450,6 +455,175 @@ export async function submitOrderFromMobile(
   // return delay(70);
 }
 
+async function submitOrderResubmit(args: ArgOrder<any>) {
+  var startDate = new Date();
+  var startTime = startDate.getTime();
+  // console.time("订单结算 " + args.title + startTime);
+  // other.memo other.ComplexInput
+  console.log(`\n😎----准备进入手机订单结算页：${args.title}`);
+  let retryCount = 0;
+  let prev_msg = "";
+  async function handler() {
+    var data1;
+    try {
+      data1 = await requestData("mtop.trade.order.build.h5", {
+        data: Object.assign(
+          {
+            exParams: JSON.stringify({
+              tradeProtocolFeatures: "5",
+              userAgent: UA.wap,
+            }),
+          },
+          args.data
+        ),
+        method: "post",
+        advance: 1500,
+      });
+    } catch (e) {
+      console.error(`\n😵获取订单信息出错：${args.title}`, e);
+      if (retryCount >= 1) {
+        console.error(`已经重试两次，放弃治疗：${args.title}`);
+        if (
+          e.name === "FAIL_SYS_TRAFFIC_LIMIT" ||
+          e.message.includes("被挤爆")
+        ) {
+          window.open(
+            `https://main.m.taobao.com/order/index.html?` +
+              qs_lib.stringify(
+                Object.assign(
+                  {
+                    exParams: JSON.stringify({
+                      tradeProtocolFeatures: "5",
+                      userAgent: UA.wap,
+                    }),
+                  },
+                  args.data
+                )
+              )
+          );
+        }
+        throw e;
+      }
+      if (e.name === "FAIL_SYS_TRAFFIC_LIMIT" || e.message.includes("被挤爆")) {
+        console.log(`太挤了，正在重试：${args.title}`);
+        retryCount++;
+        return;
+      }
+      throw e;
+    }
+    // console.timeEnd("订单结算 " + args.title + startTime);
+    // console.log(`\n-----已经进入手机订单结算页：${args.title}`);
+    // logFile(data1, "手机订单结算页", ".json");
+    // console.log(`-----准备提交：${args.title}`);
+    var postdata;
+
+    var submit = async (retryCount = 0) => {
+      try {
+        console.time("订单提交 " + startTime);
+        let ret = await requestData("mtop.trade.order.create.h5", {
+          data: postdata,
+          method: "post",
+          qs: {
+            [data1.global.secretKey]: data1.global.secretValue,
+          },
+          referer: `https://main.m.taobao.com/order/index.html?${qs_lib.stringify(
+            args.data
+          )}`,
+          origin: "https://main.m.taobao.com",
+        });
+        logFile(ret, `手机订单提交成功`);
+        console.log(`\n😃 ----------手机订单提交成功：${args.title}`);
+        console.timeEnd("订单提交 " + startTime);
+        let msg = `(${await getUserName()})手机订单提交成功，速度去付款：${
+          args.title
+        }`;
+        notify(msg);
+        sendQQMsg(msg);
+        if (
+          (args.autopay || args.expectedPrice! <= 0.3) &&
+          accounts.taobao.paypass
+        ) {
+          console.log(ret);
+          pay(ret.alipayWapCashierUrl, accounts.taobao.paypass);
+        }
+      } catch (e) {
+        startTime = Date.now();
+        if (
+          e.message.includes("优惠信息变更") ||
+          e.message.startsWith("购买数量超过了限购数")
+        ) {
+          if (args.jianlou) {
+            console.error("\n😝", e.message, "正在捡漏重试：" + args.title);
+            return;
+          }
+        }
+        if (retryCount >= 1) {
+          console.error("\n😝" + e.message + ":" + args.title);
+          console.error(`已经重试两次，放弃治疗：${args.title}`);
+          throw e;
+        }
+        if (
+          e.message.includes("对不起，系统繁忙，请稍候再试") ||
+          e.message.includes("被挤爆")
+        ) {
+          if (args.jianlou) {
+            console.log("\n😝", e.message, "正在捡漏重试：" + args.title);
+            retryCount++;
+            return;
+          }
+        } else if (
+          e.message === "当前访问页面失效，可能您停留时间过长，请重新提交申请"
+        ) {
+          console.error(e);
+          return;
+        } else if (
+          e.message !== "活动火爆，名额陆续开放，建议后续关注！" &&
+          !e.message.startsWith("您已经从购物车购买过此商品")
+        ) {
+          console.log("\n😝", e.message, "正在重试：" + args.title);
+          // B-15034-01-01-001: 您已经从购物车购买过此商品，请勿重复下单
+          // RGV587_ERROR: 哎哟喂,被挤爆啦,请稍后重试
+          // F-10007-10-10-019: 对不起，系统繁忙，请稍候再试
+          // FAIL_SYS_TOKEN_EXOIRED: 令牌过期
+          // F-10003-11-16-001: 购买数量超过了限购数。可能是库存不足，也可能是人为限制。
+          // FAIL_SYS_HSF_ASYNC_TIMEOUT: 抱歉，网络系统异常
+          retryCount++;
+          return;
+        }
+        throw e;
+      }
+    };
+    try {
+      postdata = transformOrderData(data1, args);
+    } catch (e) {
+      if (args.jianlou) {
+        if (e.message !== prev_msg) {
+          console.log(moment().format(moment.HTML5_FMT.TIME), e.message);
+          prev_msg = e.message;
+        }
+        return;
+      } else {
+        throw e;
+      }
+    }
+    if (!config.isSubmitOrder) {
+      return;
+    }
+    return submit();
+  }
+  return taskManager.registerTask(
+    {
+      name: "捡漏",
+      platform: "taobao-mobile",
+      comment: args.title,
+      handler,
+      time: startTime + 1000 * 60 * args.jianlou!,
+    },
+    0,
+    `\n🐱刷到库存了---${args.title}`
+  );
+}
+
 function getNextDataByGoodsInfo({ delivery, skuId, itemId }, quantity: number) {
   return {
     buyNow: true,
@@ -464,10 +638,7 @@ function getNextDataByGoodsInfo({ delivery, skuId, itemId }, quantity: number) {
   };
 }
 
-export const buyDirectFromMobile: BaseHandler["buy"] = async function(
-  args,
-  p?: Promise<void> & { id: number }
-) {
+export const buyDirectFromMobile: BaseHandler["buy"] = async function(args) {
   if (args.from_pc) {
     let form = document.createElement("form");
 
@@ -475,23 +646,24 @@ export const buyDirectFromMobile: BaseHandler["buy"] = async function(
     return;
   }
   var data = await getGoodsInfo(args.url, args.skuId);
-  if (p) {
-    taskManager.setTitle(p.id, data.title);
-    await p;
-  } else if (!args.no_interaction) {
-    if (!data.buyEnable) {
-      throw new Error(data.msg || "不能购买");
+  const f = async () => {
+    if (!args.no_interaction) {
+      if (!data.buyEnable) {
+        throw new Error(data.msg || "不能购买");
+      }
     }
-  }
-  if (typeof args.expectedPrice === "number") {
-    args.expectedPrice = Math.min(data.price, args.expectedPrice);
-  }
-  return submitOrderFromMobile(
-    Object.assign(args, {
-      data: getNextDataByGoodsInfo(data, args.quantity),
-      title: data.title,
-    })
-  );
+    if (typeof args.expectedPrice === "number") {
+      args.expectedPrice = Math.min(data.price, args.expectedPrice);
+    }
+    return submitOrderFromMobile(
+      Object.assign(args, {
+        data: getNextDataByGoodsInfo(data, args.quantity),
+        title: data.title,
+      })
+    );
+  };
+  f.title = data.title;
+  return f;
 };
 
 export const coudanFromMobile: BaseHandler["coudan"] = async function(
@@ -505,7 +677,7 @@ export const coudanFromMobile: BaseHandler["coudan"] = async function(
       })
     )
   );
-  var list = await getCartList({});
+  var list = await getCartListFromMobile();
   var datas: any[] = [];
   list.forEach(({ items }) => {
     items.forEach((item) => {
@@ -518,27 +690,28 @@ export const coudanFromMobile: BaseHandler["coudan"] = async function(
 };
 
 export const cartBuyFromMobile: BaseHandler["cartBuy"] = async function(
-  args,
-  p?: Promise<void>
+  args
+  // p?: Promise<void>
 ) {
-  if (p) {
-    await p;
-  }
+  // if (p) {
+  //   await p;
+  // }
   var items = args.items;
   delete args.items;
 
   if (!args.other) {
     args.other = {};
   }
-  return submitOrderFromMobile({
-    data: {
-      buyNow: "false",
-      buyParam: items.map(({ settlement }) => settlement).join(","),
-      spm: "a222m.7628550.0.0",
-    },
-    title: items.map(({ title }) => title).join("~"),
-    ...args,
-  });
+  return () =>
+    submitOrderFromMobile({
+      data: {
+        buyNow: "false",
+        buyParam: items.map(({ settlement }) => settlement).join(","),
+        spm: "a222m.7628550.0.0",
+      },
+      title: items.map(({ title }) => title).join("~"),
+      ...args,
+    });
 };
 
 // @ts-ignore

@@ -9,12 +9,12 @@ import { getPlusQuanpin, getPlusQuanpinList } from "./plus";
 import { getSysTime } from "../common/time";
 
 export default {
-  resolveUrl: resolveUrl,
+  resolveUrl,
   getCommentList() {},
   couponHandlers: handlers,
-  buyDirect: buyDirect,
+  buyDirect,
   comment() {},
-  getGoodsList: getGoodsList,
+  getGoodsList,
   getGoodsSkus() {},
   cartBuy: cartBuy,
   coudan: coudan,

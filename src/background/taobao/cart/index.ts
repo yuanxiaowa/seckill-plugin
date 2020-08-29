@@ -37,11 +37,16 @@ export interface CartItem extends CartItemBase {
   itemId: string;
 }
 
-export function getCartList({ from_pc }: { from_pc?: boolean }) {
+export async function getCartList({ from_pc }: { from_pc?: boolean }) {
+  let items: any[];
   if (from_pc) {
-    return getCartListFromPc();
+    items = await getCartListFromPc();
+  } else {
+    items = await getCartListFromMobile();
   }
-  return getCartListFromMobile();
+  return {
+    items,
+  };
 }
 
 export interface ParamsOfAddCart {

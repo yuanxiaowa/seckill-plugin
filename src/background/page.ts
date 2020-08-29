@@ -1,6 +1,18 @@
 import { delay } from "./common/tool";
 
 export class ChromePage {
+  setRequestInterception(arg0: boolean) {
+    throw new Error("Method not implemented.");
+  }
+  waitForSelector(arg0: string) {
+    throw new Error("Method not implemented.");
+  }
+  click(arg0: string) {
+    throw new Error("Method not implemented.");
+  }
+  reload() {
+    throw new Error("Method not implemented.");
+  }
   private pending = true;
   private listeners_map: Record<string, Function[]> = {};
   constructor(
