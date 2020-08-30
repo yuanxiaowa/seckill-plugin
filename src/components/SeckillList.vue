@@ -6,7 +6,7 @@
  -->
 <template>
   <div>
-    <el-form size="small">
+    <el-form>
       <el-form-item>
         <el-checkbox v-model="from_pc">pc购买 &nbsp;</el-checkbox>
         <el-radio-group v-model="platform">
@@ -24,16 +24,16 @@
       <el-table-column>
         <template slot-scope="{row}">
           <el-checkbox v-model="row.checked" @change="selectGroupAll(row,$event)">全选</el-checkbox>
-          <el-button @click="seckill({items:row.items},true)" size="small">秒杀</el-button>
+          <el-button @click="seckill({items:row.items},true)">秒杀</el-button>
           <div v-for="item of row.items" :key="item.id">
             <el-checkbox v-model="item.checked"></el-checkbox>
             <a :href="item.url" target="_blank">{{item.title}}</a>
             <i style="text-decoration:">￥{{item.price}}</i>
-            <el-tag type="danger" size="small">￥{{item.seckillPrice}}</el-tag>
+            <el-tag type="danger">￥{{item.seckillPrice}}</el-tag>
             数量：{{item.quantity}}
-            <el-button @click="seckill({items:[item]})" size="small">秒杀</el-button>
-            <el-button @click="seckill({items:[item]},false,true)" size="small">捡漏</el-button>
-            <el-button @click="addCart(item)" size="small">加入购物车</el-button>
+            <el-button @click="seckill({items:[item]})">秒杀</el-button>
+            <el-button @click="seckill({items:[item]},false,true)">捡漏</el-button>
+            <el-button @click="addCart(item)">加入购物车</el-button>
           </div>
         </template>
       </el-table-column>
@@ -53,8 +53,8 @@ import { sendMsg } from "../msg";
 @Component({
   components: {
     DatePicker,
-    SuggestionInput
-  }
+    SuggestionInput,
+  },
 })
 export default class SeckillList extends Vue {
   platform = "taobao";
@@ -66,12 +66,12 @@ export default class SeckillList extends Vue {
   pullData() {
     getSeckillList({
       platform: this.platform,
-      url: this.url
-    }).then(data => {
-      data.forEach(group => {
+      url: this.url,
+    }).then((data) => {
+      data.forEach((group) => {
         group.checked = false;
         group.items.sort((a, b) => b.price - a.price);
-        group.items.forEach(item => {
+        group.items.forEach((item) => {
           item.checked = true;
         });
       });
@@ -81,7 +81,7 @@ export default class SeckillList extends Vue {
   seckill({ items, qq }, isChecked = false, is_now = false) {
     var jianlou = is_now ? 61 - new Date().getMinutes() : 1;
     return Promise.all(
-      items.map(item => {
+      items.map((item) => {
         if (isChecked) {
           if (!item.checked) {
             return;
@@ -98,7 +98,7 @@ export default class SeckillList extends Vue {
             other: {},
             _comment: item.title,
             qq,
-            no_interaction: this.no_interaction
+            no_interaction: this.no_interaction,
           },
           is_now ? "" : item.time,
           this.platform
@@ -108,7 +108,7 @@ export default class SeckillList extends Vue {
   }
 
   selectGroupAll(item, checked) {
-    item.items.forEach(item => {
+    item.items.forEach((item) => {
       item.checked = checked;
     });
   }
@@ -117,7 +117,7 @@ export default class SeckillList extends Vue {
     cartAdd(
       {
         url: item.url,
-        quantity: 1
+        quantity: 1,
       },
       this.platform
     );
@@ -128,24 +128,24 @@ export default class SeckillList extends Vue {
       var username = await getUserName("taobao");
       getSeckillList({
         platform: this.platform,
-        url: this.url
+        url: this.url,
       })
         .then(([{ items, time }]) => {
           var t = new Date(time).getTime();
           items = items.sort((a, b) => b.price - a.price);
           this.seckill({
             items: items.slice(0, 3),
-            qq: data && data.qq
+            qq: data && data.qq,
           }).then(
             () => {
               sendMsg(`(${username})` + time + "开始秒杀", data && data.qq);
             },
-            e => {
+            (e) => {
               sendMsg(`(${username})` + "秒杀出错", data && data.qq);
             }
           );
         })
-        .catch(e => {
+        .catch((e) => {
           sendMsg(`(${username})` + e.message, data && data.qq);
         });
     });

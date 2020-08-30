@@ -5,7 +5,7 @@
  * @LastEditTime: 2019-09-07 11:39:48
  -->
 <template>
-  <el-form label-width="80px" size="small">
+  <el-form label-width="80px">
     <el-form-item>
       <el-col :span="6">
         <el-form-item label="平台">

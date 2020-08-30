@@ -4,6 +4,7 @@ import setting from "../setting";
 import { CartItem, addCart, updateCart, ParamsOfAddCart } from "../cart";
 import { VendorInfo } from "../cart";
 import { taskManager } from "@/background/common/task-manager";
+import { formatUrl } from "@/background/common/tool";
 
 const spm = "a222m.7628550.0.0";
 export async function getRawCartListFromMobile() {
@@ -94,10 +95,23 @@ export async function getCartListFromMobile() {
         if (!structure[key]) {
           return;
         }
-        structure[key].map((_item) => {
-          children.push(mapper(_item));
+        let promotions: any[] = [];
+        let groupData = data[key];
+        const { groupPromotion } = groupData.fields;
+        if (groupPromotion) {
+          promotions.push({
+            title: groupPromotion.title,
+            url: formatUrl(groupPromotion.url),
+          });
+        }
+
+        structure[key].forEach((_item) => {
+          const data: any = mapper(_item);
+          data.promotions = promotions;
+          children.push(data);
         });
       });
+      // 店铺
       ret.push({
         id,
         title: fields.title,

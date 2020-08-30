@@ -1,5 +1,8 @@
 import { getItemId } from ".";
 import { requestData } from "../tools";
+import { flatten } from "ramda";
+import { formatUrl } from "@/background/common/tool";
+import moment from "moment";
 
 export async function getGoodsDetailFromMobile(url: string) {
   var itemId = getItemId(url);
@@ -85,6 +88,80 @@ export async function getGoodsInfoFromMobile(url: string, skuId?: string) {
     version: "6.0",
   });
   return transformMobileGoodsInfo(data, skuId);
+}
+
+export async function getGoodsPromotionsFromMobile(item: any) {
+  var { coupons } = await requestData("mtop.tmall.detail.couponpage", {
+    data: { itemId: Number(item.itemId), source: "tmallH5" },
+    version: "1.0",
+  });
+  return flatten(
+    coupons.map(({ arg1, couponList, title, type }) => {
+      if (arg1 === "CategoryCoupon") {
+        return couponList.map((coupon) => {
+          const { activityUrl, subtitles, hasReceived, enabled, uuid } = coupon;
+          const discount = Number(coupon.title);
+          let quota = 300;
+          if (/满(\d+)/.test(subtitles[0])) {
+            quota = Number(RegExp.$1);
+          }
+          const time_arr = subtitles[1].split("至");
+          return {
+            url: formatUrl(activityUrl),
+            title: `[${title}] ${quota}-${discount}`,
+            quota,
+            discount,
+            startTime: moment(time_arr[0], "yyyy.MM.DD HH:mm"),
+            endTime: moment(time_arr[1], "yyyy.MM.DD HH:mm"),
+            hasReceived,
+            enabled,
+            params: {
+              asac: coupon.asac,
+              couponType: String(type),
+              lotteryId: "",
+              sellerId: item.sellerId,
+              source: "tmallH5",
+              trackBtnParams: JSON.stringify(coupon.trackBtnParams),
+              ua:
+                "134#8KXImJXwXGfcz/y2W6M9UX0D3QROwKO9sE/w4/PLri5WnZfY6PX1kXXy4DwzM3MrCj6pjoeQRKVEk/jTR8fl/FLghJowqqX3IkuU+4qqXTqqZjXxzsefqTg7oXoXqRyKTybJbsfAqcqqZJL0+001HBzKkGJtqHpqqyFU+gd8rqqAZrww+Tv66CIonTi+4a4DNBPwrnlCkbcPCMtC/0QuekvgJZOYDkASkfAWgTr1HCLGmhSZNpjWY0MMhrgIWvPucBG+T5lSiqaW/z3Wjua5zBIi2eLHV6Xy7twm2Pvoy8rAhWpI2s7WiKj064N+1PUe3LgeL/uXhni8Sow7w0MFDTp5sG3wr8PyMfZwJJX3yR1Fl4izL3fKcOEK4s1mTxKb37ltjTo+lJW2Q2+tdq4TNLoiLOiLsKUGkZnxyefupZl4uzj1mYKrXozrFrB188T46iK6dDOrxDlTI5MGfuGrewhSIo3MqA+uBaOpJAQf3NTpJfL0EV3fgGJhQ++3jam9+9mbHXGGS+OgXTsnCF7KoQNJT9v0aksIJiQqF92ZlEcFS5rIxpl3q9fvONmy9BBlvrite2+6Rvfw9IYOr618nslh3EwSyha9mqhDnnvt/71Qp194bJIyn+EVUqhwqY0K/Pjdh8yJ3UXWeRjwVGUg+C4D149CSDqkx7kcTplI8EcJxo7aEOUJAZdMVU5nrMiHx23peLg4zVMUs/jwAm3N4eNfKHiMzaTv0dSjt77KLI5KPGzcgbaUhVKgU9Sf0LgENJ1iT0riCiQZ/RhyCtQjAm8ackpwBDr6XEpNLW+PFypjAtOJOzxmfxeuhU/MZhA9v0kJKZMUz3xbADaCOauRh3h+hN/i0XQVtoS7KmftwTZHuUG0CbsYJ4GM2mHif9/7Cp/xvAcxjgkFbVgpO19KKJ7lna7TBn00jS2rt+6JGv2W",
+              uuid,
+            },
+          };
+        });
+      }
+      if (arg1 === "ShopCoupon") {
+        return couponList.map((coupon) => {
+          const { activityUrl, subtitles, hasReceived, enabled, uuid } = coupon;
+          const discount = Number(coupon.title);
+          let quota = 300;
+          if (/满(\d+)/.test(subtitles[0])) {
+            quota = Number(RegExp.$1);
+          }
+          const time_arr = subtitles[1].split("至");
+          return {
+            url: formatUrl(activityUrl),
+            title: `[${title}] ${quota}-${discount}`,
+            quota,
+            discount,
+            startTime: moment(time_arr[0], "yyyy.MM.DD HH:mm"),
+            endTime: moment(time_arr[1], "yyyy.MM.DD HH:mm"),
+            hasReceived,
+            enabled,
+            params: {
+              asac: "",
+              couponType: String(type),
+              lotteryId: "",
+              sellerId: item.sellerId,
+              source: "tmallH5",
+              ua:
+                "134#8KXImJXwXGfcz/y2W6M9UX0D3QROwKO9sE/w4/PLri5WnZfY6PX1kXXy4DwzM3MrCj6pjoeQRKVEk/jTR8fl/FLghJowqqX3IkuU+4qqXTqqZjXxzsefqTg7oXoXqRyKTybJbsfAqcqqZJL0+001HBzKkGJtqHpqqyFU+gd8rqqAZrww+Tv66CIonTi+4a4DNBPwrnlCkbcPCMtC/0QuekvgJZOYDkASkfAWgTr1HCLGmhSZNpjWY0MMhrgIWvPucBG+T5lSiqaW/z3Wjua5zBIi2eLHV6Xy7twm2Pvoy8rAhWpI2s7WiKj064N+1PUe3LgeL/uXhni8Sow7w0MFDTp5sG3wr8PyMfZwJJX3yR1Fl4izL3fKcOEK4s1mTxKb37ltjTo+lJW2Q2+tdq4TNLoiLOiLsKUGkZnxyefupZl4uzj1mYKrXozrFrB188T46iK6dDOrxDlTI5MGfuGrewhSIo3MqA+uBaOpJAQf3NTpJfL0EV3fgGJhQ++3jam9+9mbHXGGS+OgXTsnCF7KoQNJT9v0aksIJiQqF92ZlEcFS5rIxpl3q9fvONmy9BBlvrite2+6Rvfw9IYOr618nslh3EwSyha9mqhDnnvt/71Qp194bJIyn+EVUqhwqY0K/Pjdh8yJ3UXWeRjwVGUg+C4D149CSDqkx7kcTplI8EcJxo7aEOUJAZdMVU5nrMiHx23peLg4zVMUs/jwAm3N4eNfKHiMzaTv0dSjt77KLI5KPGzcgbaUhVKgU9Sf0LgENJ1iT0riCiQZ/RhyCtQjAm8ackpwBDr6XEpNLW+PFypjAtOJOzxmfxeuhU/MZhA9v0kJKZMUz3xbADaCOauRh3h+hN/i0XQVtoS7KmftwTZHuUG0CbsYJ4GM2mHif9/7Cp/xvAcxjgkFbVgpO19KKJ7lna7TBn00jS2rt+6JGv2W",
+              uuid,
+            },
+          };
+        });
+      }
+    })
+  );
 }
 
 function transformMobileGoodsInfo({ apiStack, item }, skuId?: string) {

@@ -10,8 +10,8 @@
       <el-radio label="taobao">淘宝</el-radio>
       <el-radio label="jingdong">京东</el-radio>
     </el-radio-group>
-    <el-button @click="checkStatus" size="small">获取状态</el-button>
-    <el-button @click="sysTime" size="small">同步时间</el-button>
+    <el-button @click="checkStatus">获取状态</el-button>
+    <el-button @click="sysTime">同步时间</el-button>
   </div>
 </template>
 

@@ -6,7 +6,7 @@
  -->
 <template>
   <div>
-    <el-form size="small">
+    <el-form>
       <el-form-item label="平台">
         <el-radio-group v-model="form_data.platform">
           <el-radio label="taobao">淘宝</el-radio>
@@ -90,8 +90,8 @@
       :max-height="500"
     >
       <template slot-scope="{row}" slot="actions">
-        <el-button @click="addCart(row)" size="small">加入购物车</el-button>
-        <el-button @click="showQrcode(row)" size="small">查看二维码</el-button>
+        <el-button @click="addCart(row)">加入购物车</el-button>
+        <el-button @click="showQrcode(row)">查看二维码</el-button>
       </template>
     </data-list-wrapper>
   </div>
@@ -109,15 +109,15 @@ import DataListWrapper from "./DataListWrapper.vue";
 @Component({
   components: {
     Coupons,
-    DataListWrapper
+    DataListWrapper,
   },
   mixins: [
     storageMixin({
       key: "extra_params",
       skey: "search_extra_params",
-      defaultValue: "g_couponGroupId=12786776025"
-    })
-  ]
+      defaultValue: "g_couponGroupId=12786776025",
+    }),
+  ],
 })
 export default class Search extends Vue {
   @Prop() value!: any[];
@@ -133,7 +133,7 @@ export default class Search extends Vue {
     platform: "taobao",
     keyword: "",
     start_price: 0,
-    end_price: 9999
+    end_price: 9999,
     // g_couponId: /* "117700001" */ "3485480227",
     // coupon_shopid: 0,
     // g_couponFrom: "mycoupon_pc",
@@ -147,7 +147,7 @@ export default class Search extends Vue {
     {
       label: "商品名称",
       prop: "title",
-      render: this.renderTitle
+      render: this.renderTitle,
     },
     {
       label: "价格",
@@ -155,7 +155,7 @@ export default class Search extends Vue {
       width: 100,
       formatter(row) {
         return `￥${row.price}`;
-      }
+      },
     },
     {
       label: "聚划算抢名额",
@@ -171,15 +171,16 @@ export default class Search extends Vue {
             if (!row.mjContent) {
               return;
             }
-            return `￥${(row.mjContent.promInfos[0].discount / 1000) *
-              row.price}`;
-          }
+            return `￥${
+              (row.mjContent.promInfos[0].discount / 1000) * row.price
+            }`;
+          },
         },
         {
           label: "名额",
           width: 100,
           prop: "mjContent.quantityLimit",
-          color: "#aaa"
+          color: "#aaa",
         },
         {
           label: "时间",
@@ -188,14 +189,14 @@ export default class Search extends Vue {
           filters: [
             { text: "今天", value: "今天" },
             { text: "明天", value: "明天" },
-            { text: "后天", value: "后天" }
+            { text: "后天", value: "后天" },
           ],
           "filter-method"(value, row) {
             return row.mjContent && row.mjContent.startTime_str.includes(value);
-          }
-        }
-      ]
-    }
+          },
+        },
+      ],
+    },
   ];
 
   showQrcode(row) {
@@ -238,7 +239,7 @@ export default class Search extends Vue {
     cartAdd(
       {
         url: item.url,
-        quantity: 1
+        quantity: 1,
       },
       this.form_data.platform
     );
@@ -306,7 +307,7 @@ export default class Search extends Vue {
     var extra_params = this.extra_params
       .trim()
       .split(/\r?\n/)
-      .map(item => item.trim())
+      .map((item) => item.trim())
       .filter(Boolean)
       .reduce((state, item) => {
         var [key, value] = item.split("=");
@@ -317,7 +318,7 @@ export default class Search extends Vue {
       Object.assign(
         {
           is_juhuasuan: this.is_juhuasuan,
-          page
+          page,
         },
         this.params,
         extra_params,
@@ -338,12 +339,12 @@ export default class Search extends Vue {
     bus.$emit("coupon", {
       urls: [item.url],
       quantities: [item.num],
-      expectedPrice: item.coudan_price
+      expectedPrice: item.coudan_price,
     });
   }
 
   filterDatas(datas) {
-    return datas.map(item => {
+    return datas.map((item) => {
       item.num = Math.ceil(199 / item.price);
       item.coudan_price = item.num * item.price;
       return item;

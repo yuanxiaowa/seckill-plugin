@@ -23,7 +23,7 @@ import { Component, Prop, Vue, Emit, Watch } from "vue-property-decorator";
 import { getAddresses } from "@/api";
 
 @Component({
-  components: {}
+  components: {},
 })
 export default class AddressPicker extends Vue {
   @Prop() value!: string;
@@ -34,10 +34,10 @@ export default class AddressPicker extends Vue {
   @Watch("visible")
   onVisibilityChange(b: boolean) {
     if (b) {
-      getAddresses("taobao").then(addresses => {
-        this.options = addresses.map(item => ({
+      getAddresses("taobao").then((addresses) => {
+        this.options = addresses.map((item) => ({
           value: item.deliverId,
-          label: item.fullAddress + item.addressDetail + item.fullName
+          label: `${item.addressDetail}(${item.fullName})`,
         }));
       });
     }
@@ -49,7 +49,7 @@ export default class AddressPicker extends Vue {
   }
 
   get selected_text() {
-    let item = this.options.find(item => item.value === this.value);
+    let item = this.options.find((item) => item.value === this.value);
     if (item) {
       return item.label;
     }

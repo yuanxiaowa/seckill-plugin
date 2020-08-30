@@ -153,6 +153,13 @@ export function getGoodsSkus(params: any, platform: string) {
     platform,
   });
 }
+
+export function getGoodsPromotions(params) {
+  return invoke("getGoodsPromotions", {
+    ...params,
+  });
+}
+
 export function getConfig() {
   return invoke("getConfig");
 }

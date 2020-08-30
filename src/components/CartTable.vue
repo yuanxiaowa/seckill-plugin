@@ -1,16 +1,9 @@
 <template>
   <div>
-    <el-table
-      :data="value"
-      style="width: 100%"
-      max-height="400"
-      default-expand-all
-      size="mini"
-      row-key="id"
-    >
+    <el-table :data="value" style="width: 100%" max-height="400" default-expand-all row-key="id">
       <el-table-column type="expand">
         <template slot-scope="props">
-          <el-table :data="props.row.items" size="mini" row-key="id">
+          <el-table :data="props.row.items" row-key="id">
             <el-table-column width="55">
               <template slot="header">
                 <el-checkbox @change="$emit('select-vendor',props.row)" v-model="props.row.checked"></el-checkbox>
@@ -21,12 +14,14 @@
             </el-table-column>
             <el-table-column label="商品图片">
               <template slot-scope="{row}">
-                <img :src="row.img" alt />
+                <img :src="row.img" width="38" />
               </template>
             </el-table-column>
             <el-table-column label="商品名称" width="300">
               <template slot-scope="{row}">
                 <a :href="row.url" target="_blank">{{row.title}}</a>
+                <el-button style="margin:0 1em" type="text" icon="el-icon-edit" title="修改规格"></el-button>
+                <goods-coudan :item="row" :platform="platform" />
               </template>
             </el-table-column>
             <el-table-column label="单价" prop="price"></el-table-column>
@@ -36,7 +31,6 @@
                   v-model="row.quantity"
                   @change="$emit('update-quantity',row)"
                   :min="1"
-                  size="small"
                 ></el-input-number>
               </template>
             </el-table-column>
@@ -46,8 +40,9 @@
                   type="danger"
                   plain
                   @click="$emit('del-item',row,props.row)"
-                  size="small"
-                >删除</el-button>
+                  icon="el-icon-delete"
+                  title="删除"
+                ></el-button>
               </template>
             </el-table-column>
           </el-table>
@@ -70,15 +65,22 @@
 
 <script lang="ts">
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
+import GoodsCoudan from "./GoodsCoudan.vue";
 
-@Component
+@Component({
+  components: {
+    GoodsCoudan,
+  },
+})
 export default class CartTable extends Vue {
   @Prop({
     default() {
       return [];
-    }
+    },
   })
   value!: any[];
+  @Prop() platform!: string;
+
   checked = false;
   @Watch("value")
   onValueChange(new_val, old_val) {

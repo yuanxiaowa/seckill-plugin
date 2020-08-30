@@ -10,6 +10,7 @@
 
 <script lang="ts">
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
+import moment from "moment";
 
 @Component
 export default class DatePicker extends Vue {
@@ -19,59 +20,54 @@ export default class DatePicker extends Vue {
       {
         text: "下一个整点",
         onClick(picker) {
-          var now = new Date();
-          picker.$emit(
-            "pick",
-            new Date(
-              now.getFullYear(),
-              now.getMonth(),
-              now.getDate(),
-              now.getHours() + 1
-            )
-          );
-        }
+          picker.$emit("pick", moment().startOf("hour").add("hour", 1));
+        },
       },
+      ...[0, 10, 20, 22].map((hour) => {
+        return {
+          text: `${hour}点`,
+          onClick(picker) {
+            const now = moment();
+            const nowHour = now.get("hour");
+            let m = now.startOf("date").add("hour", hour);
+            if (nowHour > hour) {
+              m.add("day", 1);
+            }
+            picker.$emit("pick", m);
+          },
+        };
+      }),
       {
         text: "现在",
         onClick(picker) {
-          picker.$emit("pick", new Date());
-        }
+          picker.$emit("pick", moment());
+        },
       },
       {
         text: "5秒后",
         onClick(picker) {
-          picker.$emit("pick", new Date(Date.now() + 1000 * 5));
-        }
+          picker.$emit("pick", moment().add("second", 5));
+        },
       },
       {
         text: "15秒后",
         onClick(picker) {
-          picker.$emit("pick", new Date(Date.now() + 1000 * 15));
-        }
+          picker.$emit("pick", moment().add("second", 15));
+        },
       },
       {
         text: "30秒后",
         onClick(picker) {
-          picker.$emit("pick", new Date(Date.now() + 1000 * 30));
-        }
+          picker.$emit("pick", moment().add("second", 30));
+        },
       },
       {
         text: "1分后",
         onClick(picker) {
-          picker.$emit("pick", new Date(Date.now() + 1000 * 60));
-        }
+          picker.$emit("pick", moment().add("second", 60));
+        },
       },
-      {
-        text: "明天0点",
-        onClick(picker) {
-          var now = new Date();
-          picker.$emit(
-            "pick",
-            new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1)
-          );
-        }
-      }
-    ]
+    ],
   };
 }
 </script>

@@ -1,5 +1,9 @@
 import { request } from "../../common/request";
-import { getGoodsDetailFromMobile, getGoodsInfoFromMobile } from "./mobile";
+import {
+  getGoodsDetailFromMobile,
+  getGoodsInfoFromMobile,
+  getGoodsPromotionsFromMobile,
+} from "./mobile";
 
 export const getItemId = (url: string) => /id=(\d+)/.exec(url)![1];
 export function getGoodsUrl(id) {
@@ -73,4 +77,8 @@ export async function getGoodsDetail(url: string) {
 
 export async function getGoodsInfo(url: string, skuId?: string) {
   return getGoodsInfoFromMobile(url, skuId);
+}
+
+export function getGoodsPromotions(item: any) {
+  return getGoodsPromotionsFromMobile(item);
 }

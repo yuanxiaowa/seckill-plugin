@@ -23,11 +23,10 @@
         :filters="{keys:['title']}"
       >
         <template slot-scope="{row}" slot="actions">
-          <el-button @click="chooseCoupon(row)" size="small">选择</el-button>
+          <el-button @click="chooseCoupon(row)">选择</el-button>
           <el-button
             v-if="row.canDelete"
             @click="deleteCoupon([row])"
-            size="small"
             icon="el-icon-delete"
             title="删除"
             circle
@@ -36,7 +35,6 @@
         <template slot-scope="{selections}" slot="selection">
           <el-button
             @click="deleteCoupon(selections)"
-            size="small"
             icon="el-icon-delete"
             title="删除"
             circle
@@ -58,8 +56,8 @@ import DataListWrapper from "./DataListWrapper.vue";
 
 @Component({
   components: {
-    DataListWrapper
-  }
+    DataListWrapper,
+  },
 })
 export default class Coupons extends Vue {
   @Prop() platform!: string;
@@ -69,16 +67,16 @@ export default class Coupons extends Vue {
   options = [
     {
       label: "店铺券",
-      value: "0"
+      value: "0",
     },
     {
       label: "商品券",
-      value: "1"
+      value: "1",
     },
     {
       label: "平台券",
-      value: "2"
-    }
+      value: "2",
+    },
   ];
   type = "0";
 
@@ -86,13 +84,13 @@ export default class Coupons extends Vue {
     {
       prop: "title",
       label: "标题",
-      render: this.renderTitle
+      render: this.renderTitle,
     },
     {
       label: "折扣",
       prop: "discount",
       render: this.renderDisount,
-      width: 100
+      width: 100,
     },
     {
       label: "有效时间",
@@ -100,8 +98,8 @@ export default class Coupons extends Vue {
       width: 170,
       formatter(row) {
         return `${row.startTime}——${row.endTime}`;
-      }
-    }
+      },
+    },
   ];
 
   renderTitle({ row }) {
@@ -128,7 +126,7 @@ export default class Coupons extends Vue {
     return getMyCoupons({
       ...params,
       platform: this.platform,
-      type: this.type
+      type: this.type,
     });
   }
 
@@ -142,10 +140,10 @@ export default class Coupons extends Vue {
   }
 
   async deleteCoupon(items) {
-    items.forEach(async item => {
+    items.forEach(async (item) => {
       await deleteCoupon({
         platform: this.platform,
-        ...item.params
+        ...item.params,
       });
       (this.$refs.dataList as DataListWrapper).remove(item);
     });

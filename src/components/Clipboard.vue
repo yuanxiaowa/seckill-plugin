@@ -6,7 +6,7 @@
  -->
 <template>
   <div style="position:relative">
-    <el-button class="__clip-btn" style="position:absolute;right:0" size="small">复制</el-button>
+    <el-button class="__clip-btn" style="position:absolute;right:0">复制</el-button>
     <div v-html="html"></div>
   </div>
 </template>
@@ -19,11 +19,11 @@ new Clipborad(".__clip-btn", {
   text(trigger) {
     console.log(trigger.nextElementSibling.innerText);
     return trigger.nextElementSibling.innerText;
-  }
+  },
 });
 
 @Component({
-  components: {}
+  components: {},
 })
 export default class ComponentName extends Vue {
   @Prop() data!: any;

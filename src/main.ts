@@ -14,8 +14,8 @@ import "./filters";
 import "./directives";
 import "./components";
 
-Vue.use(ElementUI);
-Vue.prototype.$ELEMENT = { size: "small" };
+Vue.use(ElementUI, { size: "mini" });
+// Vue.prototype.$ELEMENT = { size: "small" };
 
 Vue.config.productionTip = false;
 

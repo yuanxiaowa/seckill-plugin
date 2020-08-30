@@ -5,7 +5,7 @@
       <el-row v-for="item in items" :key="item.id" style="margin-bottom:.5em">
         <el-col>
           {{item.time}}: {{item.text}}-{{item.platform}}{{item.name}}
-          <el-button size="small" type="danger" @click="cancel(item.id)">取消</el-button>
+          <el-button type="danger" @click="cancel(item.id)">取消</el-button>
         </el-col>
       </el-row>
     </el-card>
@@ -26,7 +26,7 @@ export default class Task extends Vue {
 
   async getData() {
     this.loading = true;
-    getTasks().then(data => {
+    getTasks().then((data) => {
       this.items = data;
       this.loading = false;
     });
@@ -34,7 +34,7 @@ export default class Task extends Vue {
 
   cancel(id: string) {
     cancelTask(id).then(() => {
-      var i = this.items.findIndex(item => item.id === id);
+      var i = this.items.findIndex((item) => item.id === id);
       this.items.splice(i, 1);
     });
   }

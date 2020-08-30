@@ -1,5 +1,5 @@
 <template>
-  <el-form size="small">
+  <el-form>
     <el-form-item>
       <el-button @click="drawer=true">配置</el-button>
       <el-button @click="show_task=true">任务列表</el-button>

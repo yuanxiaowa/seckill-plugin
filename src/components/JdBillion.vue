@@ -1,5 +1,5 @@
 <template>
-  <el-form size="small" @submit.native.prevent="pullData">
+  <el-form @submit.native.prevent="pullData">
     <el-form-item>
       <el-col :span="12">
         <el-input v-model="url" placeholder="url">
@@ -43,7 +43,7 @@
       <el-table-column prop="disCount" label="券" width="180" sortable></el-table-column>
       <el-table-column label="操作" width="180" fixed="right">
         <template slot-scope="{row}">
-          <el-button type="text" size="small" @click="qiangquan([row])">抢券</el-button>
+          <el-button type="text" @click="qiangquan([row])">抢券</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -56,7 +56,7 @@ import axios from "axios";
 import { invoke } from "../api";
 
 @Component({
-  components: {}
+  components: {},
 })
 export default class JdBillion extends Vue {
   url =
@@ -67,19 +67,19 @@ export default class JdBillion extends Vue {
   filter_text = "";
 
   qiangquan(items: any[]) {
-    items.forEach(item => {
+    items.forEach((item) => {
       invoke("getJdMillion", item).then(({ data }) =>
         this.$notify({
           title: "提示",
-          message: data
+          message: data,
         })
       );
     });
   }
   pullData() {
     invoke("getJdMillionList", {
-      url: this.url
-    }).then(datas => {
+      url: this.url,
+    }).then((datas) => {
       this.datas = datas;
     });
   }
@@ -93,7 +93,7 @@ export default class JdBillion extends Vue {
       return this.datas;
     }
     return this.datas.filter(
-      item =>
+      (item) =>
         item.skuName.includes(this.filter_text) ||
         String(item.disCount) === this.filter_text ||
         String(item.pDisCount) === this.filter_text ||

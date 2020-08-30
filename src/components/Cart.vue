@@ -6,7 +6,7 @@
  -->
 <template>
   <div>
-    <el-form size="small">
+    <el-form>
       <el-form-item>
         <el-col :span="8">
           <el-checkbox v-model="from_pc" style="margin-right:1em">pc</el-checkbox>
@@ -61,6 +61,7 @@
       @select-all="selectAll"
       @update-quantity="updateQuantity"
       @del-item="delItem"
+      :platform="platform"
       v-loading="loading"
     ></cart-table>
   </div>
@@ -78,15 +79,15 @@ import {
   cartBuy,
   cartUpdateQuantity,
   cartDel,
-  cartToggleAll
+  cartToggleAll,
 } from "../api";
 import bus from "../bus";
 @Component({
   components: {
     CartTable,
     DatePicker,
-    AddressPicker
-  }
+    AddressPicker,
+  },
 })
 export default class App extends Vue {
   platform: Platform = "taobao";
@@ -109,7 +110,7 @@ export default class App extends Vue {
       this.loading = true;
       data = await cartList({
         platform: this.platform,
-        from_pc: this.from_pc
+        from_pc: this.from_pc,
       });
       this.loading = false;
     }
@@ -121,7 +122,7 @@ export default class App extends Vue {
     await cartDel(
       {
         items: [item],
-        ...this.other
+        ...this.other,
       },
       this.platform
     );
@@ -138,7 +139,7 @@ export default class App extends Vue {
     await cartUpdateQuantity(
       {
         items: [item],
-        ...this.other
+        ...this.other,
       },
       this.platform
     );
@@ -152,7 +153,7 @@ export default class App extends Vue {
       items,
       ...this.other,
       checked,
-      platform: this.platform
+      platform: this.platform,
     });
   }
   async selectItem(item: any) {
@@ -160,15 +161,15 @@ export default class App extends Vue {
   }
 
   selectVendor({ items, checked }) {
-    items.forEach(item => {
+    items.forEach((item) => {
       item.checked = checked;
     });
     return this.updateChecked(items, checked);
   }
   selectAll(checked: boolean) {
-    this.tableData.forEach(parent => {
+    this.tableData.forEach((parent) => {
       parent.checked = checked;
-      parent.items.forEach(item => {
+      parent.items.forEach((item) => {
         item.checked = checked;
       });
     });
@@ -189,7 +190,7 @@ export default class App extends Vue {
   submit() {
     var items: any[] = [];
     if (this.platform === "taobao") {
-      this.tableData.forEach(item => {
+      this.tableData.forEach((item) => {
         item.items.forEach((subitem: any) => {
           if (subitem.checked) {
             items.push(subitem);
@@ -206,7 +207,7 @@ export default class App extends Vue {
       no_interaction: this.no_interaction,
       addressId: this.addressId,
       t: this.datetime,
-      platform: this.platform
+      platform: this.platform,
     };
     if (this.forcePrice) {
       data.expectedPrice = +this.expectedPrice;
