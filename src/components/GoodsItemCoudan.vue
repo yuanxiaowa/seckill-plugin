@@ -1,11 +1,8 @@
 <template>
   <span>
-    <el-icon
-      class="el-icon-sugar"
-      title="查看活动"
-      style="color:red;cursor:pointer"
-      @click="showActivity"
-    ></el-icon>
+    <span @click="showActivity">
+      <el-icon class="el-icon-sugar" title="查看活动" style="color:red;cursor:pointer"></el-icon>
+    </span>
     <el-dialog :visible.sync="visible">
       <div v-loading="loading">
         <div v-for="promotion of promotions" :key="promotion.title">
@@ -31,6 +28,7 @@ export default class GoodsItemCoudan extends Vue {
   promotions: any[] = [];
   loading = false;
   async showActivity() {
+    console.log("enter");
     this.visible = true;
     if (this.promotions.length > 0) {
       return;
@@ -74,7 +72,7 @@ export default class GoodsItemCoudan extends Vue {
       this.platform
     );
     this.$notify.success("凑单商品已加入购物车");
-    this.$emit("refresh-cart");
+    this.$emit("refresh");
   }
 
   async applyCoupon({ params, pointConsume }) {

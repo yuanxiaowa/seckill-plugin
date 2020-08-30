@@ -12,7 +12,7 @@
                 <el-checkbox @change="$emit('select-item',row)" v-model="row.checked"></el-checkbox>
               </template>
             </el-table-column>
-            <el-table-column label="商品图片" width="38">
+            <el-table-column label="商品图片" width="100">
               <template slot-scope="{row}">
                 <img :src="row.img" width="38" />
               </template>
@@ -28,11 +28,11 @@
                     </span>
                   </sku-picker>
                 </template>
-                <goodsItem-coudan
+                <goods-item-coudan
                   style="margin:0 1em"
                   :item="row"
                   :platform="platform"
-                  @refresh-cart="$emit('refresh')"
+                  @refresh="$emit('refresh')"
                 />
               </template>
             </el-table-column>
