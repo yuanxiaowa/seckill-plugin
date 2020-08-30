@@ -1,6 +1,11 @@
 <template>
   <span>
-    <el-button type="text" icon="el-icon-sugar" title="查看活动" @click="showActivity"></el-button>
+    <el-icon
+      class="el-icon-sugar"
+      title="查看活动"
+      style="color:red;cursor:pointer"
+      @click="showActivity"
+    ></el-icon>
     <el-dialog :visible.sync="visible">
       <div v-loading="loading">
         <div v-for="promotion of promotions" :key="promotion.title">
@@ -69,6 +74,7 @@ export default class GoodsItemCoudan extends Vue {
       this.platform
     );
     this.$notify.success("凑单商品已加入购物车");
+    this.$emit("refresh-cart");
   }
 
   async applyCoupon({ params, pointConsume }) {

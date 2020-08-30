@@ -12,7 +12,7 @@
                 <el-checkbox @change="$emit('select-item',row)" v-model="row.checked"></el-checkbox>
               </template>
             </el-table-column>
-            <el-table-column label="商品图片">
+            <el-table-column label="商品图片" width="38">
               <template slot-scope="{row}">
                 <img :src="row.img" width="38" />
               </template>
@@ -22,15 +22,18 @@
                 <a :href="row.url" target="_blank">{{row.title}}</a>
                 <template v-if="row.skuName">
                   <sku-picker :url="row.url" @change="updateSku(row, $event)">
-                    <el-button
-                      style="margin:0 1em"
-                      type="text"
-                      icon="el-icon-edit"
-                      title="修改规格"
-                    >[{{row.skuName}}]</el-button>
+                    <span title="修改规格" style="margin:0 1em;cursor:pointer;">
+                      <el-icon class="el-icon-edit"></el-icon>
+                      [{{row.skuName}}]
+                    </span>
                   </sku-picker>
                 </template>
-                <goodsItem-coudan style="margin:0 1em" :item="row" :platform="platform" />
+                <goodsItem-coudan
+                  style="margin:0 1em"
+                  :item="row"
+                  :platform="platform"
+                  @refresh-cart="$emit('refresh')"
+                />
               </template>
             </el-table-column>
             <el-table-column label="单价" prop="price"></el-table-column>
