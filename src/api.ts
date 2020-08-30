@@ -83,6 +83,9 @@ export function cartDel(data: any, platform: string): Promise<any> {
 export function cartUpdateQuantity(data: any, platform: string): Promise<any> {
   return invoke("cartUpdateQuantity", { ...data, platform });
 }
+export function cartUpdateSku(data: any, platform: string): Promise<any> {
+  return invoke("cartUpdateSku", { ...data, platform });
+}
 export function buyDirect(
   data: any,
   t: string,

@@ -1,6 +1,6 @@
 import { getItemId } from ".";
 import { requestData } from "../tools";
-import { flatten } from "ramda";
+import { flatten, fromPairs } from "ramda";
 import { formatUrl } from "@/background/common/tool";
 import moment from "moment";
 
@@ -106,8 +106,9 @@ export async function getGoodsPromotionsFromMobile(item: any) {
             quota = Number(RegExp.$1);
           }
           const time_arr = subtitles[1].split("至");
+          const url = formatUrl(activityUrl);
           return {
-            url: formatUrl(activityUrl),
+            url,
             title: `[${title}] ${quota}-${discount}`,
             quota,
             discount,
@@ -126,12 +127,13 @@ export async function getGoodsPromotionsFromMobile(item: any) {
                 "134#8KXImJXwXGfcz/y2W6M9UX0D3QROwKO9sE/w4/PLri5WnZfY6PX1kXXy4DwzM3MrCj6pjoeQRKVEk/jTR8fl/FLghJowqqX3IkuU+4qqXTqqZjXxzsefqTg7oXoXqRyKTybJbsfAqcqqZJL0+001HBzKkGJtqHpqqyFU+gd8rqqAZrww+Tv66CIonTi+4a4DNBPwrnlCkbcPCMtC/0QuekvgJZOYDkASkfAWgTr1HCLGmhSZNpjWY0MMhrgIWvPucBG+T5lSiqaW/z3Wjua5zBIi2eLHV6Xy7twm2Pvoy8rAhWpI2s7WiKj064N+1PUe3LgeL/uXhni8Sow7w0MFDTp5sG3wr8PyMfZwJJX3yR1Fl4izL3fKcOEK4s1mTxKb37ltjTo+lJW2Q2+tdq4TNLoiLOiLsKUGkZnxyefupZl4uzj1mYKrXozrFrB188T46iK6dDOrxDlTI5MGfuGrewhSIo3MqA+uBaOpJAQf3NTpJfL0EV3fgGJhQ++3jam9+9mbHXGGS+OgXTsnCF7KoQNJT9v0aksIJiQqF92ZlEcFS5rIxpl3q9fvONmy9BBlvrite2+6Rvfw9IYOr618nslh3EwSyha9mqhDnnvt/71Qp194bJIyn+EVUqhwqY0K/Pjdh8yJ3UXWeRjwVGUg+C4D149CSDqkx7kcTplI8EcJxo7aEOUJAZdMVU5nrMiHx23peLg4zVMUs/jwAm3N4eNfKHiMzaTv0dSjt77KLI5KPGzcgbaUhVKgU9Sf0LgENJ1iT0riCiQZ/RhyCtQjAm8ackpwBDr6XEpNLW+PFypjAtOJOzxmfxeuhU/MZhA9v0kJKZMUz3xbADaCOauRh3h+hN/i0XQVtoS7KmftwTZHuUG0CbsYJ4GM2mHif9/7Cp/xvAcxjgkFbVgpO19KKJ7lna7TBn00jS2rt+6JGv2W",
               uuid,
             },
+            searchParams: fromPairs([...new URL(url).searchParams.entries()]),
           };
         });
       }
       if (arg1 === "ShopCoupon") {
         return couponList.map((coupon) => {
-          const { activityUrl, subtitles, hasReceived, enabled, uuid } = coupon;
+          const { subtitles, hasReceived, enabled, uuid } = coupon;
           const discount = Number(coupon.title);
           let quota = 300;
           if (/满(\d+)/.test(subtitles[0])) {
@@ -139,7 +141,7 @@ export async function getGoodsPromotionsFromMobile(item: any) {
           }
           const time_arr = subtitles[1].split("至");
           return {
-            url: formatUrl(activityUrl),
+            url: `https://market.m.taobao.com/app/tb-source-app/shop-auction/pages/auction?_w&sellerId=${item.sellerId}&shopId=${item.shopId}&dynamicCard=true&disablePromotionTips=false&shop_navi=allitems`,
             title: `[${title}] ${quota}-${discount}`,
             quota,
             discount,
@@ -156,6 +158,11 @@ export async function getGoodsPromotionsFromMobile(item: any) {
               ua:
                 "134#8KXImJXwXGfcz/y2W6M9UX0D3QROwKO9sE/w4/PLri5WnZfY6PX1kXXy4DwzM3MrCj6pjoeQRKVEk/jTR8fl/FLghJowqqX3IkuU+4qqXTqqZjXxzsefqTg7oXoXqRyKTybJbsfAqcqqZJL0+001HBzKkGJtqHpqqyFU+gd8rqqAZrww+Tv66CIonTi+4a4DNBPwrnlCkbcPCMtC/0QuekvgJZOYDkASkfAWgTr1HCLGmhSZNpjWY0MMhrgIWvPucBG+T5lSiqaW/z3Wjua5zBIi2eLHV6Xy7twm2Pvoy8rAhWpI2s7WiKj064N+1PUe3LgeL/uXhni8Sow7w0MFDTp5sG3wr8PyMfZwJJX3yR1Fl4izL3fKcOEK4s1mTxKb37ltjTo+lJW2Q2+tdq4TNLoiLOiLsKUGkZnxyefupZl4uzj1mYKrXozrFrB188T46iK6dDOrxDlTI5MGfuGrewhSIo3MqA+uBaOpJAQf3NTpJfL0EV3fgGJhQ++3jam9+9mbHXGGS+OgXTsnCF7KoQNJT9v0aksIJiQqF92ZlEcFS5rIxpl3q9fvONmy9BBlvrite2+6Rvfw9IYOr618nslh3EwSyha9mqhDnnvt/71Qp194bJIyn+EVUqhwqY0K/Pjdh8yJ3UXWeRjwVGUg+C4D149CSDqkx7kcTplI8EcJxo7aEOUJAZdMVU5nrMiHx23peLg4zVMUs/jwAm3N4eNfKHiMzaTv0dSjt77KLI5KPGzcgbaUhVKgU9Sf0LgENJ1iT0riCiQZ/RhyCtQjAm8ackpwBDr6XEpNLW+PFypjAtOJOzxmfxeuhU/MZhA9v0kJKZMUz3xbADaCOauRh3h+hN/i0XQVtoS7KmftwTZHuUG0CbsYJ4GM2mHif9/7Cp/xvAcxjgkFbVgpO19KKJ7lna7TBn00jS2rt+6JGv2W",
               uuid,
+            },
+            searchParams: {
+              sellerId: item.sellerId,
+              shopId: item.shopId,
+              searchType: "shop",
             },
           };
         });

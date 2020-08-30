@@ -29,10 +29,13 @@ export default {
   addCart,
   cartToggle() {},
   cartDel(args) {
-    updateCart(args, "deleteSome");
+    return updateCart(args, "deleteSome");
   },
   cartUpdateQuantity(args) {
-    updateCart(args, "update");
+    return updateCart(args, "update");
+  },
+  cartUpdateSku(args) {
+    return updateCart(args, "updateItemSku");
   },
   getUserName,
   getGoodsDetail,

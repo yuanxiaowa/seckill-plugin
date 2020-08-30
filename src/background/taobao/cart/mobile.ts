@@ -5,6 +5,7 @@ import { CartItem, addCart, updateCart, ParamsOfAddCart } from "../cart";
 import { VendorInfo } from "../cart";
 import { taskManager } from "@/background/common/task-manager";
 import { formatUrl } from "@/background/common/tool";
+import { request } from "@/background/common/request";
 
 const spm = "a222m.7628550.0.0";
 export async function getRawCartListFromMobile() {
@@ -58,7 +59,7 @@ export async function getCartListFromMobile() {
       cartId,
       shopId,
       itemId,
-      sku: { skuId },
+      sku: { skuId, title: skuName },
       pay: { now },
       pic,
       checked,
@@ -78,6 +79,7 @@ export async function getCartListFromMobile() {
       img: pic.startsWith("//") ? "https:" + pic : pic,
       url: getPatternUrl(fields),
       checked,
+      skuName,
     };
   }
 
@@ -222,50 +224,90 @@ export async function updateCartFromMobile(
   },
   action: string
 ) {
-  var { cartId, quantity } = items[0];
-  var { hierarchy, data }: any = await getRawCartListFromMobile();
-  var updateKey = Object.keys(data).find(
-    (key) => data[key].fields.cartId === cartId
-  )!;
-  var key = Object.keys(hierarchy.structure).find((key) =>
-    hierarchy.structure[key].includes(updateKey)
-  )!;
-  var cdata = hierarchy.structure[key].reduce((state, key) => {
-    var { fields } = data[key];
-    state[key] = {
-      fields: {
-        bundleId: fields.bundleId,
-        cartId: fields.cartId,
-        checked: fields.checked,
-        itemId: fields.itemId,
-        quantity: fields.quantity.quantity,
-        shopId: fields.shopId,
-        valid: fields.valid,
-      },
-    };
-    return state;
-  }, {});
-  cdata[updateKey].fields.quantity = quantity;
-  var { cartId } = await requestData("mtop.trade.updatebag", {
-    data: {
-      p: JSON.stringify({
-        data: cdata,
-        operate: { [action]: [updateKey] },
-        hierarchy,
-      }),
-      extStatus: "0",
-      feature: '{"gzip":false}',
-      exParams: JSON.stringify({
-        mergeCombo: "true",
-        version: "1.0.0",
-        globalSell: "1",
-        spm: setting.spm,
-        cartfrom: "detail",
-      }),
-      spm: setting.spm,
-      cartfrom: "detail",
+  await request.form(
+    "https://cart.taobao.com/json/AsyncUpdateCart.do",
+    {
+      _input_charset: "utf-8",
+      tk: "617bb7e57e3e",
+      data: JSON.stringify(
+        items.map(({ shopId, cartId, quantity, skuId, itemId }) => {
+          return {
+            shopId,
+            comboId: 0,
+            shopActId: 0,
+            cart: [
+              {
+                cartId,
+                quantity,
+                skuId,
+                itemId,
+              },
+            ],
+            operate: [cartId],
+            type: action,
+          };
+        })
+      ),
+      shop_id: 0,
+      t: Date.now(),
+      type: action,
+      ct: "2a466d1898d45b61432b1f0023b5bf47",
+      page: 1,
+      _thwlang: "zh_CN",
     },
-    method: "post",
-  });
-  return cartId;
+    {
+      referer:
+        "https://cart.taobao.com/cart.htm?spm=a1z0d.6639537.1997525049.1.c7047484iYgRz5&from=mini&ad_id=&am_id=&cm_id=&pm_id=1501036000a02c5c3739",
+    }
+  );
+  // var { cartId, quantity, skuId } = items[0];
+  // var { hierarchy, data }: any = await getRawCartListFromMobile();
+  // var updateKey = Object.keys(data).find(
+  //   (key) => data[key].fields.cartId === cartId
+  // )!;
+  // var key = Object.keys(hierarchy.structure).find((key) =>
+  //   hierarchy.structure[key].includes(updateKey)
+  // )!;
+  // var cdata = hierarchy.structure[key].reduce((state, key) => {
+  //   var { fields } = data[key];
+  //   state[key] = {
+  //     fields: {
+  //       bundleId: fields.bundleId,
+  //       cartId: fields.cartId,
+  //       checked: fields.checked,
+  //       itemId: fields.itemId,
+  //       quantity: fields.quantity.quantity,
+  //       shopId: fields.shopId,
+  //       valid: fields.valid,
+  //     },
+  //   };
+  //   return state;
+  // }, {});
+  // Object.assign(cdata[updateKey].fields, {
+  //   quantity,
+  //   skuId,
+  // });
+  // // cdata[updateKey].fields.quantity = quantity;
+  // var { cartId } = await requestData("mtop.trade.updatebag", {
+  //   data: {
+  //     p: JSON.stringify({
+  //       data: cdata,
+  //       operate: { [action]: [updateKey] },
+  //       hierarchy,
+  //     }),
+  //     extStatus: "0",
+  //     feature: '{"gzip":false}',
+  //     exParams: JSON.stringify({
+  //       mergeCombo: "true",
+  //       version: "1.0.0",
+  //       globalSell: "1",
+  //       spm: setting.spm,
+  //       cartfrom: "detail",
+  //     }),
+  //     spm: setting.spm,
+  //     cartfrom: "detail",
+  //   },
+  //   method: "post",
+  // });
+  // return cartId;
 }

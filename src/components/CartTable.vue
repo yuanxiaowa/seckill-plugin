@@ -20,8 +20,17 @@
             <el-table-column label="商品名称" width="300">
               <template slot-scope="{row}">
                 <a :href="row.url" target="_blank">{{row.title}}</a>
-                <el-button style="margin:0 1em" type="text" icon="el-icon-edit" title="修改规格"></el-button>
-                <goods-coudan :item="row" :platform="platform" />
+                <template v-if="row.skuName">
+                  <sku-picker :url="row.url" @change="updateSku(row, $event)">
+                    <el-button
+                      style="margin:0 1em"
+                      type="text"
+                      icon="el-icon-edit"
+                      title="修改规格"
+                    >[{{row.skuName}}]</el-button>
+                  </sku-picker>
+                </template>
+                <goodsItem-coudan style="margin:0 1em" :item="row" :platform="platform" />
               </template>
             </el-table-column>
             <el-table-column label="单价" prop="price"></el-table-column>
@@ -65,11 +74,13 @@
 
 <script lang="ts">
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
-import GoodsCoudan from "./GoodsCoudan.vue";
+import GoodsItemCoudan from "./GoodsItemCoudan.vue";
+import SkuPicker from "./SkuPicker.vue";
 
 @Component({
   components: {
-    GoodsCoudan,
+    GoodsItemCoudan,
+    SkuPicker,
   },
 })
 export default class CartTable extends Vue {
@@ -85,6 +96,12 @@ export default class CartTable extends Vue {
   @Watch("value")
   onValueChange(new_val, old_val) {
     this.checked = false;
+  }
+
+  updateSku(item, { label, value }: { label: string; value: string }) {
+    item.skuId = value;
+    item.skuName = label;
+    this.$emit("update-sku", item);
   }
 }
 </script>

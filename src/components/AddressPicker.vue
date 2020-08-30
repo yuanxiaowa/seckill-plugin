@@ -11,8 +11,8 @@
       </el-select>
       <el-button v-if="options.length>0" @click="setValue(value)">确定</el-button>
     </el-dialog>
-    <el-button type="primary" @click="visible=true">
-      <slot>选择</slot>
+    <el-button @click="visible=true" icon="el-icon-house">
+      <slot></slot>
     </el-button>
     {{selected_text}}
   </span>

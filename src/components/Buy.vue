@@ -221,8 +221,8 @@ export default class Buy extends Vue {
     var [url] = data.urls;
     this.goods_url = url;
   }
-  onSkuChange(skuId: string) {
-    this.skuId = skuId;
+  onSkuChange({ label, value }: { label: string; value: string }) {
+    this.skuId = value;
     this.show_sku_picker = false;
   }
   @Watch("text")

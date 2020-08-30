@@ -170,6 +170,7 @@ const taobao = {
     jd.cartUpdateQuantity,
     tb.cartUpdateQuantity
   ),
+  cartUpdateSku: tb.cartUpdateSku,
   cartToggle: ifElse(isJd, jd.cartToggle, tb.cartToggle),
   coudan: ifElse(isJd, jd.coudan, tb.coudan),
   checkStatus: ifElse(isJd, jd.checkStatus, tb.checkStatus),

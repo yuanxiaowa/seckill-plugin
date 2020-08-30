@@ -1,6 +1,8 @@
 import { ArgSearch } from "../structs";
 import { getJuhuasuanList } from "./juhuasuan";
 import { request } from "@/background/common/request";
+import { requestData } from "../tools";
+import { formatUrl } from "@/background/common/tool";
 
 /**
  * 搜索商品
@@ -8,8 +10,11 @@ import { request } from "@/background/common/request";
  */
 export async function getGoodsList(data: Partial<ArgSearch>) {
   var page = data.page;
-  if (data.is_juhuasuan) {
+  if (data.searchType === "juhuasuan") {
     return getJuhuasuanList({ page });
+  }
+  if (data.searchType === "shop") {
+    return getShopGoodsList(data);
   }
   var q = data.keyword;
   delete data.page;
@@ -40,10 +45,47 @@ export async function getGoodsList(data: Partial<ArgSearch>) {
     page,
     items: item.map((item) =>
       Object.assign(item, {
-        url: "https:" + item.url,
-        img: "https:" + item.img,
+        url: formatUrl(item.url),
+        img: formatUrl(item.img),
       })
     ),
     more: item.length > 0,
+  };
+}
+
+export async function getShopGoodsList({
+  page = 1,
+  shopId,
+  sellerId,
+  start_price,
+}: Partial<ArgSearch>) {
+  var { itemsArray, totalResults, totalPage } = await requestData(
+    "mtop.taobao.wsearch.appsearch",
+    {
+      data: {
+        m: "shopitemsearch",
+        vm: "nw",
+        sversion: "4.6",
+        shopId,
+        sellerId,
+        style: "wf",
+        page,
+        sort: "_bid",
+        catmap: "",
+        wirelessShopCategoryList: "",
+        start_price,
+      },
+      version: "1.0",
+    }
+  );
+  return {
+    total: Number(totalResults),
+    page,
+    items: itemsArray.map((item) => ({
+      ...item,
+      url: formatUrl(item.auctionUrl),
+      img: formatUrl(item.pic_path),
+    })),
+    more: page < Number(totalPage),
   };
 }

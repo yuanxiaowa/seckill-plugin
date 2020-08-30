@@ -60,6 +60,7 @@
       @select-vendor="selectVendor"
       @select-all="selectAll"
       @update-quantity="updateQuantity"
+      @update-sku="updateSku"
       @del-item="delItem"
       :platform="platform"
       v-loading="loading"
@@ -80,6 +81,7 @@ import {
   cartUpdateQuantity,
   cartDel,
   cartToggleAll,
+  cartUpdateSku,
 } from "../api";
 import bus from "../bus";
 @Component({
@@ -137,6 +139,16 @@ export default class App extends Vue {
 
   async updateQuantity(item) {
     await cartUpdateQuantity(
+      {
+        items: [item],
+        ...this.other,
+      },
+      this.platform
+    );
+  }
+
+  async updateSku(item) {
+    await cartUpdateSku(
       {
         items: [item],
         ...this.other,

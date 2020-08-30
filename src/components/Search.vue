@@ -21,7 +21,11 @@
         </el-col>
         <el-col :span="12" v-if="form_data.platform==='taobao'">
           <el-form-item>
-            <el-checkbox v-model="is_juhuasuan">聚划算</el-checkbox>
+            <el-select v-model="searchType">
+              <el-option value="normal">普通</el-option>
+              <el-option value="juhuasuan">聚划算</el-option>
+              <el-option value="shop">店铺</el-option>
+            </el-select>
           </el-form-item>
         </el-col>
       </el-form-item>
@@ -124,7 +128,7 @@ export default class Search extends Vue {
   url = "";
   coupons: any[] = [];
   only_double = false;
-  is_juhuasuan = true;
+  searchType = "juhuasuan";
 
   params: any = {};
   defaultExcudeFilter = "裤|衣|耳环|T恤|百草味|鞋|外套|真皮|包包|大嘴猴";
@@ -204,7 +208,7 @@ export default class Search extends Vue {
   }
 
   isJuhuasuan() {
-    return this.is_juhuasuan;
+    return this.searchType === "juhuasuan";
   }
 
   renderTitle({ row }) {
@@ -317,7 +321,7 @@ export default class Search extends Vue {
     return goodsList(
       Object.assign(
         {
-          is_juhuasuan: this.is_juhuasuan,
+          searchType: this.searchType,
           page,
         },
         this.params,
