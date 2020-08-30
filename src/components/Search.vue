@@ -94,8 +94,8 @@
       :max-height="500"
     >
       <template slot-scope="{row}" slot="actions">
-        <el-button @click="addCart(row)">加入购物车</el-button>
-        <el-button @click="showQrcode(row)">查看二维码</el-button>
+        <el-button @click="addCart(row)" icon="el-icon-shopping-cart-2" circle title="加入购物车"></el-button>
+        <el-button @click="showQrcode(row)" icon="el-icon-baseball" circle title="查看二维码"></el-button>
       </template>
     </data-list-wrapper>
   </div>
