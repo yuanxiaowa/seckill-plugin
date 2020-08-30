@@ -43,8 +43,8 @@ if (process.env.NODE_ENV === "production") {
 }
 
 function handleError(e: Error) {
-  console.error(e);
   Notification.error(e.message);
+  throw e;
 }
 
 export function invoke(name: string, args?: any) {
@@ -159,6 +159,12 @@ export function getGoodsSkus(params: any, platform: string) {
 
 export function getGoodsPromotions(params) {
   return invoke("getGoodsPromotions", {
+    ...params,
+  });
+}
+
+export function applyCoupon(params) {
+  return invoke("applyCoupon", {
     ...params,
   });
 }

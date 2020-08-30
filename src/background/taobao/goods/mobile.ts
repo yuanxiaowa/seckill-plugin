@@ -99,9 +99,17 @@ export async function getGoodsPromotionsFromMobile(item: any) {
     coupons.map(({ arg1, couponList, title, type }) => {
       if (arg1 === "CategoryCoupon") {
         return couponList.map((coupon) => {
-          const { activityUrl, subtitles, hasReceived, enabled, uuid } = coupon;
+          const {
+            activityUrl,
+            subtitles,
+            hasReceived,
+            enabled,
+            uuid,
+            pointConsume,
+          } = coupon;
           const discount = Number(coupon.title);
           let quota = 300;
+          const seg = subtitles[0].includes("每");
           if (/满(\d+)/.test(subtitles[0])) {
             quota = Number(RegExp.$1);
           }
@@ -116,6 +124,8 @@ export async function getGoodsPromotionsFromMobile(item: any) {
             endTime: moment(time_arr[1], "yyyy.MM.DD HH:mm"),
             hasReceived,
             enabled,
+            seg,
+            pointConsume,
             params: {
               asac: coupon.asac,
               couponType: String(type),
@@ -269,4 +279,22 @@ function transformMobileGoodsInfo({ apiStack, item }, skuId?: string) {
     price: +price.price.priceText,
     cuxiao,
   };
+}
+
+export async function applyCouponFromMobile(params) {
+  var {
+    applyDo: { success, title },
+  } = await requestData("mtop.tmall.detail.applycoupon", {
+    data: {
+      ua:
+        "134#+MXI7gXwXGf8GoYlJJkcdX0D3QROwKO9sE/w4/PLr3cU05CPlfFV5vLjStVap0dp7gUs7VoinFATO++aqDAAyE382qjtaghTfPkl1Ww33bO9+JdqKXL3ZtwwTq1qijRmNyd3OOH8qkuJ+JdKqEeFZtXt+Ty8s1dilJs7XuQXD2sS/1zPc+DDybOvdp95f3X2IFp31K6Zbsa8UEurPOknr8uGeNCDkCkXYkwE7vhILJRpX1nysD+Oz2IdTdOSySjb6nD1KUrJ9INp3KgXhqpd5ndPbY6YlsvrzIDR0ohjzWvTx0VrLa5kz9c+oucbbD7jIOJaMJ6n9jBgeNiw2DLnf7NohgQp+9TDALKAqgumIWOTpyhA79ck09iIL5BZN+NEEaqdNuKDMOYlAk+fw1E//T6uG1OI6B29AxCAtYkdMmrxJA7ITO5HWH4UvwwmQMQRpNu7SN8/xTqXhEg2K8TFHYBtILrQw43VfPFpK7tZOB7746cTAIbsEyOW64YxCbuzPf2ln+5YN8pmTIVWiHmP+X2bvMGM/8PRRqlVOgXZoFBRnqTQjzIQPWa6Ziv7sD6cXSPdo1gIIixeiX47HrB2ivU43zumTKGMNRwjUcSCOdsyT2vReLtxkgQi1MCPyH/VCCG2n3dMWJ7r47325sBLP3nREKszTmyqFA1Hg0E51CMSkDhfXT1RcfaVVmzPBhJE0yGyMt4iB6J8wISRDQz9iyYJXIFRQHglNJsRcd8L2sfV9I5s4M6QS/plGSgR7ZH4St1uxg9zvzMqDh4luZu3O6K5dGr3c9ykRYI/JNwJOYoM+kytGZ6Uppub25uHo8VeyAhioEbqxFNwHc/gq0Y11ob2hlj9ZJZWRZK94K6CXXT6l4OQxZYq4BDMGWw5TQu+UnlZwvbWRqn/AOofgNFgws4q4V3kpiuVuDDD2inUR5W4A7fYcm/NyK1SolSno0DssBzQTqBOwxbK0komwdHmE9jIWu1hT726GVqLQrex",
+      lotteryId: "",
+      source: "tmallH5",
+      ...params,
+    },
+    version: "1.0",
+  });
+  if (!success) {
+    throw new Error(title);
+  }
 }

@@ -70,7 +70,7 @@ export async function getShopGoodsList({
         sellerId,
         style: "wf",
         page,
-        sort: "_bid",
+        sort: "bid",
         catmap: "",
         wirelessShopCategoryList: "",
         start_price,

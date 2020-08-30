@@ -3,9 +3,15 @@ import {
   getGoodsDetailFromMobile,
   getGoodsInfoFromMobile,
   getGoodsPromotionsFromMobile,
+  applyCouponFromMobile,
 } from "./mobile";
 
-export const getItemId = (url: string) => /id=(\d+)/.exec(url)![1];
+export const getItemId = (url: string) => {
+  if (/\/i(\d+)\.htm?/.test(url)) {
+    return RegExp.$1;
+  }
+  return /id=(\d+)/.exec(url)![1];
+};
 export function getGoodsUrl(id) {
   return `https://detail.tmall.com/item.htm?id=${id}`;
 }
@@ -81,4 +87,8 @@ export async function getGoodsInfo(url: string, skuId?: string) {
 
 export function getGoodsPromotions(item: any) {
   return getGoodsPromotionsFromMobile(item);
+}
+
+export function applyCoupon(params: any) {
+  return applyCouponFromMobile(params);
 }

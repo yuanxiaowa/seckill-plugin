@@ -6,7 +6,7 @@
         <div v-for="promotion of promotions" :key="promotion.title">
           <span style="color:red;margin-right:1em">{{promotion.title}}</span>
           <el-button @click="coudan(promotion)">凑单</el-button>
-          <el-button>{{promotion.hasReceived?'继续':''}}领取</el-button>
+          <el-button @click="applyCoupon(promotion)">{{promotion.hasReceived?'继续':''}}领取</el-button>
         </div>
         <span v-if="promotions.length===0">暂无数据</span>
       </div>
@@ -16,7 +16,7 @@
 
 <script lang="ts">
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
-import { getGoodsPromotions, goodsList, cartAdd } from "@/api";
+import { getGoodsPromotions, goodsList, cartAdd, applyCoupon } from "@/api";
 
 @Component
 export default class GoodsItemCoudan extends Vue {
@@ -40,12 +40,25 @@ export default class GoodsItemCoudan extends Vue {
     this.loading = false;
   }
 
-  async coudan({ quota, searchParams }) {
+  async coudan({ quota, searchParams, seg }) {
+    let start_price = 0;
+    let now_price = this.item.price * this.item.quantity;
+    if (seg) {
+      let n = Math.ceil(now_price / quota);
+      start_price = quota * n - now_price;
+    } else {
+      if (now_price < quota) {
+        start_price = quota - now_price;
+      } else {
+        this.$notify.warning("已达到额度，无需凑单");
+        return;
+      }
+    }
     var {
       items: [item],
     } = await goodsList({
       platform: this.platform,
-      start_price: quota - this.item.price,
+      start_price,
       ...searchParams,
     });
     await cartAdd(
@@ -56,6 +69,17 @@ export default class GoodsItemCoudan extends Vue {
       this.platform
     );
     this.$notify.success("已加入购物车");
+  }
+
+  async applyCoupon({ params, pointConsume }) {
+    if (pointConsume > 0) {
+      await this.$msgbox.confirm(`消耗${pointConsume}积分兑换？`);
+    }
+    await applyCoupon({
+      ...params,
+      platform: this.platform,
+    });
+    this.$notify.success("抢到了");
   }
 }
 </script>

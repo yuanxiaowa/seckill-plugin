@@ -2,7 +2,12 @@ import { getCommentList, comment } from "./comment";
 import { resolveUrl, getUserName } from "./tools";
 import { handlers } from "./coupon";
 import { buyDirect, cartBuy, coudan } from "./order";
-import { getGoodsSkus, getGoodsDetail, getGoodsPromotions } from "./goods";
+import {
+  getGoodsSkus,
+  getGoodsDetail,
+  getGoodsPromotions,
+  applyCoupon,
+} from "./goods";
 import { getCartList, addCart, updateCart } from "./cart";
 import {
   deleteCoupon,
@@ -52,4 +57,5 @@ export default {
     ({ data: { t } }) => t
   ),
   getGoodsPromotions,
+  applyCoupon,
 };
