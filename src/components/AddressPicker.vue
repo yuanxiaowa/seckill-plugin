@@ -9,6 +9,7 @@
           :value="item.value"
         ></el-option>
       </el-select>
+      <el-button @click="fetchData" icon="el-icon-refresh" circle></el-button>
       <el-button v-if="options.length>0" @click="setValue(value)">确定</el-button>
     </el-dialog>
     <el-button @click="visible=true" icon="el-icon-house">
@@ -34,13 +35,17 @@ export default class AddressPicker extends Vue {
   @Watch("visible")
   onVisibilityChange(b: boolean) {
     if (b) {
-      getAddresses("taobao").then((addresses) => {
-        this.options = addresses.map((item) => ({
-          value: item.deliverId,
-          label: `${item.addressDetail}(${item.fullName})`,
-        }));
-      });
+      this.fetchData();
     }
+  }
+
+  fetchData() {
+    return getAddresses("taobao").then((addresses) => {
+      this.options = addresses.map((item) => ({
+        value: item.deliverId,
+        label: `${item.addressDetail}(${item.fullName})`,
+      }));
+    });
   }
 
   @Emit("input")

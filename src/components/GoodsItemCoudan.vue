@@ -68,7 +68,7 @@ export default class GoodsItemCoudan extends Vue {
       },
       this.platform
     );
-    this.$notify.success("已加入购物车");
+    this.$notify.success("凑单商品已加入购物车");
   }
 
   async applyCoupon({ params, pointConsume }) {
