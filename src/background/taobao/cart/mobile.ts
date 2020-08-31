@@ -311,3 +311,111 @@ export async function updateCartFromMobile(
   // });
   // return cartId;
 }
+
+export async function getNewCartDatas() {
+  const {
+    data,
+    hierarchy: { root, structure },
+    linkage: {
+      common: { compress, queryParams, validateParams },
+      signature,
+    },
+  } = await requestData("mtop.trade.query.bag", {
+    data: {
+      isPage: false,
+      extStatus: 0,
+      netType: 0,
+      exParams: JSON.stringify({
+        mergeCombo: "true",
+        version: "1.1.1",
+        globalSell: "1",
+        spm: "a222m.7628550.0.0",
+        cartfrom: "detail",
+        dataformat: "dataformat_ultron_h5",
+      }),
+      spm: "a222m.7628550.0.0",
+      cartfrom: "detail",
+      dataformat: "dataformat_ultron_h5",
+      ttid: "h5",
+    },
+    version: "5.0",
+  });
+  return {
+    data,
+    hierarchy: { root, structure },
+    linkage: {
+      common: { compress, queryParams, validateParams },
+      signature,
+    },
+  };
+}
+
+export async function calcPrice(items: any[]) {
+  const itemKeys: string[] = [];
+  const {
+    data: oldData,
+    hierarchy: { root, structure },
+    linkage,
+  } = await getNewCartDatas();
+  if (structure.invalidBlock_1) {
+    delete structure.invalidBlock_1;
+    structure.global_1 = structure.global_1.filter(
+      (item) => !item.startsWith("invalid")
+    );
+  }
+  const data = Object.keys(oldData).reduce((acc, key) => {
+    const item = oldData[key];
+    if (item.submit || item.tag === "global") {
+      acc[key] = item;
+    } else {
+      // if (key.startsWith("item_")) {
+      //   itemKeys.push(key);
+      // }
+      if (items.includes(key)) {
+        item.fields.isChecked = "true";
+        const checkClickItem = item.events.checkClick[0];
+        checkClickItem.fields.checkedItems = [key];
+        checkClickItem.fields.isChecked = true;
+        acc[key] = item;
+      }
+    }
+    return acc;
+  }, {});
+  const {
+    data: { submit_1 },
+  } = await requestData("mtop.trade.update.bag", {
+    data: {
+      params: JSON.stringify({
+        operator: items[0],
+        operatorEvent: "checkClick.cartSelect",
+        data,
+        hierarchy: {
+          structure,
+        },
+        linkage,
+      }),
+      isPage: false,
+      extStatus: 0,
+      netType: 0,
+      feature: JSON.stringify({ gzip: false }),
+      exParams: {
+        mergeCombo: "true",
+        version: "1.1.1",
+        globalSell: "1",
+        spm: "a222m.7628550.0.0",
+        cartfrom: "detail",
+        dataformat: "dataformat_ultron_h5",
+      },
+      spm: "a222m.7628550.0.0",
+      cartfrom: "detail",
+      dataformat: "dataformat_ultron_h5",
+    },
+    method: "post",
+  });
+  console.log(submit_1);
+}
+
+// // @ts-ignore
+// window.getNewCartDatas = getNewCartDatas;
+// // @ts-ignore
+// window.calcPrice = calcPrice;

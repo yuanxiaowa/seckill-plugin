@@ -89,6 +89,10 @@ export function getGoodsPromotions(item: any) {
   return getGoodsPromotionsFromMobile(item);
 }
 
+/**
+ * 领取优惠券
+ * @param params
+ */
 export function applyCoupon(params: any) {
   return applyCouponFromMobile(params);
 }
