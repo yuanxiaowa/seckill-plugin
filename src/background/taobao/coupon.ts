@@ -1,4 +1,4 @@
-import { test, startsWith, includes } from "ramda";
+import { test, startsWith, includes, or, anyPass } from "ramda";
 import { getGoodsUrl } from "./goods";
 import { requestData } from "./tools";
 import setting from "./setting";
@@ -401,7 +401,10 @@ export async function getTaolijinFromPage(url: string) {
   var href = await excuteRequestAction<string>(url, {
     code:
       '[...document.querySelectorAll(".btn-text")].forEach(ele => ele.click());document.querySelector(".product-info-detail").getAttribute("href");',
-    test: includes("mtop.alimama.vegas.center.flb.coupon.query"),
+    test: anyPass([
+      includes("mtop.alimama.vegas.center.flb.coupon.query"),
+      includes("mtop.alimama.union.xt.en.api.entry"),
+    ]),
     urls: ["*://*.taobao.com/*"],
   });
   return resolveUrl(href).then((url) => ({ url, success: true }));
