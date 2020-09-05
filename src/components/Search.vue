@@ -22,9 +22,9 @@
         <el-col :span="12" v-if="form_data.platform==='taobao'">
           <el-form-item>
             <el-select v-model="searchType">
-              <el-option value="normal">普通</el-option>
-              <el-option value="juhuasuan">聚划算</el-option>
-              <el-option value="shop">店铺</el-option>
+              <el-option value="normal" label="普通"></el-option>
+              <el-option value="juhuasuan" label="聚划算"></el-option>
+              <el-option value="shop" label="店铺"></el-option>
             </el-select>
           </el-form-item>
         </el-col>
@@ -214,7 +214,7 @@ export default class Search extends Vue {
   renderTitle({ row }) {
     return (
       <span>
-        <img src={row.img} width="50" />
+        <img src={row.img} width="38" style="vertical-align:middle" />
         <a href={row.url} target="_blank">
           {row.title}
         </a>
