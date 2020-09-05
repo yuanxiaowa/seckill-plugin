@@ -17,7 +17,7 @@ export interface ArgBuyDirect {
   from_pc?: boolean;
   diejia?: number;
   ignoreRepeat?: boolean;
-  no_interaction?: boolean;
+  no_relay?: boolean;
   addressId?: string;
 }
 
@@ -31,18 +31,19 @@ export interface ArgOrder<T> {
   title: string;
   qq?: string;
   bus?: Vue;
-  no_interaction?: boolean;
+  no_relay?: boolean;
   addressId?: string;
   referer?: string;
   autopay?: boolean;
   is_pc?: boolean;
+  resubmit?: boolean;
 }
 
 export interface ArgCartBuy {
   items: any[];
   jianlou?: number;
   expectedPrice?: number;
-  no_interaction?: boolean;
+  no_relay?: boolean;
   addressId?: string;
   other: any;
 }

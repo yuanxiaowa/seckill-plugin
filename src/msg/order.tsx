@@ -121,18 +121,21 @@ bus.$on("tasks-kill", (data?: { port: number; qq: number }) => {
     qq: 727694556
   });
 }; */
-bus.$on("check-status", (data?: { qq: number }) => {
-  // @ts-ignore
-  checkStatus("taobao", data && data.qq).then((url: string) => {
-    if (!url || !url.startsWith("http")) {
-      Notification.success(`(${url})状态正常`);
-      sendMsg(`(${url})登录状态正常`, data && data.qq);
-    } else {
-      // sendMsg(url, data && data.qq);
-      MessageBox.alert(`<img src=${url} />`, {
-        dangerouslyUseHTMLString: true,
-        center: true,
-      });
-    }
-  });
-});
+bus.$on(
+  "check-status",
+  ({ qq, platform }: { qq?: number; platform?: string }) => {
+    // @ts-ignore
+    checkStatus(platform || "taobao", qq).then((url: string) => {
+      if (!url || !url.startsWith("http")) {
+        Notification.success(`(${url})状态正常`);
+        sendMsg(`(${url})登录状态正常`, qq);
+      } else {
+        // sendMsg(url, data && data.qq);
+        MessageBox.alert(`<img src=${url} />`, {
+          dangerouslyUseHTMLString: true,
+          center: true,
+        });
+      }
+    });
+  }
+);

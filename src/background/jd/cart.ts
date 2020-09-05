@@ -44,19 +44,19 @@ export async function getCartList() {
   } = JSON.parse(text);
   var other = {
     areaId: data.areaId,
-    traceId: data.traceId
+    traceId: data.traceId,
   };
-  var items = data.cart.venderCart.map(item => {
+  var items = data.cart.venderCart.map((item, i) => {
     var vendor: any = {
-      id: item.popInfo.vid,
+      id: item.popInfo.vid + i,
       title: item.popInfo.vname,
       items: [],
-      checked: item.checkType === "1"
+      checked: item.checkType === "1",
     };
     item.sortedItems.forEach(({ polyItem, itemId, polyType }: any) => {
-      polyItem.products.forEach(product => {
+      polyItem.products.forEach((product) => {
         var sku = product.mainSku;
-        return vendor.items.push({
+        vendor.items.push({
           id: sku.id,
           itemId: itemId,
           title: sku.name,
@@ -66,7 +66,7 @@ export async function getCartList() {
           price: product.price / 100,
           quantity: product.num,
           polyType,
-          checked: product.checkType === "1"
+          checked: product.checkType === "1",
         });
       });
     });
@@ -74,8 +74,35 @@ export async function getCartList() {
   });
   return {
     other,
-    items
+    items,
   };
+}
+
+function getItype(t, e) {
+  var n = 0;
+  switch (t) {
+    case "1":
+      n = 1;
+      break;
+    case "2":
+      n = 4;
+      break;
+    case "3":
+      n = "cmdty" == e ? 11 : "canselectgift" == e ? 10 : "xnzt" == e ? 24 : 9;
+      break;
+    case "4":
+      n =
+        "cmdty" === e
+          ? 13
+          : "canselectgift" === e
+          ? 15
+          : "selectedgift" === e
+          ? 16
+          : "xnzt" == e
+          ? 29
+          : 12;
+  }
+  return 0 == n && console.error("iType error"), n;
 }
 
 async function operateCart(
@@ -92,15 +119,16 @@ async function operateCart(
     sceneval: "2",
     // mainSku.id,,1,mainSku.id,11,itemid,0
     commlist: data.items
-      .map(item =>
+      .map((item) =>
         [
           item.id,
           ,
           item.quantity,
           item.id,
-          Number(item.polyType).toString(2),
+          getItype(item.polyType, "cmdty"),
+          // Number(item.polyType).toString(2),
           item.polyType === "1" ? "" : item.itemId,
-          0
+          0,
         ].join(",")
       )
       .join("$"),
@@ -111,12 +139,12 @@ async function operateCart(
     reg: "1",
     traceid: data.traceId,
     locationid: data.areaId,
-    t: Math.random()
+    t: Math.random(),
   };
   var { errId, errMsg } = await request.get(url, {
     qs,
     referer: "https://p.m.jd.com/cart/cart.action?sceneval=2",
-    type: "jsonp"
+    type: "jsonp",
   });
   if (errId !== "0") {
     throw new Error(errMsg);
@@ -124,7 +152,7 @@ async function operateCart(
 }
 
 export async function toggleCartChecked(data) {
-  return operateCart(
+  await operateCart(
     `https://wqdeal.jd.com/deal/mshopcart/${
       data.checked ? "checkcmdy" : "uncheckcmdy"
     }`,
@@ -146,10 +174,10 @@ export async function addCart(args) {
         type: "0",
         commlist: [skuId, , quantity, skuId, 1, 0, 0].join(","),
         // locationid: "12-988-40034",
-        t: Math.random()
+        t: Math.random(),
       },
       referer: `https://item.m.jd.com/product/${skuId}.html`,
-      type: "jsonp"
+      type: "jsonp",
     }
   );
   if (errId !== "0") {
@@ -158,13 +186,10 @@ export async function addCart(args) {
   return skuId;
 }
 
-export function delCart(data: any) {
-  return operateCart("https://wqdeal.jd.com/deal/mshopcart/rmvCmdy", data);
+export async function delCart(data: any) {
+  await operateCart("https://wqdeal.jd.com/deal/mshopcart/rmvCmdy", data);
 }
 
-export function updateCartQuantity(data: any) {
-  return operateCart(
-    "https://wqdeal.jd.com/deal/mshopcart/modifycmdynum",
-    data
-  );
+export async function updateCartQuantity(data: any) {
+  await operateCart("https://wqdeal.jd.com/deal/mshopcart/modifycmdynum", data);
 }

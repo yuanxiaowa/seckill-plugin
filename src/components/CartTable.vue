@@ -6,7 +6,10 @@
           <el-table :data="props.row.items" row-key="id">
             <el-table-column width="55">
               <template slot="header">
-                <el-checkbox @change="$emit('select-vendor',props.row)" v-model="props.row.checked"></el-checkbox>
+                <el-checkbox
+                  @change="props.row.checked=$event;$emit('select-vendor',props.row)"
+                  :checked="props.row.checked"
+                ></el-checkbox>
               </template>
               <template slot-scope="{row}">
                 <el-checkbox @change="$emit('select-item',row)" v-model="row.checked"></el-checkbox>
@@ -67,7 +70,7 @@
       </el-table-column>-->
       <el-table-column prop="title">
         <template slot="header">
-          <el-checkbox label="全选" v-model="checked" @change="$emit('select-all',checked)"></el-checkbox>
+          <el-checkbox label="全选" :checked="checked" @change="onChangeAll"></el-checkbox>
           <span style="margin-left:2em">店铺名称</span>
         </template>
       </el-table-column>
@@ -76,7 +79,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue, Watch } from "vue-property-decorator";
+import { Component, Emit, Prop, Vue, Watch } from "vue-property-decorator";
 import GoodsItemCoudan from "./GoodsItemCoudan.vue";
 import SkuPicker from "./SkuPicker.vue";
 
@@ -99,6 +102,11 @@ export default class CartTable extends Vue {
   @Watch("value")
   onValueChange(new_val, old_val) {
     this.checked = false;
+  }
+
+  @Emit("select-all")
+  onChangeAll(e: boolean) {
+    this.checked = e;
   }
 
   updateSku(item, { label, value }: { label: string; value: string }) {

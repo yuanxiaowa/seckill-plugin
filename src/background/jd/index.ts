@@ -2,7 +2,13 @@ import { handlers } from "./coupon";
 import { resolveUrl } from "./tools";
 import { buyDirect, cartBuy, coudan } from "./order";
 import { getGoodsList } from "./goods";
-import { getCartList, addCart } from "./cart";
+import {
+  getCartList,
+  addCart,
+  updateCartQuantity,
+  delCart,
+  toggleCartChecked,
+} from "./cart";
 import { checkStatus, getMyCoupons, deleteCoupon } from "./member";
 import { getBillion, getBillionList } from "./billion";
 import { getPlusQuanpin, getPlusQuanpinList } from "./plus";
@@ -16,13 +22,13 @@ export default {
   comment() {},
   getGoodsList,
   getGoodsSkus() {},
-  cartBuy: cartBuy,
-  coudan: coudan,
-  getCartList: getCartList,
+  cartBuy,
+  coudan,
+  getCartList,
   addCart: addCart,
-  cartToggle() {},
-  cartDel(args) {},
-  cartUpdateQuantity(args) {},
+  cartToggle: toggleCartChecked,
+  cartDel: delCart,
+  cartUpdateQuantity: updateCartQuantity,
   getUserName() {},
   getGoodsDetail() {},
   checkStatus: checkStatus,

@@ -19,7 +19,7 @@ import {
   getCouponCenterCoupon,
   getCouponCenterItems,
 } from "./jd/coupon-center";
-import "./jd/task";
+import { runJdTasks } from "./jd/task";
 // import "./baidu";
 import { HandlerWithAll } from "@/structs/api";
 import { ifElse, propIs } from "ramda";
@@ -135,7 +135,7 @@ async function getTasks() {
 async function cancelTask({ id }: { id: number }) {
   return taskManager.cancelTask(id);
 }
-const isJd = R.propEq("jingdong", "platform");
+const isJd = R.propEq("platform", "jingdong");
 const taobao = {
   resolveUrl: ifElse(
     isJd,
@@ -157,7 +157,6 @@ const taobao = {
       handler: ifElse(isJd, jd.cartBuy, tb.cartBuy),
     })(args);
   },
-  // getCartList: taobao_getCartList,
   getConfig,
   setConfig,
   getAccounts,
@@ -218,4 +217,28 @@ window.taobao = taobao;
 taobao.checkStatus("taobao");
 if (config.is_main) {
   taobao.checkStatus("jingdong");
+  if (accounts.jingdong.password) {
+    runJdTasks();
+  }
 }
+
+chrome.runtime.onMessageExternal.addListener(function(
+  { name, args },
+  sender,
+  sendResponse
+) {
+  taobao[name](...args)
+    .then((res) =>
+      sendResponse({
+        success: true,
+        data: res,
+      })
+    )
+    .catch((err) =>
+      sendResponse({
+        success: false,
+        err,
+      })
+    );
+});
+chrome.runtime.onMessage.addListener(console.log);

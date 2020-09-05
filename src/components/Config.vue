@@ -5,47 +5,49 @@
       <el-button @click="show_task=true">任务列表</el-button>
     </el-form-item>
     <el-drawer title="配置" :visible.sync="drawer" direction="ltr">
-      <el-divider></el-divider>
-      <el-form-item>
-        <el-tag>{{username}}</el-tag>
-        <el-button icon="el-icon-refresh-right" circle @click="refreshUserName"></el-button>
-        <account-info></account-info>
-      </el-form-item>
-      <el-form-item label="端口号" v-if="config.is_main">
-        <el-input-number v-model="port" @change="onPortChange" :min="80" :max="35000"></el-input-number>
-      </el-form-item>
-      <el-form-item>
-        <status-comp />
-      </el-form-item>
-      <el-divider></el-divider>
-      <el-form-item label="自动提交订单">
-        <el-checkbox v-model="config.isSubmitOrder" @input="setConfig"></el-checkbox>
-      </el-form-item>
-      <el-form-item label="监视重载">
-        <el-checkbox v-model="config.resubmit" @input="setConfig"></el-checkbox>
-      </el-form-item>
-      <el-form-item label="延迟">
-        <el-input-number v-model="config.delay_all" @input="setConfig"></el-input-number>
-      </el-form-item>
-      <el-form-item label="下单间隔">
-        <el-input-number v-model="config.interval_submit" @input="setConfig"></el-input-number>
-      </el-form-item>
-      <el-form-item label="下单延时">
-        <el-input-number v-model="config.delay_submit" @input="setConfig"></el-input-number>
-      </el-form-item>
-      <el-form-item label="主账号">
-        <el-checkbox v-model="config.is_main" @input="setConfig"></el-checkbox>
-      </el-form-item>
-      <el-form-item label="QQ">
-        <el-input v-model="config.qq" @input="setConfig"></el-input>
-      </el-form-item>
-      <el-form-item label="接收消息">
-        <el-checkbox v-model="config.accept_messages" @input="setConfig"></el-checkbox>
-      </el-form-item>
-      <el-form-item>
-        <el-button @click="pullConfig">拉取配置</el-button>
-        <el-button style="margin-left:2em" @click="logout">退出</el-button>
-      </el-form-item>
+      <div style="padding:0 1em;">
+        <el-divider></el-divider>
+        <el-form-item>
+          <el-tag>{{username}}</el-tag>
+          <el-button icon="el-icon-refresh-right" circle @click="refreshUserName"></el-button>
+          <account-info></account-info>
+        </el-form-item>
+        <el-form-item label="端口号" v-if="config.is_main">
+          <el-input-number v-model="port" @change="onPortChange" :min="80" :max="35000"></el-input-number>
+        </el-form-item>
+        <el-form-item>
+          <status-comp />
+        </el-form-item>
+        <el-divider></el-divider>
+        <el-form-item label="自动提交订单">
+          <el-checkbox v-model="config.isSubmitOrder" @input="setConfig"></el-checkbox>
+        </el-form-item>
+        <el-form-item label="监视重载">
+          <el-checkbox v-model="config.resubmit" @input="setConfig"></el-checkbox>
+        </el-form-item>
+        <el-form-item label="延迟">
+          <el-input-number v-model="config.delay_all" @input="setConfig"></el-input-number>
+        </el-form-item>
+        <el-form-item label="下单间隔">
+          <el-input-number v-model="config.interval_submit" @input="setConfig"></el-input-number>
+        </el-form-item>
+        <el-form-item label="下单延时">
+          <el-input-number v-model="config.delay_submit" @input="setConfig"></el-input-number>
+        </el-form-item>
+        <el-form-item label="主账号">
+          <el-checkbox v-model="config.is_main" @input="setConfig"></el-checkbox>
+        </el-form-item>
+        <el-form-item label="QQ">
+          <el-input v-model="config.qq" @input="setConfig"></el-input>
+        </el-form-item>
+        <el-form-item label="接收消息">
+          <el-checkbox v-model="config.accept_messages" @input="setConfig"></el-checkbox>
+        </el-form-item>
+        <el-form-item>
+          <el-button @click="pullConfig">拉取配置</el-button>
+          <el-button style="margin-left:2em" @click="logout">退出</el-button>
+        </el-form-item>
+      </div>
     </el-drawer>
 
     <task v-model="show_task"></task>
@@ -109,4 +111,7 @@ export default class Config extends Vue {
 </script>
 
 <style>
+.el-drawer__body {
+  overflow: auto;
+}
 </style>

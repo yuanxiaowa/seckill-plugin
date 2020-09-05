@@ -32,7 +32,7 @@
         <el-col :span="8">
           <el-checkbox v-model="noinvalid">存在失效商品不提交</el-checkbox>
           <el-checkbox v-model="from_browser">浏览器提交</el-checkbox>
-          <el-checkbox :value="!no_interaction" @input="no_interaction=!$event">互助</el-checkbox>
+          <el-checkbox :value="!no_relay" @input="no_relay=!$event">接力</el-checkbox>
         </el-col>
         <el-col :span="8">
           <el-form-item>
@@ -103,7 +103,7 @@ export default class App extends Vue {
   forcePrice = false;
   from_browser = false;
   jianlou = 30;
-  no_interaction = false;
+  no_relay = true;
   addressId = "";
   loading = false;
 
@@ -221,7 +221,7 @@ export default class App extends Vue {
       from_browser: this.from_browser,
       noinvalid: this.noinvalid,
       jianlou: this.jianlou,
-      no_interaction: this.no_interaction,
+      no_relay: this.no_relay,
       addressId: this.addressId,
       t: this.datetime,
       platform: this.platform,

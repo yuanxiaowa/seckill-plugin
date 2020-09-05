@@ -26,7 +26,7 @@
       </el-col>
       <el-col :span="6">
         <el-checkbox v-model="from_cart">加车购买</el-checkbox>
-        <el-checkbox :value="!no_interaction" @input="no_interaction=!$event">互助</el-checkbox>
+        <el-checkbox :value="!no_relay" @input="no_relay=!$event">接力</el-checkbox>
       </el-col>
       <el-col :span="6">
         <el-form-item label="pc购买">
@@ -46,8 +46,14 @@
         </el-form-item>
       </el-col>
       <el-col :span="2">
-        <el-button @click="saveRecorder" @disabled="!text">保存</el-button>
-        <el-button @click="show_recorder=true">记录</el-button>
+        <el-button
+          @click="saveRecorder"
+          @disabled="!text"
+          icon="el-icon-collection"
+          circle
+          title="保存"
+        ></el-button>
+        <el-button @click="show_recorder=true" icon="el-icon-s-order" circle title="记录"></el-button>
         <text-recorder v-model="show_recorder" @data="text=$event" ref="recorder" />
       </el-col>
       <el-col :span="12">
@@ -202,7 +208,7 @@ export default class Buy extends Vue {
   jianlou = 30;
   from_cart = false;
   from_pc = false;
-  no_interaction = false;
+  no_relay = true;
 
   show_recorder = false;
   skuId = "";
@@ -299,7 +305,7 @@ export default class Buy extends Vue {
           from_cart: this.from_cart,
           from_pc: this.from_pc,
           ignoreRepeat: true,
-          no_interaction: this.no_interaction,
+          no_relay: this.no_relay,
           other: {
             memo: this.memo,
           },

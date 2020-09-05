@@ -13,6 +13,7 @@ import { BaseHandler } from "@/structs/api";
 import { logFile } from ".";
 import { getCartListFromMobile } from "../cart/mobile";
 import moment from "moment";
+import { fromPairs } from "ramda";
 
 function transformOrderData(
   orderdata: any,
@@ -185,7 +186,7 @@ function transformOrderData(
 }
 
 export async function submitOrderFromMobile(args: ArgOrder<any>) {
-  if (config.resubmit) {
+  if (args.resubmit || config.resubmit) {
     return submitOrderResubmit(args);
   }
   return submitOrderStatic(args);
@@ -312,7 +313,7 @@ async function submitOrderStatic(args: ArgOrder<any>, retryCount = 0) {
 
   var submit = async (retryCount = 0) => {
     try {
-      if (args.jianlou && !args.no_interaction) {
+      if (args.jianlou && !args.no_relay) {
         if (!args.bus) {
           args.bus = new Vue();
           console.log(`\n${_n}打开另一个捡漏-${args.title}`);
@@ -639,27 +640,36 @@ function getNextDataByGoodsInfo({ delivery, skuId, itemId }, quantity: number) {
 }
 
 export const buyDirectFromMobile: BaseHandler["buy"] = async function(args) {
-  if (args.from_pc) {
-    let form = document.createElement("form");
-
-    document.body.append(form);
-    return;
+  var data;
+  const urlObj = new URL(args.url);
+  var isGoodsUrl = urlObj.pathname !== "/cart/order.html";
+  if (isGoodsUrl) {
+    data = await getGoodsInfo(args.url, args.skuId);
+  } else {
+    // {"buyParam":"626470978699_1,626242045992_1","un":"c0aeec34afc20560e13bd8fde7d968fb","share_crt_v":"1","ut_sk":"1.utdid_21646297_1599271174094.TaoPassword-Outside.windvane","spm":"a2159r.13376465.0.0","sp_tk":"bkswcGMzVTBKeFo","bxsign":"tcd1599271186597450b827527ccebd0e8fb2ca7b4a17ed0/"}
+    data = fromPairs([...urlObj.searchParams.entries()]);
   }
-  var data = await getGoodsInfo(args.url, args.skuId);
   const f = async () => {
-    if (!args.no_interaction) {
-      if (!data.buyEnable) {
-        throw new Error(data.msg || "不能购买");
+    if (isGoodsUrl) {
+      if (!args.no_relay) {
+        if (!data.buyEnable) {
+          throw new Error(data.msg || "不能购买");
+        }
       }
     }
     if (typeof args.expectedPrice === "number") {
       args.expectedPrice = Math.min(data.price, args.expectedPrice);
     }
     return submitOrderFromMobile(
-      Object.assign(args, {
-        data: getNextDataByGoodsInfo(data, args.quantity),
-        title: data.title,
-      })
+      Object.assign(
+        args,
+        isGoodsUrl
+          ? {
+              data: getNextDataByGoodsInfo(data, args.quantity),
+              title: data.title,
+            }
+          : { data, title: "直达链接", resubmit: true }
+      )
     );
   };
   f.title = data.title;

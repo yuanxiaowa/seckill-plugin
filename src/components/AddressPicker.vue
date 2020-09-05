@@ -12,7 +12,7 @@
       <el-button @click="fetchData" icon="el-icon-refresh" circle></el-button>
       <el-button v-if="options.length>0" @click="setValue(value)">确定</el-button>
     </el-dialog>
-    <el-button @click="visible=true" icon="el-icon-house">
+    <el-button @click="visible=true" icon="el-icon-house" circle>
       <slot></slot>
     </el-button>
     {{selected_text}}

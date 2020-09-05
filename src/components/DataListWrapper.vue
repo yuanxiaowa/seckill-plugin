@@ -14,25 +14,29 @@ export default class DataListWrapper extends Vue {
   @Prop() columns!: any[];
   @Prop() actions!: { text: string; test?(props: any): boolean }[];
   @Prop() fetcher!: ({
-    page: number
+    page: number,
   }) => Promise<{
     items: any[];
     more: boolean;
     page: number;
   }>;
   @Prop({
-    default: "id"
+    default: "id",
   })
   rowKey!: string;
   @Prop({
-    default: {}
+    default() {
+      return {};
+    },
   })
   filters!: {
     default: string;
     keys: string[];
   };
   @Prop({
-    default: {}
+    default() {
+      return {};
+    },
   })
   excludeFilters!: {
     default: string;
@@ -41,7 +45,7 @@ export default class DataListWrapper extends Vue {
 
   @Prop() extraFilter!: (items: any[]) => any[];
   @Prop({
-    default: 400
+    default: 400,
   })
   maxHeight!: number;
 
@@ -68,7 +72,7 @@ export default class DataListWrapper extends Vue {
     this.loading = true;
     try {
       var { items, more } = await this.fetcher({
-        page: this.page
+        page: this.page,
       });
       if (this.is_attach && this.page !== 1) {
         this.items = this.items.concat(items);
@@ -131,15 +135,12 @@ export default class DataListWrapper extends Vue {
           .trim()
           .split(/\s+|\|/)
           .filter(Boolean)
-          .map(item => item.toLowerCase());
+          .map((item) => item.toLowerCase());
         if (filter_kws.length > 0) {
-          items = items.filter(item =>
-            filter_kws.some(kw =>
-              this.filters.keys.some(key =>
-                item[key]
-                  .toString()
-                  .toLowerCase()
-                  .includes(kw)
+          items = items.filter((item) =>
+            filter_kws.some((kw) =>
+              this.filters.keys.some((key) =>
+                item[key].toString().toLowerCase().includes(kw)
               )
             )
           );
@@ -152,16 +153,13 @@ export default class DataListWrapper extends Vue {
           .trim()
           .split(/\s+|\|/)
           .filter(Boolean)
-          .map(item => item.toLowerCase());
+          .map((item) => item.toLowerCase());
         if (filter_not_kws.length > 0) {
           items = items.filter(
-            item =>
-              !filter_not_kws.some(kw =>
-                this.excludeFilters.keys.some(key =>
-                  item[key]
-                    .toString()
-                    .toLowerCase()
-                    .includes(kw)
+            (item) =>
+              !filter_not_kws.some((kw) =>
+                this.excludeFilters.keys.some((key) =>
+                  item[key].toString().toLowerCase().includes(kw)
                 )
               )
           );
@@ -190,12 +188,12 @@ export default class DataListWrapper extends Vue {
     const otherProps: any = {};
     if (color) {
       otherProps.domProps = {
-        style: `color:${color}`
+        style: `color:${color}`,
       };
     }
     if (render) {
       otherProps.scopedSlots = {
-        default: render
+        default: render,
       };
     }
     if (sortable === undefined && prop) {
@@ -209,9 +207,9 @@ export default class DataListWrapper extends Vue {
         sortable={sortable}
         {...{
           props: {
-            ...restProps
+            ...restProps,
           },
-          ...otherProps
+          ...otherProps,
         }}
       >
         {children && children.map(this.renderColumn)}
@@ -230,10 +228,10 @@ export default class DataListWrapper extends Vue {
         stripe
         {...{
           on: {
-            "selection-change": this.handleSelectionChange
+            "selection-change": this.handleSelectionChange,
           },
 
-          style: "width: 100%"
+          style: "width: 100%",
         }}
       >
         <el-table-column type="selection" width="55"></el-table-column>
@@ -246,8 +244,8 @@ export default class DataListWrapper extends Vue {
           align="right"
           {...{
             scopedSlots: {
-              default: this.$scopedSlots.actions
-            }
+              default: this.$scopedSlots.actions,
+            },
           }}
         ></el-table-column>
       </el-table>
@@ -262,7 +260,7 @@ export default class DataListWrapper extends Vue {
               <el-input
                 value={this.filter_kw}
                 placeholder="包含关键字"
-                onInput={v => (this.filter_kw = v)}
+                onInput={(v) => (this.filter_kw = v)}
               ></el-input>
             </el-col>
           )}
@@ -271,7 +269,7 @@ export default class DataListWrapper extends Vue {
               <el-input
                 value={this.filter_not_kw}
                 placeholder="不包含关键字"
-                onInput={v => (this.filter_not_kw = v)}
+                onInput={(v) => (this.filter_not_kw = v)}
               ></el-input>
             </el-col>
           )}
@@ -281,7 +279,7 @@ export default class DataListWrapper extends Vue {
           <el-col span={12}>
             {this.$scopedSlots.selection &&
               this.$scopedSlots.selection({
-                selections: this.multipleSelection
+                selections: this.multipleSelection,
               })}
           </el-col>
           <el-col span={12} style="text-align:right">
@@ -291,7 +289,7 @@ export default class DataListWrapper extends Vue {
             </span>
             <el-checkbox
               value={this.is_attach}
-              onInput={v => {
+              onInput={(v) => {
                 this.is_attach = v;
               }}
             >

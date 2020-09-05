@@ -26,7 +26,9 @@ export default class Status extends Vue {
   platform = "taobao";
   status_text = "";
   checkStatus() {
-    bus.$emit("check-status");
+    bus.$emit("check-status", {
+      platform: this.platform,
+    });
   }
   sysTime() {
     sysTime(this.platform);

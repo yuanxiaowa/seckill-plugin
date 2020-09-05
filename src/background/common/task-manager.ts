@@ -71,7 +71,7 @@ export class TaskManager {
         url: data.url,
         cancel: rejectHandler,
         time: toTime.format(),
-        timer: <any>0
+        timer: <any>0,
       };
       if (!data.handler) {
         rejectHandler = (msg: string) => {
@@ -82,7 +82,7 @@ export class TaskManager {
           reject(new Error(msg));
         };
         if (data.url) {
-          if (this.tasks.find(task => task.url === data.url)) {
+          if (this.tasks.find((task) => task.url === data.url)) {
             return rejectHandler(
               "\n 已存在该任务 " + JSON.stringify(data.comment, null, 2)
             );
@@ -93,7 +93,7 @@ export class TaskManager {
           taskData.timer = setTimeout(() => {
             this.removeTask(id);
             resolve();
-          }, toTime.diff(moment()) - dt);
+          }, toTime.diff(moment()) - dt + (data.platform === "taobao" ? 5000 : 0));
         })();
       } else {
         let update = (b: number) => {
@@ -189,7 +189,7 @@ export class TaskManager {
     return p;
   }
   cancelTask(id: number) {
-    var i = this.tasks.findIndex(item => item.id === id);
+    var i = this.tasks.findIndex((item) => item.id === id);
     if (i > -1) {
       let { timer, cancel } = this.tasks[i];
       cancel("手动取消任务 " + this.tasks[i].comment);
@@ -200,14 +200,14 @@ export class TaskManager {
     }
   }
   removeTask(id: number) {
-    var i = this.tasks.findIndex(item => item.id === id);
+    var i = this.tasks.findIndex((item) => item.id === id);
     if (i > -1) {
       this.tasks.splice(i, 1);
     }
   }
 
   setTitle(id: number, title: string) {
-    var item = this.tasks.find(item => item.id === id);
+    var item = this.tasks.find((item) => item.id === id);
     if (item) {
       item.comment = title;
     }
@@ -220,7 +220,7 @@ export class TaskManager {
       platform,
       text: comment,
       url,
-      time
+      time,
     }));
   }
 }

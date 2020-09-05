@@ -61,7 +61,7 @@ export default class SeckillList extends Vue {
   list = [];
   url = "";
   from_pc = false;
-  no_interaction = true;
+  no_relay = true;
 
   pullData() {
     getSeckillList({
@@ -98,7 +98,7 @@ export default class SeckillList extends Vue {
             other: {},
             _comment: item.title,
             qq,
-            no_interaction: this.no_interaction,
+            no_relay: this.no_relay,
           },
           is_now ? "" : item.time,
           this.platform

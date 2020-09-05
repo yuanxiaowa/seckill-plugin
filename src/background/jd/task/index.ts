@@ -8,11 +8,13 @@ import { farm_tasks } from "./farm";
 import { nutrient_tasks } from "./nutrient";
 import { pig_tasks } from "./pig";
 
-excuteTasks(jr_tasks);
-excuteTasks(jd_tasks);
-excuteTasks(joy_tasks);
-// excuteTasks(nianshou_tasks);
-excuteTasks(jinguo_tasks);
-excuteTasks(farm_tasks);
-excuteTasks(nutrient_tasks);
-excuteTasks(pig_tasks);
+export function runJdTasks() {
+  excuteTasks(jr_tasks);
+  excuteTasks(jd_tasks);
+  excuteTasks(joy_tasks);
+  // excuteTasks(nianshou_tasks);
+  excuteTasks(jinguo_tasks);
+  excuteTasks(farm_tasks);
+  excuteTasks(nutrient_tasks);
+  excuteTasks(pig_tasks);
+}
