@@ -1,11 +1,15 @@
 <template>
-  <el-date-picker
-    type="datetime"
-    :value="value"
-    @input="$emit('input',$event)"
-    :picker-options="pickerOptions"
-    format="yyyy-MM-dd HH:mm:ss"
-  ></el-date-picker>
+  <div>
+    <el-button icon="el-icon-minus" type="text" @click="add(-5)"></el-button>
+    <el-date-picker
+      type="datetime"
+      :value="value"
+      @input="$emit('input',$event)"
+      :picker-options="pickerOptions"
+      format="yyyy-MM-dd HH:mm:ss"
+    ></el-date-picker>
+    <el-button icon="el-icon-plus" type="text" @click="add(5)"></el-button>
+  </div>
 </template>
 
 <script lang="ts">
@@ -69,6 +73,15 @@ export default class DatePicker extends Vue {
       },
     ],
   };
+
+  add(diff: number) {
+    this.$emit(
+      "input",
+      moment(this.value || new Date())
+        .add("second", diff)
+        .format()
+    );
+  }
 }
 </script>
 

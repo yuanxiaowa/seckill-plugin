@@ -119,7 +119,7 @@ import DataListWrapper from "./DataListWrapper.vue";
     storageMixin({
       key: "extra_params",
       skey: "search_extra_params",
-      defaultValue: "g_couponGroupId=12786776025",
+      defaultValue: "",
     }),
   ],
 })
