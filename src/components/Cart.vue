@@ -15,7 +15,14 @@
             <el-radio label="taobao">淘宝</el-radio>
             <el-radio label="jingdong">京东</el-radio>
           </el-radio-group>
-          <el-button style="margin-left:2em" type="primary" @click="refresh">拉取</el-button>
+          <el-button
+            style="margin-left:2em"
+            type="primary"
+            @click="refresh"
+            icon="el-icon-refresh"
+            title="刷新"
+            circle
+          ></el-button>
         </el-col>
         <el-col :span="8">
           <el-form-item label="日期">

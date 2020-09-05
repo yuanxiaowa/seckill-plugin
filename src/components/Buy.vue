@@ -39,28 +39,12 @@
         </el-form-item>
       </el-col>
     </el-form-item>
-    <el-form-item>
-      <el-col :span="10">
-        <el-form-item label="文本">
-          <el-input type="textarea" v-model="text" autosize></el-input>
-        </el-form-item>
-      </el-col>
-      <el-col :span="2">
-        <el-button
-          @click="saveRecorder"
-          @disabled="!text"
-          icon="el-icon-collection"
-          circle
-          title="保存"
-        ></el-button>
-        <el-button @click="show_recorder=true" icon="el-icon-s-order" circle title="记录"></el-button>
-        <text-recorder v-model="show_recorder" @data="text=$event" ref="recorder" />
-      </el-col>
-      <el-col :span="12">
-        <el-form-item label="备注">
-          <el-input type="textarea" v-model="memo"></el-input>
-        </el-form-item>
-      </el-col>
+    <el-form-item label="解析">
+      <goods-resolver
+        @datas="datas=$event"
+        @metadata="metadata=$event"
+        @text-change="innerText=$event"
+      />
     </el-form-item>
     <el-form-item>
       <el-col :span="12">
@@ -77,20 +61,12 @@
         </el-form-item>
       </el-col>
       <el-col :span="12">
-        <el-form-item label="规格">
-          <el-input v-model="skus">
-            <el-button small slot="append" @click="chooseSku">选择</el-button>
-          </el-input>
-          <sku-picker v-model="show_sku_picker" :url="goods_url" @change="onSkuChange"></sku-picker>
+        <el-form-item label="备注">
+          <el-input type="textarea" v-model="memo"></el-input>
         </el-form-item>
       </el-col>
     </el-form-item>
     <el-form-item>
-      <el-col :span="8">
-        <el-form-item label="数量">
-          <el-input-number v-model.number="num"></el-input-number>
-        </el-form-item>
-      </el-col>
       <el-col :span="8">
         <el-form-item label="日期">
           <date-picker v-model="datetime"></date-picker>
@@ -116,9 +92,8 @@
 <script lang="tsx">
 import { Component, Vue, Watch } from "vue-property-decorator";
 import DatePicker from "./DatePicker.vue";
-import TextRecorder from "./TextRecorder.vue";
-import SkuPicker from "./SkuPicker.vue";
 import AddressPicker from "./AddressPicker.vue";
+import GoodsResolver from "./GoodsResolver.vue";
 import { Platform } from "../handlers";
 import {
   buyDirect,
@@ -132,11 +107,7 @@ import {
 import { qiangquan } from "../msg/order";
 import bus from "../bus";
 import { sendMsg } from "../msg";
-import {
-  resolveText,
-  getDealedData,
-  getDealedDataFromText,
-} from "../msg/tools";
+import { getDealedData, getDealedDataFromText } from "../msg/tools";
 import storageMixin from "@/mixins/storage";
 
 interface InfoItem {
@@ -180,9 +151,8 @@ function getPlatform(text: string) {
 @Component({
   components: {
     DatePicker,
-    TextRecorder,
-    SkuPicker,
     AddressPicker,
+    GoodsResolver,
   },
   mixins: [
     storageMixin({
@@ -194,11 +164,8 @@ function getPlatform(text: string) {
   ],
 })
 export default class Buy extends Vue {
-  text = "";
   datetime = "";
-  num = 1;
   platform: "auto" | Platform = "auto";
-  skus = "";
   memo = "";
   expectedPrice = 0;
   forcePrice = false;
@@ -210,75 +177,22 @@ export default class Buy extends Vue {
   from_pc = false;
   no_relay = true;
 
-  show_recorder = false;
-  skuId = "";
   addressId = "";
 
-  saveRecorder() {
-    (this.$refs.recorder as TextRecorder).addText(this.text);
-    this.$notify.success("保存成功");
-  }
-
-  goods_url = "";
-  show_sku_picker = false;
-  async chooseSku() {
-    var data = await this.doQiangquan(false);
-    this.show_sku_picker = true;
-    var [url] = data.urls;
-    this.goods_url = url;
-  }
-  onSkuChange({ label, value }: { label: string; value: string }) {
-    this.skuId = value;
-    this.show_sku_picker = false;
-  }
-  @Watch("text")
-  onTextChanged() {
-    this.goods_url = "";
-    this.skuId = "";
-  }
-
-  /* async execAction(
-    fn: (url: string, item: InfoItemNoUrl) => any,
-    text = this.text,
-    item: InfoItemNoUrl = {
-      platform: this.realPlatform,
-      quantity: this.num,
-      skus: this.getSkus(),
-      expectedPrice: this.forcePrice ? this.expectedPrice : undefined,
-      datetime: this.datetime,
-      mc_dot1: this.mc_dot1,
-      jianlou: this.force_jianlou ? Number(this.jianlou) : undefined,
-      from_cart: this.from_cart,
-      from_pc: this.from_pc,
-      t: this.datetime
-    }
-  ) {
-    var urls = await this.getUrls(text, item.platform);
-    urls.forEach(url => {
-      fn(url, item);
-    });
-  } */
-
-  getSkus() {
-    var skus = this.skus.trim();
-    if (skus) {
-      return skus.split(/,|\s+/).map(Number);
-    }
-  }
+  datas: any[] = [];
+  metadata: any = {};
+  innerText = "";
 
   async doAddCart() {
-    var data = await this.doToQiangquan(this.text);
+    // var data = await this.doToQiangquan(this.text);
     await Promise.all(
-      data.urls.map((url, i) =>
+      this.datas.map((item) =>
         cartAdd(
           {
-            url,
-            quantity: this.num > 1 ? Number(this.num) : data.quantities[i],
-            skus: this.getSkus(),
-            skuId: this.skuId,
+            ...item,
             jianlou: this.jianlou,
           },
-          data.platform
+          item.platform
         )
       )
     );
@@ -286,20 +200,20 @@ export default class Buy extends Vue {
   }
 
   async doQiangdan() {
-    var data = await this.doToQiangquan(this.text);
+    // var data = await this.doToQiangquan(this.text);
     this.$notify.success("执行直接购买");
-    if (data.urls.length === 0) {
+    if (this.datas.length === 0) {
       throw new Error("无链接");
     }
-    if (!this.price_coudan && data.urls.length === 1) {
+    const datas = [...this.datas];
+    const { platform } = this.metadata;
+    if (!this.price_coudan && datas.length === 1) {
       buyDirect(
         {
-          url: data.urls[0],
-          quantity: this.num === 1 ? data.quantities[0] : this.num,
-          skus: this.getSkus(),
+          ...datas[0],
           expectedPrice: this.forcePrice
             ? +this.expectedPrice
-            : data.expectedPrice,
+            : this.metadata.expectedPrice,
           mc_dot1: this.mc_dot1,
           jianlou: this.force_jianlou ? this.jianlou : undefined,
           from_cart: this.from_cart,
@@ -309,104 +223,95 @@ export default class Buy extends Vue {
           other: {
             memo: this.memo,
           },
-          skuId: this.skuId,
           addressId: this.addressId,
         },
         // @ts-ignore
-        this.datetime || data.datetime,
-        data.platform
+        this.datetime || this.metadata.datetime,
+        platform
       );
     } else {
       this.$notify.success("开始凑单");
-      bus.$emit("unselect-all", data.platform);
+      bus.$emit("unselect-all", platform);
       if (this.price_coudan) {
         let [{ url }] = await goodsList({
-          platform: data.platform,
+          platform,
           start_price: this.price_coudan,
         });
-        data.urls[data.urls.length] = url;
-        data.quantities[data.urls.length] = 1;
+        datas.push({
+          url,
+          quantity: 1,
+        });
       }
-      coudan(data, data.platform);
+      coudan(this.datas, platform);
     }
   }
 
   prevUrl!: string;
 
   async doQiangquan(has_tip = true) {
-    var data = await getDealedDataFromText(this.text);
-    if (has_tip && this.prevUrl === data.urls[0]) {
+    // var data = await getDealedDataFromText(this.text);
+    const { urls, platform } = this.metadata;
+    if (has_tip && this.prevUrl === urls[0]) {
       if (!(await this.$confirm("与上次链接相同，要继续操作吗？"))) {
         throw new Error("重复领取");
       }
     }
-    this.prevUrl = data.urls[0];
+    this.prevUrl = urls[0];
     this.$notify.success("开始抢券");
-    var urls = await qiangquan(
-      data.urls,
-      has_tip ? this.datetime : "",
-      data.platform
-    );
-    data.urls = urls
-      .filter(Boolean)
-      .map((item) => item.url)
-      .filter(Boolean);
-    return data;
+    await qiangquan(urls, has_tip ? this.datetime : "", platform);
   }
 
-  async qiangquan_old(url: string, arg: InfoItemNoUrl, force = false) {
-    this.prevUrl = url;
-    this.$notify.success("开始抢券");
-    var res = await qiangquan_api({ data: url }, arg.t!, arg.platform);
-    if (res) {
-      if (!res.success) {
-        let msg;
-        if (res.manual) {
-          var qurl = await getQrcode(url);
-          sendMsg("手动领取优惠券\n" + qurl);
-          msg = (
-            <div style="text-align:center">
-              <p>手动扫描领取优惠券</p>
-              <img src={qurl} />
-              <el-input value={url} />
-            </div>
-          );
-        } else {
-          if (!force) {
-            msg = "领券失败，要继续吗？";
-          }
-        }
-        if (msg) {
-          let b = await this.$confirm(msg, {
-            title: "提示",
-            closeOnClickModal: false,
-          });
-          if (!b) {
-            throw new Error("领券失败");
-          }
-        }
-      }
-      url = res.url || url;
-    }
-    return url;
-  }
+  // async qiangquan_old(url: string, arg: InfoItemNoUrl, force = false) {
+  //   this.prevUrl = url;
+  //   this.$notify.success("开始抢券");
+  //   var res = await qiangquan_api({ data: url }, arg.t!, arg.platform);
+  //   if (res) {
+  //     if (!res.success) {
+  //       let msg;
+  //       if (res.manual) {
+  //         var qurl = await getQrcode(url);
+  //         sendMsg("手动领取优惠券\n" + qurl);
+  //         msg = (
+  //           <div style="text-align:center">
+  //             <p>手动扫描领取优惠券</p>
+  //             <img src={qurl} />
+  //             <el-input value={url} />
+  //           </div>
+  //         );
+  //       } else {
+  //         if (!force) {
+  //           msg = "领券失败，要继续吗？";
+  //         }
+  //       }
+  //       if (msg) {
+  //         let b = await this.$confirm(msg, {
+  //           title: "提示",
+  //           closeOnClickModal: false,
+  //         });
+  //         if (!b) {
+  //           throw new Error("领券失败");
+  //         }
+  //       }
+  //     }
+  //     url = res.url || url;
+  //   }
+  //   return url;
+  // }
 
-  async doToQiangquan(text: string, datetime?: any) {
-    var data = await getDealedDataFromText(this.text);
-    var urls = await qiangquan(data.urls, datetime, data.platform);
-    data.urls = urls
-      .filter(Boolean)
-      .map((item) => item.url)
-      .filter(Boolean);
-    return data;
-  }
+  // async doToQiangquan(text: string, datetime?: any) {
+  //   var data = await getDealedDataFromText(this.text);
+  //   var urls = await qiangquan(data.urls, datetime, data.platform);
+  //   data.urls = urls
+  //     .filter(Boolean)
+  //     .map((item) => item.url)
+  //     .filter(Boolean);
+  //   return data;
+  // }
 
   mounted() {}
 
   reset() {
-    this.num = 1;
     this.forcePrice = false;
-    this.text = "";
     this.expectedPrice = 0;
     this.mc_dot1 = false;
     this.price_coudan = 0;
@@ -417,7 +322,7 @@ export default class Buy extends Vue {
 
   get realPlatform() {
     if (this.platform === "auto") {
-      return getPlatform(this.text);
+      return getPlatform(this.innerText);
     }
     return this.platform;
   }

@@ -5,40 +5,57 @@
  * @LastEditTime: 2019-09-07 11:39:48
  -->
 <template>
-  <div>
-    <el-form-item>
-      <el-col :span="10">
+  <el-row :gutter="10">
+    <el-col :span="11">
+      <el-form-item>
         <el-form-item label="文本">
           <el-input type="textarea" v-model="text" @change="onTextChange" autosize></el-input>
         </el-form-item>
-      </el-col>
-      <el-col :span="2">
-        <el-button
-          @click="saveRecorder"
-          @disabled="!text"
-          icon="el-icon-collection"
-          circle
-          title="保存"
-        ></el-button>
-        <el-button @click="show_recorder=true" icon="el-icon-s-odrer" circle title="记录"></el-button>
-        <text-recorder v-model="show_recorder" @data="text=$event" ref="recorder" />
-      </el-col>
-    </el-form-item>
-    <div>
-      <div v-for="item of datas" :key="item.url">
-        <a target="_blank" :url="item.url">{{item.url}}</a>
-        <el-button small slot="append" @click="item.show_sku_picker=true">选择</el-button>
-        <sku-picker
-          v-model="item.show_sku_picker"
-          :url="item.url"
-          @change="onSkuChange(item, $event)"
-        ></sku-picker>
-        <el-form-item label="数量">
+        <div style="text-align:center">
+          <el-button
+            icon="el-icon-refresh"
+            :loading="loading"
+            @click="resolve(text)"
+            circle
+            title="刷新"
+          ></el-button>
+          <el-button
+            @click="saveRecorder"
+            @disabled="!text"
+            icon="el-icon-collection"
+            circle
+            title="保存"
+          ></el-button>
+          <el-button @click="show_recorder=true" icon="el-icon-s-operation" circle title="记录"></el-button>
+          <text-recorder v-model="show_recorder" @data="text=$event" ref="recorder" />
+        </div>
+      </el-form-item>
+    </el-col>
+    <el-col :span="12">
+      <div class="goods-list">
+        <div v-for="item of datas" :key="item.url" class="df">
+          <div class="flex-1 text-ellipse">
+            <a target="_blank" :href="item.url">{{item.url}}</a>
+          </div>
+          <div>
+            <el-button small @click="item.show_sku_picker=true">选择</el-button>
+            <sku-picker
+              v-model="item.show_sku_picker"
+              :url="item.url"
+              @change="onSkuChange(item, $event)"
+            ></sku-picker>
+            <goods-item-coudan
+              style="margin:0 1em"
+              :item="item"
+              :platform="item.platform"
+              isLonely
+            />
+          </div>
           <el-input-number v-model.number="item.quantity"></el-input-number>
-        </el-form-item>
+        </div>
       </div>
-    </div>
-  </div>
+    </el-col>
+  </el-row>
 </template>
 
 <script lang="tsx">
@@ -47,6 +64,7 @@ import DatePicker from "./DatePicker.vue";
 import TextRecorder from "./TextRecorder.vue";
 import SkuPicker from "./SkuPicker.vue";
 import AddressPicker from "./AddressPicker.vue";
+import GoodsItemCoudan from "./GoodsItemCoudan.vue";
 import { Platform } from "../handlers";
 import {
   buyDirect,
@@ -67,15 +85,13 @@ import {
 } from "../msg/tools";
 import storageMixin from "@/mixins/storage";
 
-const debounce = function <T extends (...args: any[]) => any>(
-  fn: T,
-  delay: number
-) {
+const debounce = <T extends (...args: any[]) => any>(fn: T, delay: number) => {
   let t: any = 0;
-  return (...args: Parameters<T>) => {
+  return function (...args: Parameters<T>) {
     clearTimeout(t);
     t = setTimeout(() => {
-      fn(...args);
+      // @ts-ignore
+      fn.apply(this, args);
     }, delay);
   };
 };
@@ -84,6 +100,7 @@ const debounce = function <T extends (...args: any[]) => any>(
   components: {
     TextRecorder,
     SkuPicker,
+    GoodsItemCoudan,
   },
   mixins: [
     storageMixin({
@@ -98,6 +115,11 @@ export default class Buy extends Vue {
   text = "";
   show_recorder = false;
 
+  created() {
+    // @ts-ignore
+    // this.onTextChange = debounce(this.onTextChange, 500);
+  }
+
   datas: {
     url: string;
     quantity: number;
@@ -105,24 +127,49 @@ export default class Buy extends Vue {
     show_sku_picker?: boolean;
   }[] = [];
 
-  onTextChange = debounce(async (text: string) => {
-    this.$emit("text-change");
+  loading = false;
+
+  onTextChange(text: string) {
+    this.$emit("text-change", text);
     if (!text) {
       this.datas = [];
+      this.$emit("metadata", {});
       return;
     }
-    var data = await getDealedDataFromText(this.text);
-    var urls = await qiangquan(data.urls, undefined, data.platform);
-    this.datas = urls
-      .filter(Boolean)
-      .map((item) => item.url)
-      .filter(Boolean)
-      .map((url) => ({
-        url,
-        quantity: 1,
-        show_sku_picker: false,
-      }));
-  }, 200);
+    this.resolve(text);
+  }
+
+  async resolve(text: string) {
+    this.loading = true;
+    try {
+      var data = await getDealedDataFromText(this.text);
+      try {
+        var urls = await qiangquan(data.urls, undefined, data.platform);
+        this.datas = urls
+          .filter(Boolean)
+          .map((item) => item.url)
+          .filter(Boolean)
+          .map((url, i) => ({
+            url,
+            quantity: data.quantities[i],
+            show_sku_picker: false,
+            platform: data.platform,
+          }));
+      } catch (e) {}
+      this.$emit("metadata", data);
+    } catch (e) {}
+    this.loading = false;
+  }
+
+  @Watch("datas", {
+    deep: true,
+  })
+  onDatasChange(datas) {
+    this.$emit(
+      "datas",
+      datas.map(({ url, quantity }) => ({ url, quantity }))
+    );
+  }
 
   onSkuChange(item, { label, value }: { label: string; value: string }) {
     item.skuId = value;
@@ -139,3 +186,17 @@ export default class Buy extends Vue {
   }
 }
 </script>
+<style lang="scss" scoped>
+.df {
+  display: flex;
+  justify-content: space-between;
+}
+.flex-1 {
+  flex: 1;
+}
+.text-ellipse {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+</style>

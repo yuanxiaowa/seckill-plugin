@@ -175,7 +175,7 @@ const taobao = {
   checkStatus: ifElse(isJd, jd.checkStatus, tb.checkStatus),
   sysTime: ifElse(isJd, jd.sysTime, tb.sysTime),
   goodsList: ifElse(isJd, jd.getGoodsList, tb.getGoodsList),
-  goodsDetail: ifElse(isJd, jd.getGoodsDetail, tb.getGoodsDetail),
+  goodsInfo: ifElse(isJd, jd.getGoodsInfo, tb.getGoodsInfo),
   getTasks,
   cancelTask,
   getAddresses: ifElse(isJd, jd.getAddresses, tb.getAddresses),

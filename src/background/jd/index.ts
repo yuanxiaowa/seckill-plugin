@@ -30,7 +30,7 @@ export default {
   cartDel: delCart,
   cartUpdateQuantity: updateCartQuantity,
   getUserName() {},
-  getGoodsDetail() {},
+  getGoodsInfo() {},
   checkStatus: checkStatus,
   getAddresses() {},
   getMyCoupons: getMyCoupons,

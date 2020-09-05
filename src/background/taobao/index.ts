@@ -4,9 +4,9 @@ import { handlers } from "./coupon";
 import { buyDirect, cartBuy, coudan } from "./order";
 import {
   getGoodsSkus,
-  getGoodsDetail,
   getGoodsPromotions,
   applyCoupon,
+  getGoodsInfo,
 } from "./goods";
 import { getCartList, addCart, updateCart } from "./cart";
 import {
@@ -28,6 +28,7 @@ export default {
   comment,
   getGoodsList,
   getGoodsSkus,
+  getGoodsInfo,
   cartBuy,
   coudan,
   getCartList,
@@ -43,7 +44,6 @@ export default {
     return updateCart(args, "updateItemSku");
   },
   getUserName,
-  getGoodsDetail,
   checkStatus,
   getAddresses,
   getMyCoupons,

@@ -1,6 +1,5 @@
 import { request } from "../../common/request";
 import {
-  getGoodsDetailFromMobile,
   getGoodsInfoFromMobile,
   getGoodsPromotionsFromMobile,
   applyCouponFromMobile,
@@ -77,11 +76,13 @@ export async function getGoodsSkus({ url }: { url: string }) {
   };
 }
 
-export async function getGoodsDetail(url: string) {
-  return getGoodsDetailFromMobile(url);
-}
-
-export async function getGoodsInfo(url: string, skuId?: string) {
+export async function getGoodsInfo({
+  url,
+  skuId,
+}: {
+  url: string;
+  skuId?: string;
+}) {
   return getGoodsInfoFromMobile(url, skuId);
 }
 

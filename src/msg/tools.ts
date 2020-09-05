@@ -252,7 +252,7 @@ export function resolveText(text: string, datetime?: string | Date) {
       forcePrice,
       diejia,
       datetime: getDate(datetime),
-      jianlou: action === "coudan" && datetime ? 35 : undefined,
+      jianlou: action === "coudan" && datetime ? 30 : undefined,
     };
   }
   if (/速度|锁单|试试|叠加/.test(text)) {

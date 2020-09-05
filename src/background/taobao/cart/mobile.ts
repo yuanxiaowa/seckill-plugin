@@ -171,7 +171,7 @@ export async function addCartFromMobile(args: ParamsOfAddCart) {
     skuId = RegExp.$1;
     itemId = /id=(\d+)/.exec(args.url)![1];
   } else {
-    res = await getGoodsInfo(args.url, args.skuId);
+    res = await getGoodsInfo(args);
     if (res.quantity === 0 && !args.jianlou) {
       throw new Error("无库存了");
     }

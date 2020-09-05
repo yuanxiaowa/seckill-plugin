@@ -14,6 +14,7 @@
           >{{promotion.btnText}}</el-button>
         </div>
         <span v-if="promotions.length===0">暂无数据</span>
+        <el-button icon="el-icon-refresh" :loading="loading" @click="fetchDatas" circle title="刷新"></el-button>
       </div>
     </el-dialog>
   </span>
@@ -21,25 +22,48 @@
 
 <script lang="ts">
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
-import { getGoodsPromotions, goodsList, cartAdd, applyCoupon } from "@/api";
+import {
+  getGoodsPromotions,
+  goodsList,
+  cartAdd,
+  applyCoupon,
+  goodsInfo,
+} from "@/api";
 
 @Component
 export default class GoodsItemCoudan extends Vue {
   @Prop() item: any;
   @Prop() platform!: string;
+  @Prop(Boolean) isLonely!: boolean;
   visible = false;
   promotions: any[] = [];
   loading = false;
-  async showActivity() {
-    console.log("enter");
+  actualItem: any = {};
+  showActivity() {
     this.visible = true;
     if (this.promotions.length > 0) {
       return;
     }
+    this.fetchDatas();
+  }
+
+  async fetchDatas() {
     this.loading = true;
     try {
+      if (this.isLonely) {
+        let item = await goodsInfo({
+          ...this.item,
+          platform: this.platform,
+        });
+        this.actualItem = {
+          ...item,
+          ...this.item,
+        };
+      } else {
+        this.actualItem = this.item;
+      }
       this.promotions = await getGoodsPromotions({
-        ...this.item,
+        ...this.actualItem,
         platform: this.platform,
       });
     } catch (e) {}
@@ -48,7 +72,7 @@ export default class GoodsItemCoudan extends Vue {
 
   async coudan({ quota, searchParams, seg }) {
     let start_price = 0;
-    let now_price = this.item.price * this.item.quantity;
+    let now_price = this.actualItem.price * this.actualItem.quantity;
     if (seg) {
       let n = Math.ceil(now_price / quota);
       start_price = quota * n - now_price;
@@ -67,14 +91,29 @@ export default class GoodsItemCoudan extends Vue {
       start_price,
       ...searchParams,
     });
-    await cartAdd(
-      {
-        url: item.url,
-        quantity: 1,
-      },
-      this.platform
-    );
+    var promises: Promise<any>[] = [
+      cartAdd(
+        {
+          url: item.url,
+          quantity: 1,
+        },
+        this.platform
+      ),
+    ];
+    if (this.isLonely) {
+      promises.push(
+        cartAdd(
+          {
+            quantity: 1,
+            ...this.actualItem,
+          },
+          this.platform
+        )
+      );
+    }
+    await Promise.all(promises);
     this.$notify.success("凑单商品已加入购物车");
+    this.visible = true;
     this.$emit("refresh");
   }
 

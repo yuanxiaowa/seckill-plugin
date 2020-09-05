@@ -4,83 +4,6 @@ import { flatten, fromPairs } from "ramda";
 import { formatUrl } from "@/background/common/tool";
 import moment from "moment";
 
-export async function getGoodsDetailFromMobile(url: string) {
-  var itemId = getItemId(url);
-  /* 
-    ttid: "2017@taobao_h5_6.6.0",
-    AntiCreep: "true",
-   */
-  var { apiStack, item, skuBase: p_skuBase } = await requestData(
-    "mtop.taobao.detail.getdetail",
-    {
-      data: { itemNumId: itemId },
-      version: "6.0",
-    }
-  );
-  let { skuBase, skuCore } = JSON.parse(apiStack[0].value);
-  let sku_ret;
-  let quantity = 0;
-  let price: string = "0";
-  if (!skuBase) {
-    skuBase = p_skuBase;
-  }
-  if (skuBase) {
-    let { props, skus } = skuBase;
-    let sortOrders = props
-      .map(({ values }, index) => ({
-        sortOrder: +values[0].sortOrder,
-        index,
-      }))
-      .sort((a, b) => a.sortOrder - b.sortOrder)
-      .map(({ index }) => index);
-    function f(i, vids: string[]) {
-      var parent = {
-        pid: props[i].pid,
-        name: props[i].name,
-        children: props[i].values
-          .map((item) => {
-            var data: any = {
-              value: item.vid,
-              label: item.name,
-            };
-            vids[i] = props[i].pid + ":" + item.vid;
-            if (i < props.length - 1) {
-              Object.assign(data, f(i + 1, vids));
-            } else {
-              let vid_str = sortOrders.map((i) => vids[i]).join(";");
-              let sku = skus.find((item) => item.propPath === vid_str);
-              if (!sku) {
-                return;
-              }
-              let { skuId } = sku;
-              let { quantity, price } = skuCore.sku2info[skuId];
-              // if (+quantity === 0) {
-              //   return;
-              // }
-              data.children = [
-                {
-                  label: `￥${price.priceText}, ${quantity}`,
-                  value: skuId,
-                },
-              ];
-            }
-            return data;
-          })
-          .filter(Boolean),
-      };
-      return parent;
-    }
-    sku_ret = f(0, []);
-  }
-  if (skuCore && skuCore.sku2info) {
-    if (skuCore.sku2info[0]) {
-      quantity = +skuCore.sku2info[0].quantity;
-      price = skuCore.sku2info[0].price.priceText;
-    }
-  }
-  return { skus: sku_ret, item, title: item.title, quantity, price };
-}
-
 export async function getGoodsInfoFromMobile(url: string, skuId?: string) {
   var itemId = getItemId(url);
   var data = await requestData("mtop.taobao.detail.getdetail", {
@@ -193,7 +116,10 @@ export async function getGoodsPromotionsFromMobile(item: any) {
   );
 }
 
-function transformMobileGoodsInfo({ apiStack, item }, skuId?: string) {
+function transformMobileGoodsInfo(
+  { apiStack, item, seller = {} as any },
+  skuId?: string
+) {
   let { delivery, trade, skuBase, skuCore, price } = JSON.parse(
     apiStack[0].value
   );
@@ -290,6 +216,8 @@ function transformMobileGoodsInfo({ apiStack, item }, skuId?: string) {
     delivery,
     price: +price.price.priceText,
     cuxiao,
+    sellerId: seller.userId,
+    shopId: seller.shopId,
   };
 }
 

@@ -239,14 +239,15 @@ export default class Search extends Vue {
     }
     this.params = fromPairs([...searchParams.entries()]);
   }
-  addCart(item: any) {
-    cartAdd(
+  async addCart(item: any) {
+    await cartAdd(
       {
         url: item.url,
         quantity: 1,
       },
       this.form_data.platform
     );
+    this.$notify.success("已加入购物车");
   }
   async doubleCoudan() {
     // var f = async (quantity: number) => {

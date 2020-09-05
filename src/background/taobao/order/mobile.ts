@@ -644,7 +644,7 @@ export const buyDirectFromMobile: BaseHandler["buy"] = async function(args) {
   const urlObj = new URL(args.url);
   var isGoodsUrl = urlObj.pathname !== "/cart/order.html";
   if (isGoodsUrl) {
-    data = await getGoodsInfo(args.url, args.skuId);
+    data = await getGoodsInfo(args);
   } else {
     // {"buyParam":"626470978699_1,626242045992_1","un":"c0aeec34afc20560e13bd8fde7d968fb","share_crt_v":"1","ut_sk":"1.utdid_21646297_1599271174094.TaoPassword-Outside.windvane","spm":"a2159r.13376465.0.0","sp_tk":"bkswcGMzVTBKeFo","bxsign":"tcd1599271186597450b827527ccebd0e8fb2ca7b4a17ed0/"}
     data = fromPairs([...urlObj.searchParams.entries()]);

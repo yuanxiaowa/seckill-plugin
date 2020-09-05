@@ -140,10 +140,9 @@ export function goodsList(args: any) {
   return invoke("goodsList", args);
 }
 
-export function goodsDetail(params: any, platform: string) {
-  return invoke("goodsDetail", {
+export function goodsInfo(params: any) {
+  return invoke("goodsInfo", {
     ...params,
-    platform,
   });
 }
 
