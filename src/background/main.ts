@@ -135,7 +135,11 @@ async function getTasks() {
 async function cancelTask({ id }: { id: number }) {
   return taskManager.cancelTask(id);
 }
-const isJd = R.propEq("platform", "jingdong");
+const isJd = (args) => {
+  const platform = args.platform;
+  delete args.platform;
+  return platform === "jingdong";
+};
 const taobao = {
   resolveUrl: ifElse(
     isJd,
