@@ -161,7 +161,8 @@ function transformOrderData(
     let { coupon_3, tbgold_1 } = orderData;
     address_1.fields.cornerType = "both";
     if (coupon_3) {
-      coupon_3.fields.cornerType = "bottom";
+      // 使用红包
+      coupon_3.fields.cornerType = "top";
     }
     if (tbgold_1) {
       tbgold_1.fields.cornerType = "top";

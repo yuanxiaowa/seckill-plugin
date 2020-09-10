@@ -10,7 +10,7 @@ export const UA = {
 export const config = {
   isSubmitOrder: true,
   interval_submit: 0,
-  delay_submit: 1200,
+  delay_submit: 0,
   delay_all: 40,
   qq: 870092104,
   is_main: false,
