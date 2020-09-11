@@ -179,26 +179,27 @@ export async function addCartFromMobile(args: ParamsOfAddCart) {
     itemId = res.itemId;
   }
   async function handler() {
-    try {
-      var { cartId } = await requestData("mtop.trade.addbag", {
-        data: {
-          itemId,
-          quantity: args.quantity,
-          exParams: JSON.stringify({
-            addressId: "9607477385",
-            etm: "",
-            buyNow: "true",
-            _input_charset: "utf-8",
-            areaId: "320583",
-            divisionId: "320583",
-          }),
-          skuId,
-        },
-        method: "post",
-        version: "3.1",
-      });
-      return cartId;
-    } catch (e) {}
+    var { cartId, msg } = await requestData("mtop.trade.addbag", {
+      data: {
+        itemId,
+        quantity: args.quantity,
+        exParams: JSON.stringify({
+          addressId: "9607477385",
+          etm: "",
+          buyNow: "true",
+          _input_charset: "utf-8",
+          areaId: "320583",
+          divisionId: "320583",
+        }),
+        skuId,
+      },
+      method: "post",
+      version: "3.1",
+    });
+    if (!cartId) {
+      throw new Error(msg);
+    }
+    return cartId;
   }
   if (args.jianlou) {
     return taskManager.registerTask(
@@ -206,7 +207,11 @@ export async function addCartFromMobile(args: ParamsOfAddCart) {
         name: "加入购物车捡漏",
         platform: "taobao-mobile",
         comment: res?.title,
-        handler,
+        async handler() {
+          try {
+            await handler()
+          } catch(e) {}
+        },
         time: Date.now() + 1000 * 60 * args.jianlou!,
       },
       0,
