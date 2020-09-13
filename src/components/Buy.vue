@@ -27,6 +27,7 @@
       <el-col :span="6">
         <el-checkbox v-model="from_cart">加车购买</el-checkbox>
         <el-checkbox :value="!no_relay" @input="no_relay=!$event">接力</el-checkbox>
+        <el-checkbox v-model="half_discount">半价</el-checkbox>
       </el-col>
       <el-col :span="6">
         <el-form-item label="pc购买">
@@ -82,8 +83,8 @@
     </el-form-item>
     <el-form-item>
       <el-button type="primary" @click="doQiangdan">抢单</el-button>
-      <el-button type="warning" @click="doQiangquan">抢券</el-button>
-      <el-button @click="doAddCart" type="warning">加入购物车</el-button>
+      <el-button type="warning" @click="doQiangquan" :disabled="datas.length===0">抢券</el-button>
+      <el-button @click="doAddCart" type="warning" :disabled="datas.length===0">加入购物车</el-button>
       <el-button @click="reset">重置</el-button>
     </el-form-item>
   </el-form>
@@ -176,6 +177,7 @@ export default class Buy extends Vue {
   from_cart = false;
   from_pc = false;
   no_relay = true;
+  half_discount = false
 
   addressId = "";
 
@@ -220,6 +222,7 @@ export default class Buy extends Vue {
           from_pc: this.from_pc,
           ignoreRepeat: true,
           no_relay: this.no_relay,
+          half_discount: this.half_discount,
           other: {
             memo: this.memo,
           },

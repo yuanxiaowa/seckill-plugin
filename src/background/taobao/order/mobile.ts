@@ -46,6 +46,20 @@ function transformOrderData(
         };
       }
     }
+    if (args.half_discount) {
+      if (
+        !linkage.request.some(
+          (key) =>
+            key.startsWith("promotion_") &&
+            data[key].fields.desc.includes("前N件5折")
+        )
+      ) {
+        throw {
+          message: `${args.title} 五折抢光了，等下再来~~~`,
+          code: 2,
+        };
+      }
+    }
   }
   // if (dataSubmitOrder.hidden) {
   // var realPay = data.realPay_1;

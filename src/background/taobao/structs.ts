@@ -37,6 +37,7 @@ export interface ArgOrder<T> {
   autopay?: boolean;
   is_pc?: boolean;
   resubmit?: boolean;
+  half_discount?: boolean
 }
 
 export interface ArgCartBuy {

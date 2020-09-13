@@ -4,7 +4,7 @@ import { requestData } from "./tools";
 import setting from "./setting";
 import { resolveUrl } from "./tools";
 import { CouponHandler } from "@/structs/coupon";
-import { delay } from "../common/tool";
+import { delay, formatUrl } from "../common/tool";
 import { request } from "../common/request";
 import { excuteRequestAction } from "../page";
 
@@ -397,17 +397,19 @@ export async function getCouponEdetailFromApi(url: string) {
   };
 }
 
-export async function getTaolijinFromPage(url: string) {
-  var href = await excuteRequestAction<string>(url, {
-    code:
-      '[...document.querySelectorAll(".btn-text")].forEach(ele => ele.click());document.querySelector(".product-info-detail").getAttribute("href");',
-    test: anyPass([
-      includes("mtop.alimama.vegas.center.flb.coupon.query"),
-      includes("mtop.alimama.union.xt.en.api.entry"),
-    ]),
-    urls: ["*://*.taobao.com/*"],
-  });
-  return resolveUrl(href).then((url) => ({ url, success: true }));
+export function getTaolijinFromPage(url: string) {
+  return async () => {
+    var href = await excuteRequestAction<string>(url, {
+      code:
+        '[...document.querySelectorAll(".btn-text")].forEach(ele => ele.click());document.querySelector(".product-info-detail").getAttribute("href");',
+      test: anyPass([
+        includes("mtop.alimama.vegas.center.flb.coupon.query"),
+        includes("mtop.alimama.union.xt.en.api.entry"),
+      ]),
+      urls: ["*://*.taobao.com/*"],
+    });
+    return resolveUrl(formatUrl(href)).then((url) => ({ url, success: true }));
+  }
 }
 
 export async function getTaolijinFromApi(url: string) {
