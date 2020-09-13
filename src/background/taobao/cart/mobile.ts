@@ -1,7 +1,7 @@
 import { requestData } from "../tools";
 import { getGoodsInfo } from "../goods";
 import setting from "../setting";
-import { CartItem, addCart, updateCart, ParamsOfAddCart } from "../cart";
+import { CartItem, ParamsOfAddCart } from "../cart";
 import { VendorInfo } from "../cart";
 import { taskManager } from "@/background/common/task-manager";
 import { formatUrl } from "@/background/common/tool";
@@ -209,7 +209,7 @@ export async function addCartFromMobile(args: ParamsOfAddCart) {
         comment: res?.title,
         async handler() {
           try {
-            await handler()
+            return await handler()
           } catch(e) {}
         },
         time: Date.now() + 1000 * 60 * args.jianlou!,
