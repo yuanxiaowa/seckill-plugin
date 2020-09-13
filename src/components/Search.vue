@@ -266,6 +266,7 @@ export default class Search extends Vue {
   async buy(item) {
     try {
       await getFinalDatasFromText(item.couponUrl);
+      await new Promise(resolve => setTimeout(resolve, 1000))
       await buyDirect(
         {
           expectedPrice: +(item.price - 5).toFixed(2),
