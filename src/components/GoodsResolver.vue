@@ -73,16 +73,11 @@ import {
   getQrcode,
   goodsList,
   resolveUrl,
-  qiangquan as qiangquan_api,
 } from "../api";
 import { qiangquan } from "../msg/order";
 import bus from "../bus";
 import { sendMsg } from "../msg";
-import {
-  resolveText,
-  getDealedData,
-  getDealedDataFromText,
-} from "../msg/tools";
+import { getFinalDatasFromText } from "../msg/tools";
 import storageMixin from "@/mixins/storage";
 
 const debounce = <T extends (...args: any[]) => any>(fn: T, delay: number) => {
@@ -142,21 +137,11 @@ export default class Buy extends Vue {
   async resolve(text: string) {
     this.loading = true;
     try {
-      var data = await getDealedDataFromText(this.text);
-      try {
-        var urls = await qiangquan(data.urls, undefined, data.platform);
-        this.datas = urls
-          .filter(Boolean)
-          .map((item) => item.url)
-          .filter(Boolean)
-          .map((url, i) => ({
-            url,
-            quantity: data.quantities[i],
-            show_sku_picker: false,
-            platform: data.platform,
-          }));
-      } catch (e) {}
-      this.$emit("metadata", data);
+      var { metadata, datas } = await getFinalDatasFromText(text);
+      if (datas) {
+        this.datas = datas;
+      }
+      this.$emit("metadata", metadata);
     } catch (e) {}
     this.loading = false;
   }

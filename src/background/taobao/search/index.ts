@@ -3,6 +3,7 @@ import { getJuhuasuanList } from "./juhuasuan";
 import { request } from "@/background/common/request";
 import { requestData } from "../tools";
 import { formatUrl } from "@/background/common/tool";
+import getShoudanList from "./shoudan";
 
 /**
  * 搜索商品
@@ -15,6 +16,9 @@ export async function getGoodsList(data: Partial<ArgSearch>) {
   }
   if (data.searchType === "shop") {
     return getShopGoodsList(data);
+  }
+  if (data.searchType === "shoudan") {
+    return getShoudanList(data);
   }
   var q = data.keyword;
   delete data.page;

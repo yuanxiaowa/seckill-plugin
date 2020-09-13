@@ -452,7 +452,7 @@ async function submitOrderStatic(args: ArgOrder<any>, retryCount = 0) {
       `\n🐱${_n}刷到库存了${t}---${args.title}`
     );
   }
-  (async () => {
+  return (async () => {
     try {
       postdata = transformOrderData(data1, args);
       logFile(postdata, "订单结算页提交的数据", ".json");

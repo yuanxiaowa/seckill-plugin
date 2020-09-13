@@ -71,7 +71,7 @@
     // "https://*/*" // 可以通过executeScript或者insertCSS访问的网站
   ],
   "externally_connectable": {
-    "matches": ["*://127.0.0.1/*"]
+    "matches": ["*://127.0.0.1/*", "*://192.168.0.102/*"]
   },
   // 普通页面能够直接访问的插件资源列表，如果不设置是无法直接访问的
   // "web_accessible_resources": ["js/inject.js"],

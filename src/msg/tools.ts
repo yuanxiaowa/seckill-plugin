@@ -1,5 +1,6 @@
 import { resolveUrl, getRedirectedUrl } from "../api";
 import { Platform } from "../handlers";
+import { qiangquan } from './order';
 
 /*
  * @Author: oudingyin
@@ -312,4 +313,29 @@ export async function getDealedDataFromText(text: string) {
     throw new Error("无链接");
   }
   return data;
+}
+
+export async function getFinalDatasFromText(text: string) {
+  var data = await getDealedDataFromText(text);
+  var datas;
+  try {
+    var urls = await qiangquan(data.urls, undefined, data.platform);
+    datas = urls
+      .filter(Boolean)
+      .map((item) => item.url)
+      .filter(Boolean)
+      .map((url, i) => ({
+        url,
+        quantity: data.quantities[i],
+        show_sku_picker: false,
+        platform: data.platform,
+      }));
+  } catch (e) {
+    console.log(e)
+
+  }
+  return {
+    metadata: data,
+    datas,
+  };
 }

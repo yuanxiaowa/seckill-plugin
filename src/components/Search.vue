@@ -25,6 +25,11 @@
               <el-option value="normal" label="普通"></el-option>
               <el-option value="juhuasuan" label="聚划算"></el-option>
               <el-option value="shop" label="店铺"></el-option>
+              <el-option value="shoudan" label="首单"></el-option>
+            </el-select>
+            <el-select v-if="searchType==='shoudan'" v-model="subSearchType">
+              <el-option value="molong666"></el-option>
+              <el-option value="haodanku"></el-option>
             </el-select>
           </el-form-item>
         </el-col>
@@ -94,6 +99,13 @@
       :max-height="500"
     >
       <template slot-scope="{row}" slot="actions">
+        <el-button
+          v-if="searchType==='shoudan'"
+          @click="buy(row)"
+          icon="el-icon-s-promotion"
+          circle
+          title="购买"
+        ></el-button>
         <el-button @click="addCart(row)" icon="el-icon-shopping-cart-2" circle title="加入购物车"></el-button>
         <el-button @click="showQrcode(row)" icon="el-icon-baseball" circle title="查看二维码"></el-button>
       </template>
@@ -103,17 +115,20 @@
 
 <script lang="tsx">
 import { Component, Prop, Vue } from "vue-property-decorator";
-import { goodsList, cartAdd, coudan } from "../api";
+import { goodsList, cartAdd, coudan, buyDirect } from "../api";
 import bus from "../bus";
 import { fromPairs } from "ramda";
 import storageMixin from "@/mixins/storage";
 import Coupons from "./Coupons.vue";
 import DataListWrapper from "./DataListWrapper.vue";
+import GoodsItemCoudan from "./GoodsItemCoudan.vue";
+import { getFinalDatasFromText } from "@/msg/tools";
 
 @Component({
   components: {
     Coupons,
     DataListWrapper,
+    GoodsItemCoudan,
   },
   mixins: [
     storageMixin({
@@ -129,6 +144,8 @@ export default class Search extends Vue {
   coupons: any[] = [];
   only_double = false;
   searchType = "juhuasuan";
+
+  subSearchType = "molong666";
 
   params: any = {};
   defaultExcudeFilter = "裤|衣|耳环|T恤|百草味|鞋|外套|真皮|包包|大嘴猴";
@@ -218,6 +235,12 @@ export default class Search extends Vue {
         <a href={row.url} target="_blank">
           {row.title}
         </a>
+        <goods-item-coudan
+          style="margin:0 1em"
+          item={row}
+          platform={this.form_data.platform}
+          isLonely
+        />
       </span>
     );
   }
@@ -239,6 +262,23 @@ export default class Search extends Vue {
     }
     this.params = fromPairs([...searchParams.entries()]);
   }
+
+  async buy(item) {
+    try {
+      await getFinalDatasFromText(item.couponUrl);
+      await buyDirect(
+        {
+          expectedPrice: +(item.price - 5).toFixed(2),
+          url: item.url,
+          quantity: item.quantity,
+        },
+        "",
+        this.form_data.platform
+      );
+      this.$notify.success('购买成功')
+    } catch (error) {}
+  }
+
   async addCart(item: any) {
     await cartAdd(
       {
@@ -323,6 +363,8 @@ export default class Search extends Vue {
       Object.assign(
         {
           searchType: this.searchType,
+          subSearchType:
+            this.searchType === "shoudan" ? this.subSearchType : undefined,
           page,
         },
         this.params,

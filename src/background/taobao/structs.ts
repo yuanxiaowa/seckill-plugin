@@ -37,7 +37,7 @@ export interface ArgOrder<T> {
   autopay?: boolean;
   is_pc?: boolean;
   resubmit?: boolean;
-  half_discount?: boolean
+  half_discount?: boolean;
 }
 
 export interface ArgCartBuy {
@@ -55,7 +55,7 @@ export type ArgSearch = {
   keyword: string;
   start_price?: string;
   coupon_tag_id?: string;
-  searchType?: "juhuasuan" | "shop" | "normal";
+  searchType?: "juhuasuan" | "shop" | "normal" | "shoudan";
 } & Record<string, any>;
 
 export type CoudanArg = {

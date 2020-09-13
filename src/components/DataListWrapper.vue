@@ -225,6 +225,7 @@ export default class DataListWrapper extends Vue {
         tooltip-effect="dark"
         v-loading={this.loading}
         max-height={this.maxHeight}
+        row-key="url"
         stripe
         {...{
           on: {
