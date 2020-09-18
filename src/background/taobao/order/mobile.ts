@@ -201,6 +201,7 @@ function transformOrderData(
 }
 
 export async function submitOrderFromMobile(args: ArgOrder<any>) {
+  args.other = args.other || {}
   if (args.resubmit || config.resubmit) {
     return submitOrderResubmit(args);
   }

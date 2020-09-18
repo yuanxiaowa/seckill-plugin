@@ -85,12 +85,18 @@ export default class GoodsItemCoudan extends Vue {
       }
     }
     var {
-      items: [item],
+      items,
     } = await goodsList({
       platform: this.platform,
       start_price,
       ...searchParams,
     });
+    var item = items[items.length - 1]
+    items.reverse().forEach(newItem => {
+      if (newItem.price < item.price) {
+        item = newItem
+      }
+    })
     var promises: Promise<any>[] = [
       cartAdd(
         {
