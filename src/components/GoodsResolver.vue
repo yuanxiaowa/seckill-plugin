@@ -152,13 +152,14 @@ export default class Buy extends Vue {
   onDatasChange(datas) {
     this.$emit(
       "datas",
-      datas.map(({ url, quantity }) => ({ url, quantity }))
+      datas.map(({ url, quantity, skuId }) => ({ url, quantity, skuId }))
     );
   }
 
   onSkuChange(item, { label, value }: { label: string; value: string }) {
     item.skuId = value;
     item.show_sku_picker = false;
+    this.onDatasChange(this.datas);
   }
 
   saveRecorder() {
