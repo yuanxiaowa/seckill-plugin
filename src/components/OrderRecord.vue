@@ -6,7 +6,7 @@
         <el-col>
           {{item.expectedPrice}}: {{item.title}}
           <el-button type="danger" @click="cancel(item.id)">取消</el-button>
-          <el-button type="danger" @click="relay(item)">重下单</el-button>
+          <el-button @click="relay(item)">重下单</el-button>
         </el-col>
       </el-row>
     </el-card>

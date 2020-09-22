@@ -9,6 +9,8 @@
           <span style="color:red;margin-right:1em">{{promotion.title}}</span>
           <el-input-number v-model="promotion.coudanPrice"></el-input-number>
           <el-button @click="coudan(promotion)">凑单</el-button>
+          <el-input-number v-model="promotion.expectedPrice"></el-input-number>
+          <el-button @click="coudan(promotion,true)">凑单买</el-button>
           <el-button
             :disabled="!promotion.enabled"
             @click="applyCoupon(promotion)"
@@ -29,16 +31,17 @@ import {
   cartAdd,
   applyCoupon,
   goodsInfo,
+  cartBuy,
 } from "@/api";
 
 async function getGoodsList(args, count = 1) {
   try {
-    return await goodsList(args)
+    return await goodsList(args);
   } catch (error) {
     if (--count > 0) {
-      return getGoodsList(args, count)
+      return getGoodsList(args, count);
     }
-    throw error
+    throw error;
   }
 }
 
@@ -81,13 +84,13 @@ export default class GoodsItemCoudan extends Vue {
       });
       this.promotions = promotions.map((item) => ({
         ...item,
-        coudanPrice: this.getCoudanPrice(item),
+        ...this.getPrice(item),
       }));
     } catch (e) {}
     this.loading = false;
   }
 
-  getCoudanPrice({ quota, seg }) {
+  getPrice({ quota, seg, discount }) {
     let start_price = 0;
     let now_price = this.actualItem.price * this.actualItem.quantity;
     if (seg) {
@@ -98,44 +101,82 @@ export default class GoodsItemCoudan extends Vue {
         start_price = quota - now_price;
       }
     }
-    return ((start_price * 100) >> 0) / 100;
+    const coudanPrice = ((start_price * 100) >> 0) / 100;
+    const expectedPrice = quota - discount || 0;
+    return {
+      coudanPrice,
+      expectedPrice,
+    };
   }
 
-  async coudan({ quota, searchParams, seg, coudanPrice }) {
-    var { items } = await getGoodsList({
-      platform: this.platform,
-      start_price: coudanPrice,
-      ...searchParams,
-    }, 5);
+  async coudan(
+    { quota, searchParams, seg, coudanPrice, expectedPrice },
+    directBuy = false
+  ) {
+    var { items } = await getGoodsList(
+      {
+        platform: this.platform,
+        start_price: coudanPrice,
+        ...searchParams,
+      },
+      5
+    );
     var item = items[items.length - 1];
     items.reverse().forEach((newItem) => {
       if (newItem.price < item.price) {
         item = newItem;
       }
     });
-    var promises: Promise<any>[] = [
-      cartAdd(
-        {
-          url: item.url,
-          quantity: 1,
-        },
-        this.platform
-      ),
-    ];
-    if (this.isLonely) {
-      promises.push(
+    if (directBuy) {
+      var { skuId, itemId } = await goodsInfo({
+        url: item.url,
+      });
+      cartBuy({
+        platform: this.platform,
+        expectedPrice,
+        jianlou: 30,
+        no_relay: true,
+        items: [
+          {
+            title: item.title,
+            settlement: [skuId === "0" ? itemId : skuId, 1].join("_"),
+          },
+          {
+            title: this.actualItem.title,
+            settlement: [
+              this.actualItem.skuId === "0"
+                ? this.actualItem.itemId
+                : this.actualItem.skuId,
+              this.actualItem.quantity,
+            ].join("_"),
+          },
+        ],
+      });
+    } else {
+      var promises: Promise<any>[] = [
         cartAdd(
           {
+            url: item.url,
             quantity: 1,
-            ...this.actualItem,
           },
           this.platform
-        )
-      );
+        ),
+      ];
+      if (this.isLonely) {
+        promises.push(
+          cartAdd(
+            {
+              quantity: 1,
+              ...this.actualItem,
+            },
+            this.platform
+          )
+        );
+      }
+      await Promise.all(promises);
+      this.$notify.success("凑单商品已加入购物车");
+      this.visible = true;
     }
-    await Promise.all(promises);
-    this.$notify.success("凑单商品已加入购物车");
-    this.visible = true;
     this.$emit("refresh");
   }
 
