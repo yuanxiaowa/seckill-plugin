@@ -8160,6 +8160,13 @@ json5@^1.0.1:
   dependencies:
     minimist "^1.2.0"
 
+json5@^2.1.3:
+  version "2.1.3"
+  resolved "https://registry.npm.taobao.org/json5/download/json5-2.1.3.tgz#c9b0f7fa9233bfe5807fe66fcf3a5617ed597d43"
+  integrity sha1-ybD3+pIzv+WAf+ZvzzpWF+1ZfUM=
+  dependencies:
+    minimist "^1.2.5"
+
 jsonfile@^4.0.0:
   version "4.0.0"
   resolved "https://registry.npm.taobao.org/jsonfile/download/jsonfile-4.0.0.tgz?cache=0&sync_timestamp=1583593992319&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2Fjsonfile%2Fdownload%2Fjsonfile-4.0.0.tgz#8771aae0799b64076b76640fca058f9c10e33ecb"

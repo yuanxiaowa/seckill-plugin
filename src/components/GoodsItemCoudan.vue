@@ -7,6 +7,7 @@
       <div v-loading="loading">
         <div v-for="promotion of promotions" :key="promotion.title">
           <span style="color:red;margin-right:1em">{{promotion.title}}</span>
+          <el-input-number v-model="promotion.coudanPrice"></el-input-number>
           <el-button @click="coudan(promotion)">凑单</el-button>
           <el-button
             :disabled="!promotion.enabled"
@@ -30,6 +31,17 @@ import {
   goodsInfo,
 } from "@/api";
 
+async function getGoodsList(args, count = 1) {
+  try {
+    return await goodsList(args)
+  } catch (error) {
+    if (--count > 0) {
+      return getGoodsList(args, count)
+    }
+    throw error
+  }
+}
+
 @Component
 export default class GoodsItemCoudan extends Vue {
   @Prop() item: any;
@@ -39,6 +51,7 @@ export default class GoodsItemCoudan extends Vue {
   promotions: any[] = [];
   loading = false;
   actualItem: any = {};
+
   showActivity() {
     this.visible = true;
     if (this.promotions.length > 0) {
@@ -62,15 +75,19 @@ export default class GoodsItemCoudan extends Vue {
       } else {
         this.actualItem = this.item;
       }
-      this.promotions = await getGoodsPromotions({
+      var promotions = await getGoodsPromotions({
         ...this.actualItem,
         platform: this.platform,
       });
+      this.promotions = promotions.map((item) => ({
+        ...item,
+        coudanPrice: this.getCoudanPrice(item),
+      }));
     } catch (e) {}
     this.loading = false;
   }
 
-  async coudan({ quota, searchParams, seg }) {
+  getCoudanPrice({ quota, seg }) {
     let start_price = 0;
     let now_price = this.actualItem.price * this.actualItem.quantity;
     if (seg) {
@@ -79,24 +96,23 @@ export default class GoodsItemCoudan extends Vue {
     } else {
       if (now_price < quota) {
         start_price = quota - now_price;
-      } else {
-        this.$notify.warning("已达到额度，无需凑单");
-        return;
       }
     }
-    var {
-      items,
-    } = await goodsList({
+    return ((start_price * 100) >> 0) / 100;
+  }
+
+  async coudan({ quota, searchParams, seg, coudanPrice }) {
+    var { items } = await getGoodsList({
       platform: this.platform,
-      start_price,
+      start_price: coudanPrice,
       ...searchParams,
-    });
-    var item = items[items.length - 1]
-    items.reverse().forEach(newItem => {
+    }, 5);
+    var item = items[items.length - 1];
+    items.reverse().forEach((newItem) => {
       if (newItem.price < item.price) {
-        item = newItem
+        item = newItem;
       }
-    })
+    });
     var promises: Promise<any>[] = [
       cartAdd(
         {

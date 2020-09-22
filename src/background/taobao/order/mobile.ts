@@ -200,8 +200,39 @@ function transformOrderData(
   return postdata;
 }
 
+type RecordItem = ArgOrder<any> & {
+  id: number;
+};
+
+let records: RecordItem[] = [];
+
+export function getOrderRecordsFromMobile() {
+  return records;
+}
+
+export function deleteOrderRecordsFromMobile({ ids }: { ids: number[] }) {
+  records = records.filter((record) => !ids.some((id) => record.id === id));
+}
+
+export function relayOrderRecordsFromMobile({ items }: { items: any[] }) {
+  items.forEach(submitOrderFromMobile)
+}
+
+function addRecord(item: any) {
+  setTimeout(() => {
+    if (records.some(({ title }) => item.title === title)) {
+      return;
+    }
+    records.push({
+      ...item,
+      id: Math.random(),
+    });
+  });
+}
+
 export async function submitOrderFromMobile(args: ArgOrder<any>) {
-  args.other = args.other || {}
+  addRecord(args);
+  args.other = args.other || {};
   if (args.resubmit || config.resubmit) {
     return submitOrderResubmit(args);
   }
@@ -384,6 +415,7 @@ async function submitOrderStatic(args: ArgOrder<any>, retryCount = 0) {
       }`;
       notify(msg);
       sendQQMsg(msg);
+      console.log(data1);
       if (
         (args.autopay || args.expectedPrice! <= 0.3) &&
         accounts.taobao.paypass

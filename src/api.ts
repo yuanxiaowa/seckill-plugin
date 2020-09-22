@@ -189,6 +189,18 @@ export function cancelTask(id: string) {
   return invoke("cancelTask", { id });
 }
 
+export function getOrderRecords() {
+  return invoke("getOrderRecords");
+}
+
+export function deleteOrderRecords(args: { ids: number[] }) {
+  return invoke("deleteOrderRecords", args);
+}
+
+export function relayOrderRecords(args: { items: any[] }) {
+  return invoke("relayOrderRecords", args);
+}
+
 export function getCollection(params: any) {
   return invoke("getCollection", params);
 }

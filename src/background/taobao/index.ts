@@ -1,7 +1,14 @@
 import { getCommentList, comment } from "./comment";
 import { resolveUrl, getUserName } from "./tools";
 import { handlers } from "./coupon";
-import { buyDirect, cartBuy, coudan } from "./order";
+import {
+  buyDirect,
+  cartBuy,
+  coudan,
+  getOrderRecords,
+  deleteOrderRecords,
+  relayOrderRecords,
+} from "./order";
 import {
   getGoodsSkus,
   getGoodsPromotions,
@@ -58,4 +65,7 @@ export default {
   ),
   getGoodsPromotions,
   applyCoupon,
+  getOrderRecords,
+  deleteOrderRecords,
+  relayOrderRecords,
 };

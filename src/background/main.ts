@@ -213,6 +213,9 @@ const taobao = {
   getGoodsSkus: tb.getGoodsSkus,
   getGoodsPromotions: tb.getGoodsPromotions,
   applyCoupon: tb.applyCoupon,
+  getOrderRecords: tb.getOrderRecords,
+  deleteOrderRecords: tb.deleteOrderRecords,
+  relayOrderRecords: tb.relayOrderRecords,
 };
 
 // @ts-ignore

@@ -2,6 +2,9 @@ import {
   buyDirectFromMobile,
   cartBuyFromMobile,
   coudanFromMobile,
+  deleteOrderRecordsFromMobile,
+  getOrderRecordsFromMobile,
+  relayOrderRecordsFromMobile,
 } from "./mobile";
 import { Handler } from "@/structs/api";
 import { cartBuyFromPc, buyDirectFromPc } from "./pc";
@@ -22,5 +25,17 @@ export const cartBuy: Handler["cartBuy"] = ifElse(
   cartBuyFromPc,
   cartBuyFromMobile
 );
+
+export async function getOrderRecords(args) {
+  return getOrderRecordsFromMobile();
+}
+
+export async function deleteOrderRecords(args) {
+  return deleteOrderRecordsFromMobile(args);
+}
+
+export async function relayOrderRecords(args) {
+  return relayOrderRecordsFromMobile(args);
+}
 
 export function logFile(a: any, b?: any, c?: any) {}

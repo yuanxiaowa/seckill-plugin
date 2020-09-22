@@ -3,6 +3,7 @@
     <el-form-item>
       <el-button @click="drawer=true">配置</el-button>
       <el-button @click="show_task=true">任务列表</el-button>
+      <el-button @click="show_record=true">order记录</el-button>
     </el-form-item>
     <el-drawer title="配置" :visible.sync="drawer" direction="ltr">
       <div style="padding:0 1em;">
@@ -50,7 +51,8 @@
       </div>
     </el-drawer>
 
-    <task v-model="show_task"></task>
+    <task v-model="show_task" />
+    <order-record v-model="show_record" />
   </el-form>
 </template>
 
@@ -59,6 +61,7 @@ import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import { getConfig, setConfig, logout, getUserName } from "../api";
 import bus from "../bus";
 import Task from "./Task.vue";
+import OrderRecord from "./OrderRecord.vue";
 import StatusComp from "./StatusComp.vue";
 import AccountInfo from "./AccountInfo.vue";
 import { init } from "@/msg";
@@ -68,11 +71,13 @@ import { init } from "@/msg";
     Task,
     StatusComp,
     AccountInfo,
+    OrderRecord,
   },
 })
 export default class Config extends Vue {
   config: any = {};
   username = "";
+  show_record = false;
   mounted() {
     this.pullConfig();
     this.refreshUserName();
