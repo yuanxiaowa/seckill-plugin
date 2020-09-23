@@ -48,11 +48,15 @@ function transformOrderData(
     }
     if (args.half_discount) {
       if (
-        !linkage.request.some(
-          (key) =>
-            key.startsWith("promotion_") &&
-            data[key].fields.desc.includes("前N件5折")
-        )
+        !linkage.request.some((key) => {
+          if (key.startsWith("promotion_")) {
+            const {
+              fields: { components },
+            } = data[key];
+            return components.some(({ title }) => title.includes("前N"));
+          }
+          return false;
+        })
       ) {
         throw {
           message: `${args.title} 五折抢光了，等下再来~~~`,
@@ -215,7 +219,7 @@ export function deleteOrderRecordsFromMobile({ ids }: { ids: number[] }) {
 }
 
 export function relayOrderRecordsFromMobile({ items }: { items: any[] }) {
-  items.forEach(submitOrderFromMobile)
+  items.forEach(submitOrderFromMobile);
 }
 
 function addRecord(item: any) {

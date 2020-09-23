@@ -26,7 +26,7 @@ export const cartBuy: Handler["cartBuy"] = ifElse(
   cartBuyFromMobile
 );
 
-export async function getOrderRecords(args) {
+export async function getOrderRecords() {
   return getOrderRecordsFromMobile();
 }
 
