@@ -53,7 +53,10 @@ function transformOrderData(
             const {
               fields: { components },
             } = data[key];
-            return components.some(({ title }) => title.includes("前N"));
+            return (
+              components &&
+              components.some(({ title }) => title.includes("前N"))
+            );
           }
           return false;
         })

@@ -1,6 +1,7 @@
 import { requestData } from "../tools";
 import moment from "moment";
 import { formatUrl } from "../../common/tool";
+import { ArgSearch } from "../structs";
 
 let prevTime = 0;
 let prevData: any;
@@ -37,11 +38,14 @@ async function getMeta(force_update = false) {
   return prevData;
 }
 
-export async function getJuhuasuanList({ page = 1 }) {
+export async function getJuhuasuanList({
+  page = 1,
+  subSearchType,
+}: Partial<ArgSearch>) {
   const { pvuuid, campaignPageId } = await getMeta(page === 1);
   // 5912546
   // 5831003
-  const appId = 5835013;
+  const appId = subSearchType;
   const {
     resultValue: {
       [appId]: { data },

@@ -10,9 +10,8 @@ import getShoudanList from "./shoudan";
  * @param data
  */
 export async function getGoodsList(data: Partial<ArgSearch>) {
-  var page = data.page;
   if (data.searchType === "juhuasuan") {
-    return getJuhuasuanList({ page });
+    return getJuhuasuanList(data);
   }
   if (data.searchType === "shop") {
     return getShopGoodsList(data);
@@ -20,6 +19,7 @@ export async function getGoodsList(data: Partial<ArgSearch>) {
   if (data.searchType === "shoudan") {
     return getShoudanList(data);
   }
+  var page = data.page;
   var q = data.keyword;
   delete data.page;
   delete data.keyword;
