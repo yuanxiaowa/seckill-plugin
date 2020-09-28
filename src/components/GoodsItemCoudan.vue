@@ -1,23 +1,36 @@
 <template>
   <span>
     <span @click="showActivity">
-      <el-icon class="el-icon-present" title="查看活动" style="color:red;cursor:pointer"></el-icon>
+      <el-icon
+        class="el-icon-present"
+        title="查看活动"
+        style="color: red; cursor: pointer"
+      ></el-icon>
     </span>
     <el-dialog :visible.sync="visible">
       <div v-loading="loading">
         <div v-for="promotion of promotions" :key="promotion.title">
-          <span style="color:red;margin-right:1em">{{promotion.title}}</span>
+          <span style="color: red; margin-right: 1em">{{
+            promotion.title
+          }}</span>
           <el-input-number v-model="promotion.coudanPrice"></el-input-number>
           <el-button @click="coudan(promotion)">凑单</el-button>
           <el-input-number v-model="promotion.expectedPrice"></el-input-number>
-          <el-button @click="coudan(promotion,true)">凑单买</el-button>
+          <el-button @click="coudan(promotion, true)">凑单买</el-button>
           <el-button
-            :disabled="!promotion.enabled"
+            :type="promotion.enabled ? 'success' : 'warning'"
             @click="applyCoupon(promotion)"
-          >{{promotion.btnText}}</el-button>
+            >{{ promotion.btnText }}</el-button
+          >
         </div>
-        <span v-if="promotions.length===0">暂无数据</span>
-        <el-button icon="el-icon-refresh" :loading="loading" @click="fetchDatas" circle title="刷新"></el-button>
+        <span v-if="promotions.length === 0">暂无数据</span>
+        <el-button
+          icon="el-icon-refresh"
+          :loading="loading"
+          @click="fetchDatas"
+          circle
+          title="刷新"
+        ></el-button>
       </div>
     </el-dialog>
   </span>
