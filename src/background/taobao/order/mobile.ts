@@ -68,6 +68,14 @@ function transformOrderData(
         );
         coupon_3.fields.price = coupon_3.fields.price.replace("-", "");
         coupon_3.fields.asSelect.selectedIds.fill("false");
+        const finalPrice = (
+          submitOrder_1.hidden.extensionMap.showPrice - p
+        ).toFixed(2);
+        submitOrder_1.hidden.extensionMap.showPrice = finalPrice;
+        submitOrder_1.fields.price = submitOrder_1.fields.price.replace(
+          /\d.*/,
+          finalPrice
+        );
       }
     }
     let price = data.realPay_1

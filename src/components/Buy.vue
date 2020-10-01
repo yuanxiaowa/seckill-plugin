@@ -25,6 +25,11 @@
         </el-form-item>
       </el-col>
       <el-col :span="6">
+        <el-form-item label="地址">
+          <address-picker v-model="addressId"></address-picker>
+        </el-form-item>
+      </el-col>
+      <el-col :span="24">
         <el-checkbox v-model="from_cart">加车购买</el-checkbox>
         <el-checkbox :value="!no_relay" @input="no_relay = !$event"
           >接力</el-checkbox
@@ -33,16 +38,7 @@
         <el-checkbox v-model="autopay">自动支付</el-checkbox>
         <el-checkbox v-model="tbgold">淘金币</el-checkbox>
         <el-checkbox v-model="hongbao">红包</el-checkbox>
-      </el-col>
-      <el-col :span="6">
-        <el-form-item label="pc购买">
-          <el-checkbox v-model="from_pc"></el-checkbox>
-        </el-form-item>
-      </el-col>
-      <el-col :span="6">
-        <el-form-item label="地址">
-          <address-picker v-model="addressId"></address-picker>
-        </el-form-item>
+        <el-checkbox v-model="from_pc">pc购买</el-checkbox>
       </el-col>
     </el-form-item>
     <el-form-item label="解析">
