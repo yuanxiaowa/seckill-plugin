@@ -26,8 +26,13 @@
       </el-col>
       <el-col :span="6">
         <el-checkbox v-model="from_cart">加车购买</el-checkbox>
-        <el-checkbox :value="!no_relay" @input="no_relay=!$event">接力</el-checkbox>
+        <el-checkbox :value="!no_relay" @input="no_relay = !$event"
+          >接力</el-checkbox
+        >
         <el-checkbox v-model="half_discount">半价</el-checkbox>
+        <el-checkbox v-model="autopay">自动支付</el-checkbox>
+        <el-checkbox v-model="tbgold">淘金币</el-checkbox>
+        <el-checkbox v-model="hongbao">红包</el-checkbox>
       </el-col>
       <el-col :span="6">
         <el-form-item label="pc购买">
@@ -42,18 +47,22 @@
     </el-form-item>
     <el-form-item label="解析">
       <goods-resolver
-        @datas="datas=$event"
-        @metadata="metadata=$event"
-        @text-change="innerText=$event"
+        @datas="datas = $event"
+        @metadata="metadata = $event"
+        @text-change="innerText = $event"
       />
     </el-form-item>
     <el-form-item>
       <el-col :span="12">
         <el-form-item label="期望价格">
           <el-input :disabled="!forcePrice" v-model="expectedPrice">
-            <el-checkbox slot="prepend" v-model="forcePrice" label></el-checkbox>
             <el-checkbox
-              v-if="realPlatform==='taobao'"
+              slot="prepend"
+              v-model="forcePrice"
+              label
+            ></el-checkbox>
+            <el-checkbox
+              v-if="realPlatform === 'taobao'"
               slot="append"
               label="猫超凑0.01"
               v-model="mc_dot1"
@@ -73,7 +82,7 @@
           <date-picker v-model="datetime"></date-picker>
         </el-form-item>
       </el-col>
-      <el-col :span="8" v-if="realPlatform==='taobao'">
+      <el-col :span="8" v-if="realPlatform === 'taobao'">
         <el-form-item label="猫超凑单">
           <el-input v-model="price_coudan">
             <span slot="append">元</span>
@@ -83,8 +92,18 @@
     </el-form-item>
     <el-form-item>
       <el-button type="primary" @click="doQiangdan">抢单</el-button>
-      <el-button type="warning" @click="doQiangquan" :disabled="datas.length===0">抢券</el-button>
-      <el-button @click="doAddCart" type="warning" :disabled="datas.length===0">加入购物车</el-button>
+      <el-button
+        type="warning"
+        @click="doQiangquan"
+        :disabled="datas.length === 0"
+        >抢券</el-button
+      >
+      <el-button
+        @click="doAddCart"
+        type="warning"
+        :disabled="datas.length === 0"
+        >加入购物车</el-button
+      >
       <el-button @click="reset">重置</el-button>
     </el-form-item>
   </el-form>
@@ -177,7 +196,10 @@ export default class Buy extends Vue {
   from_cart = false;
   from_pc = false;
   no_relay = true;
-  half_discount = false
+  half_discount = false;
+  autopay = false;
+  tbgold = true;
+  hongbao = true;
 
   addressId = "";
 
@@ -227,6 +249,9 @@ export default class Buy extends Vue {
             memo: this.memo,
           },
           addressId: this.addressId,
+          autopay: this.autopay,
+          tbgold: this.tbgold,
+          hongbao: this.hongbao,
         },
         // @ts-ignore
         this.datetime || this.metadata.datetime,

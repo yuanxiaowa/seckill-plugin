@@ -9,14 +9,16 @@
     <el-form>
       <el-form-item>
         <el-col :span="8">
-          <el-checkbox v-model="from_pc" style="margin-right:1em">pc</el-checkbox>
+          <el-checkbox v-model="from_pc" style="margin-right: 1em"
+            >pc</el-checkbox
+          >
           <span>平台：</span>
           <el-radio-group v-model="platform">
             <el-radio label="taobao">淘宝</el-radio>
             <el-radio label="jingdong">京东</el-radio>
           </el-radio-group>
           <el-button
-            style="margin-left:2em"
+            style="margin-left: 2em"
             type="primary"
             @click="refresh"
             icon="el-icon-refresh"
@@ -39,8 +41,13 @@
         <el-col :span="8">
           <el-checkbox v-model="noinvalid">存在失效商品不提交</el-checkbox>
           <el-checkbox v-model="from_browser">浏览器提交</el-checkbox>
-          <el-checkbox :value="!no_relay" @input="no_relay=!$event">接力</el-checkbox>
-        <el-checkbox v-model="half_discount">半价</el-checkbox>
+          <el-checkbox :value="!no_relay" @input="no_relay = !$event"
+            >接力</el-checkbox
+          >
+          <el-checkbox v-model="half_discount">半价</el-checkbox>
+          <el-checkbox v-model="autopay">自动支付</el-checkbox>
+          <el-checkbox v-model="tbgold">淘金币</el-checkbox>
+          <el-checkbox v-model="hongbao">红包</el-checkbox>
         </el-col>
         <el-col :span="8">
           <el-form-item>
@@ -59,7 +66,9 @@
         </el-col>
       </el-form-item>
       <el-form-item>
-        <el-button type="danger" :disabled="checkedLength===0" @click="submit">提交订单</el-button>
+        <el-button type="danger" :disabled="checkedLength === 0" @click="submit"
+          >提交订单</el-button
+        >
       </el-form-item>
     </el-form>
     <cart-table
@@ -114,7 +123,10 @@ export default class App extends Vue {
   no_relay = true;
   addressId = "";
   loading = false;
-  half_discount = false
+  half_discount = false;
+  autopay = false;
+  tbgold = true;
+  hongbao = true
 
   refresh() {
     return this.pullCartData();
@@ -232,6 +244,9 @@ export default class App extends Vue {
       jianlou: this.jianlou,
       no_relay: this.no_relay,
       half_discount: this.half_discount,
+      autopay: this.autopay,
+      tbgold: this.tbgold,
+      hongbao: this.hongbao,
       addressId: this.addressId,
       t: this.datetime,
       platform: this.platform,

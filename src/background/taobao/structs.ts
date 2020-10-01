@@ -38,6 +38,8 @@ export interface ArgOrder<T> {
   is_pc?: boolean;
   resubmit?: boolean;
   half_discount?: boolean;
+  tbgold?: boolean;
+  hongbao?: boolean;
 }
 
 export interface ArgCartBuy {

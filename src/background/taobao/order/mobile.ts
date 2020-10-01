@@ -35,9 +35,44 @@ function transformOrderData(
         code: 2,
       };
     }
+    const { submitOrder_1 } = data;
+    if (submitOrder_1) {
+      // 禁用淘金币
+      if (args.tbgold === false) {
+        const { tbgold_1 } = data;
+        if (tbgold_1) {
+          let p = tbgold_1.hidden.extensionMap.usePoint / 100;
+          Object.assign(tbgold_1.hidden.extensionMap, {
+            usePoint: "0",
+            selected: "false",
+          });
+          tbgold_1.fields.isChecked = "false";
+          tbgold_1.events.itemClick[0].fields.isChecked = "false";
+          const finalPrice = (
+            submitOrder_1.hidden.extensionMap.showPrice - p
+          ).toFixed(2);
+          submitOrder_1.hidden.extensionMap.showPrice = finalPrice;
+          submitOrder_1.fields.price = submitOrder_1.fields.price.replace(
+            /\d.*/,
+            finalPrice
+          );
+        }
+      }
+      if (args.hongbao === false) {
+        const { coupon_3 } = data;
+        const p = Number(coupon_3.hidden.extensionMap.value);
+        coupon_3.hidden.extensionMap.value = -p;
+        coupon_3.fields.components[0].price = coupon_3.fields.components[0].price.replace(
+          "-",
+          ""
+        );
+        coupon_3.fields.price = coupon_3.fields.price.replace("-", "");
+        coupon_3.fields.asSelect.selectedIds.fill("false");
+      }
+    }
     let price = data.realPay_1
       ? +data.realPay_1.fields.price
-      : data.submitOrder_1.hidden.extensionMap.showPrice;
+      : submitOrder_1.hidden.extensionMap.showPrice;
     if (typeof args.expectedPrice === "number") {
       if (Number(args.expectedPrice) < Number(price) - 0.1) {
         throw {
@@ -50,12 +85,15 @@ function transformOrderData(
       if (
         !linkage.request.some((key) => {
           if (key.startsWith("promotion_")) {
-            const {
-              fields: { components },
-            } = data[key];
+            const { fields } = data[key];
+            if (!fields) {
+              return false;
+            }
+            const { components, desc } = fields;
             return (
-              components &&
-              components.some(({ title }) => title.includes("前N"))
+              (desc && desc.includes("前N")) ||
+              (components &&
+                components.some(({ title }) => title.includes("前N")))
             );
           }
           return false;
@@ -403,6 +441,7 @@ async function submitOrderStatic(args: ArgOrder<any>, retryCount = 0) {
         await delay(config.delay_submit);
       }
       console.time(_n + "订单提交 " + startTime);
+      console.log(data1);
       let ret = await requestData("mtop.trade.order.create.h5", {
         data: postdata,
         method: "post",
@@ -422,7 +461,6 @@ async function submitOrderStatic(args: ArgOrder<any>, retryCount = 0) {
       }`;
       notify(msg);
       sendQQMsg(msg);
-      console.log(data1);
       if (
         (args.autopay || args.expectedPrice! <= 0.3) &&
         accounts.taobao.paypass
@@ -576,6 +614,7 @@ async function submitOrderResubmit(args: ArgOrder<any>) {
     var submit = async (retryCount = 0) => {
       try {
         console.time("订单提交 " + startTime);
+        console.log(data1);
         let ret = await requestData("mtop.trade.order.create.h5", {
           data: postdata,
           method: "post",
