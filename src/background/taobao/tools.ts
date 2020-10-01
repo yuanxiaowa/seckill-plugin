@@ -130,12 +130,18 @@ export async function resolveTaokouling(password: string) {
   //   data: { password },
   //   version: "1.0",
   // });
-  var { data } = await request.get(
-    "http://www.taofake.com/index/tools/gettkljm.html",
+  // var { data } = await request.get(
+  //   "http://www.taofake.com/index/tools/gettkljm.html",
+  //   {
+  //     qs: {
+  //       tkl: password,
+  //     },
+  //   }
+  // );
+  var { data } = await request.form(
+    "https://taodaxiang.com/taopass/parse/get",
     {
-      qs: {
-        tkl: password,
-      },
+      content: password,
     }
   );
   return data.url;
