@@ -93,7 +93,7 @@ export class TaskManager {
           taskData.timer = setTimeout(() => {
             this.removeTask(id);
             resolve();
-          }, toTime.diff(moment()) - dt + (data.platform === "taobao" ? 7000 : 0));
+          }, toTime.diff(moment()) - dt + (data.platform === "taobao" ? 1000 * 10 : 0));
         })();
       } else {
         let update = (b: number) => {
