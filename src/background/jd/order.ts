@@ -50,37 +50,39 @@ export async function buyDirect(
       )
     );
   };
-  if (args.jianlou && data.stock.StockState === 34) {
-    waitForStock(
-      [
-        {
-          skuId,
-          num: String(args.quantity),
-        },
-      ],
-      args.jianlou
-    ).then(() => {
+
+  return async () => {
+    if (args.jianlou && data.stock.StockState === 34) {
+      await waitForStock(
+        [
+          {
+            skuId,
+            num: String(args.quantity),
+          },
+        ],
+        args.jianlou
+      );
       console.log("有库存了，去下单");
-      next();
-    });
-    return;
-  }
-  return next();
+    }
+    return next();
+  };
 }
-export function cartBuy(data: any) {
-  return submitOrder(
-    Object.assign(
-      {
-        data: {
-          submit_url: "https://trade.jd.com/shopping/order/getOrderInfo.action",
-          // submit_url: "https://p.m.jd.com/norder/order.action"
+export async function cartBuy(data: any) {
+  return () =>
+    submitOrder(
+      Object.assign(
+        {
+          data: {
+            submit_url:
+              "https://trade.jd.com/shopping/order/getOrderInfo.action",
+            // submit_url: "https://p.m.jd.com/norder/order.action"
+          },
+          other: {},
+          is_pc: true,
         },
-        other: {},
-        is_pc: true,
-      },
-      data
-    )
-  );
+        data
+      )
+    );
 }
 export async function getOrderPage() {
   /* var page = await newPage({
