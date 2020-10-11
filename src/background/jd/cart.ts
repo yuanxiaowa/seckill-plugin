@@ -163,26 +163,33 @@ export async function toggleCartChecked(data) {
 export async function addCart(args) {
   var { url, quantity }: { url: string; quantity: number } = args;
   var skuId = getSkuId(url);
-  var { errId, errMsg } = await request.get(
-    "https://wq.jd.com/deal/mshopcart/addcmdy",
-    {
-      qs: {
-        callback: "addCartCBA",
-        sceneval: "2",
-        reg: "1",
-        scene: "2",
-        type: "0",
-        commlist: [skuId, , quantity, skuId, 1, 0, 0].join(","),
-        // locationid: "12-988-40034",
-        t: Math.random(),
-      },
-      referer: `https://item.m.jd.com/product/${skuId}.html`,
-      type: "jsonp",
-    }
-  );
-  if (errId !== "0") {
-    throw new Error(errMsg);
-  }
+  // var { errId, errMsg } = await request.get(
+  //   "https://wq.jd.com/deal/mshopcart/addcmdy",
+  //   {
+  //     qs: {
+  //       callback: "addCartCBA",
+  //       sceneval: "2",
+  //       reg: "1",
+  //       scene: "2",
+  //       type: "0",
+  //       commlist: [skuId, , quantity, skuId, 1, 0, 0].join(","),
+  //       // locationid: "12-988-40034",
+  //       t: Math.random(),
+  //     },
+  //     referer: `https://item.m.jd.com/product/${skuId}.html`,
+  //     type: "jsonp",
+  //   }
+  // );
+  // if (errId !== "0") {
+  //   throw new Error(errMsg);
+  // }
+  await request.get(`https://cart.jd.com/gate.action`, {
+    qs: {
+      pid: skuId,
+      pcount: quantity,
+      ptype: 1,
+    },
+  });
   return skuId;
 }
 

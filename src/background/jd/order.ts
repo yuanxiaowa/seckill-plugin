@@ -1,22 +1,14 @@
 import qs_lib from "querystring";
 import { getStock, getGoodsInfo, getSkuId } from "./goods";
 import { ArgBuyDirect, ArgOrder } from "../taobao/structs";
-import { config, accounts } from "../common/setting";
-import { delay } from "../common/tool";
-import moment from "moment";
-import { taskManager } from "../common/task-manager";
-import { sendQQMsg } from "../common/message";
+import { accounts } from "../common/setting";
 import { request } from "../common/request";
 import { getCookie } from "./tools";
-import { excuteRequestAction, newPage } from "../page";
-import { async } from "rxjs/internal/scheduler/async";
+import { newPage } from "../page";
 
-const user: any = {};
 
 export async function waitForStock(
-  args: Parameters<typeof getStock>[0],
-  duration: number
-): Promise<any> {
+  args: Parameters<typeof getStock>[0]): Promise<any> {
   var data = await getStock(args, {});
   return {
     success: JSON.stringify(data).includes("无货"),
@@ -56,27 +48,23 @@ export async function buyDirect(
           skuId,
           num: String(args.quantity),
         },
-      ],
-      args.jianlou
+      ]
     );
     console.log("有库存了，去下单");
   }
   return next();
 }
 export async function cartBuy(data: any) {
-  return submitOrder(
-    Object.assign(
-      {
-        data: {
-          submit_url: "https://trade.jd.com/shopping/order/getOrderInfo.action",
-          // submit_url: "https://p.m.jd.com/norder/order.action"
-        },
-        other: {},
-        from_pc: true,
-      },
-      data
-    )
-  );
+  return submitOrder({
+    ...data,
+    data: {
+      submit_url: data.from_pc
+        ? "https://trade.jd.com/shopping/order/getOrderInfo.action"
+        : "https://p.m.jd.com/norder/order.action",
+      // submit_url: "https://p.m.jd.com/norder/order.action"
+    },
+    other: {},
+  });
 }
 export async function getOrderPage() {
   /* var page = await newPage({
@@ -386,15 +374,11 @@ export async function submitOrder(
 export async function submitOrderPc(
   args: ArgOrder<{
     submit_url: string;
-  }>,
-  p?: Promise<void>
+  }>
 ): Promise<any> {
   var page = await newPage();
   return async () => {
     try {
-      if (p) {
-        await p;
-      }
       await page.goto(args.data.submit_url);
       page.evaluate(
         (pass, expectedPrice) => {
@@ -434,7 +418,7 @@ export async function submitOrderPc(
               .getElementById("sumPayPriceId")!
               .textContent!.substring(1);
             if (price - expectedPrice > 0.1) {
-              throw new Error("太贵了");
+              throw new Error(`价格太高了, 期望为${expectedPrice}`);
             }
           }
           var data = {
@@ -466,14 +450,6 @@ export async function submitOrderPc(
                     result[key].status.includes("无货")
                   )
               );
-          }
-          function handler() {
-            check().then((b) => {
-              if (!b) {
-                return handler();
-              }
-              submit();
-            });
           }
           function submit() {
             console.log(new Date(), "去下单");
@@ -545,14 +521,5 @@ export type ArgCoudan = {
   other: any;
 };
 export async function coudan(data: ArgCoudan): Promise<any> {
-  var ret = await request.get(
-    `https://cart.jd.com/reBuyForOrderCenter.action`,
-    {
-      qs: {
-        wids: data.urls.map(getSkuId).join(","),
-        nums: data.quantities.join(","),
-      },
-    }
-  );
   return cartBuy(data);
 }

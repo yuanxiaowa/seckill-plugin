@@ -152,7 +152,7 @@ export default class Buy extends Vue {
   onDatasChange(datas) {
     this.$emit(
       "datas",
-      datas.map(({ url, quantity, skuId }) => ({ url, quantity, skuId }))
+      datas.map(({ url, quantity, skuId, platform }) => ({ url, quantity, skuId, platform }))
     );
   }
 
