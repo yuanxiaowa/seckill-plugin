@@ -12,7 +12,7 @@ export function getCookie(name: string, domain = "taobao") {
         name,
         url: `https://www.${domain}.com`,
       },
-      (cookie) => resolve(cookie!.value)
+      (cookie) => resolve(cookie?.value)
     );
   });
 }

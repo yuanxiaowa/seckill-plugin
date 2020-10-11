@@ -1,6 +1,6 @@
 import { resolveUrl, getRedirectedUrl } from "../api";
 import { Platform } from "../handlers";
-import { qiangquan } from './order';
+import { qiangquan } from "./order";
 
 /*
  * @Author: oudingyin
@@ -331,8 +331,7 @@ export async function getFinalDatasFromText(text: string) {
         platform: data.platform,
       }));
   } catch (e) {
-    console.log(e)
-
+    console.log(e);
   }
   return {
     metadata: data,

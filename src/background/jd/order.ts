@@ -9,6 +9,7 @@ import { sendQQMsg } from "../common/message";
 import { request } from "../common/request";
 import { getCookie } from "./tools";
 import { excuteRequestAction, newPage } from "../page";
+import { async } from "rxjs/internal/scheduler/async";
 
 const user: any = {};
 
@@ -40,49 +41,42 @@ export async function buyDirect(
   }
   var next = async () => {
     let res = await getNextDataByGoodsInfo({ skuId }, args.quantity, data.miao);
-    return submitOrder(
-      Object.assign(
-        {
-          title: data.item.skuName,
-          data: res,
-        },
-        args
-      )
-    );
+    return submitOrder({
+      title: data.item.skuName,
+      data: res,
+      ...args,
+      from_pc: false,
+    });
   };
 
-  return async () => {
-    if (args.jianlou && data.stock.StockState === 34) {
-      await waitForStock(
-        [
-          {
-            skuId,
-            num: String(args.quantity),
-          },
-        ],
-        args.jianlou
-      );
-      console.log("有库存了，去下单");
-    }
-    return next();
-  };
+  if (args.jianlou && data.stock.StockState === 34) {
+    await waitForStock(
+      [
+        {
+          skuId,
+          num: String(args.quantity),
+        },
+      ],
+      args.jianlou
+    );
+    console.log("有库存了，去下单");
+  }
+  return next();
 }
 export async function cartBuy(data: any) {
-  return () =>
-    submitOrder(
-      Object.assign(
-        {
-          data: {
-            submit_url:
-              "https://trade.jd.com/shopping/order/getOrderInfo.action",
-            // submit_url: "https://p.m.jd.com/norder/order.action"
-          },
-          other: {},
-          is_pc: true,
+  return submitOrder(
+    Object.assign(
+      {
+        data: {
+          submit_url: "https://trade.jd.com/shopping/order/getOrderInfo.action",
+          // submit_url: "https://p.m.jd.com/norder/order.action"
         },
-        data
-      )
-    );
+        other: {},
+        from_pc: true,
+      },
+      data
+    )
+  );
 }
 export async function getOrderPage() {
   /* var page = await newPage({
@@ -108,7 +102,7 @@ export async function submitOrder(
     submit_url: string;
   }>
 ): Promise<any> {
-  if (args.is_pc) {
+  if (args.from_pc) {
     return submitOrderPc(args);
   }
   var page = await newPage();
@@ -117,15 +111,15 @@ export async function submitOrder(
     try {
       page.goto(args.data.submit_url);
       await page.waitForResponse((url) => url.includes("userasset"));
-      await delay(300);
+      // await delay(100);
       page.evaluate(
         function f(pass, expectedPrice) {
           if (typeof expectedPrice === "number") {
             let price = Number(
-              document.querySelector(".price strong")!.textContent!.substring(1)
+              document.querySelector(".price")!.textContent!.substring(1)
             );
             if (price > expectedPrice + 0.1) {
-              throw new Error("价格太高了");
+              throw new Error(`价格太高了, 期望为${expectedPrice}`);
             }
           }
           // var script_content = document.querySelector(".wx_wrap")!
@@ -140,11 +134,10 @@ export async function submitOrder(
 
           // var products = (vendorCart[0].mfsuits || vendorCart[0].mzsuits)[0]
           //   .products;
-          var btn = Array.from(
-            document.querySelectorAll<HTMLDivElement>(".mod_btns")
-          )
-            .filter((ele) => ele.style.display !== "none")
-            .reverse()[0]
+          var btn = (Array.from(
+            document.querySelector<HTMLDivElement>("#payBtnList")!.children
+          ) as HTMLDivElement[])
+            .find((ele) => ele.style.display !== "none")!
             .querySelector<HTMLLinkElement>("a")!;
           // var data = {
           //   skuNumList: products.map(({ mainSku }) => ({
@@ -397,117 +390,120 @@ export async function submitOrderPc(
   p?: Promise<void>
 ): Promise<any> {
   var page = await newPage();
-  try {
-    if (p) {
-      await p;
-    }
-    await page.goto(args.data.submit_url);
-    page.evaluate(
-      (pass, expectedPrice) => {
-        var meta_text = document.getElementById("skuDetailInfo")!.textContent!;
-        var skuNumList: any = [];
-        if (meta_text) {
-          let meta_data = JSON.parse(meta_text);
-          skuNumList = meta_data.map((item) => ({
-            skuId: item.skuId,
-            num: item.num,
-          }));
-        } else {
-          skuNumList = Array.from(document.querySelectorAll(".goods-item"))
-            .map((item) => {
-              var skuId = item.getAttribute("goods-id")!;
-              if (!skuId) {
-                return;
-              }
-              var num = item
-                .querySelector(".p-num")!
-                .textContent!.trim()
-                .substring(1);
-              return {
-                skuId,
-                num,
-              };
-            })
-            .filter(Boolean);
-        }
-        var area_ele = document.querySelector<HTMLDivElement>(
-          ".consignee-item.item-selected"
-        )!;
-        var btn = document.getElementById("enterPriseUserPaymentSubmit")!;
-        if (typeof expectedPrice === "number") {
-          let price = +document
-            .getElementById("sumPayPriceId")!
-            .textContent!.substring(1);
-          if (price - expectedPrice > 0.1) {
-            throw new Error("太贵了");
+  return async () => {
+    try {
+      if (p) {
+        await p;
+      }
+      await page.goto(args.data.submit_url);
+      page.evaluate(
+        (pass, expectedPrice) => {
+          var meta_text = document.getElementById("skuDetailInfo")!
+            .textContent!;
+          var skuNumList: any = [];
+          if (meta_text) {
+            let meta_data = JSON.parse(meta_text);
+            skuNumList = meta_data.map((item) => ({
+              skuId: item.skuId,
+              num: item.num,
+            }));
+          } else {
+            skuNumList = Array.from(document.querySelectorAll(".goods-item"))
+              .map((item) => {
+                var skuId = item.getAttribute("goods-id")!;
+                if (!skuId) {
+                  return;
+                }
+                var num = item
+                  .querySelector(".p-num")!
+                  .textContent!.trim()
+                  .substring(1);
+                return {
+                  skuId,
+                  num,
+                };
+              })
+              .filter(Boolean);
           }
-        }
-        var data = {
-          skuNumList,
-          areaRequest: {
-            provinceId: area_ele.getAttribute("provinceId"),
-            cityId: area_ele.getAttribute("cityId"),
-            countyId: area_ele.getAttribute("countyId"),
-            townId: area_ele.getAttribute("townId"),
-          },
-          coordnateRequest: {
-            longtitude: area_ele.getAttribute("gcLng"),
-            latitude: area_ele.getAttribute("gcLat"),
-          },
-        };
-        function check() {
-          return fetch(`https://trade.jd.com/api/v1/batch/stock`, {
-            method: "post",
-            body: JSON.stringify(data),
-            headers: {
-              Accept: "application/json",
-              "Content-Type": "application/json",
+          var area_ele = document.querySelector<HTMLDivElement>(
+            ".consignee-item.item-selected"
+          )!;
+          var btn = document.getElementById("enterPriseUserPaymentSubmit")!;
+          if (typeof expectedPrice === "number") {
+            let price = +document
+              .getElementById("sumPayPriceId")!
+              .textContent!.substring(1);
+            if (price - expectedPrice > 0.1) {
+              throw new Error("太贵了");
+            }
+          }
+          var data = {
+            skuNumList,
+            areaRequest: {
+              provinceId: area_ele.getAttribute("provinceId"),
+              cityId: area_ele.getAttribute("cityId"),
+              countyId: area_ele.getAttribute("countyId"),
+              townId: area_ele.getAttribute("townId"),
             },
-          })
-            .then((res) => res.json())
-            .then(
-              ({ result }) =>
-                !Object.keys(result).find((key) =>
-                  result[key].status.includes("无货")
-                )
-            );
-        }
-        function handler() {
-          check().then((b) => {
-            if (!b) {
-              return handler();
-            }
-            submit();
-          });
-        }
-        function submit() {
-          console.log(new Date(), "去下单");
-          btn.click();
-          setTimeout(() => {
-            // handler();
-            submit();
-            var ele = document.querySelector<HTMLDivElement>(".ui-dialog");
-            if (ele) {
-              ele.parentNode!.removeChild(ele);
-            }
-          }, 200);
-        }
-        let input_pass = document.querySelector<HTMLInputElement>(
-          ".quark-pw-result-input"
-        )!;
-        input_pass.value = pass;
-        input_pass.dispatchEvent(new Event("input"));
-        submit();
-      },
-      accounts.jingdong.paypass,
-      args.expectedPrice
-    );
-  } catch (e) {
-    if (page!) {
-      page!.close();
+            coordnateRequest: {
+              longtitude: area_ele.getAttribute("gcLng"),
+              latitude: area_ele.getAttribute("gcLat"),
+            },
+          };
+          function check() {
+            return fetch(`https://trade.jd.com/api/v1/batch/stock`, {
+              method: "post",
+              body: JSON.stringify(data),
+              headers: {
+                Accept: "application/json",
+                "Content-Type": "application/json",
+              },
+            })
+              .then((res) => res.json())
+              .then(
+                ({ result }) =>
+                  !Object.keys(result).find((key) =>
+                    result[key].status.includes("无货")
+                  )
+              );
+          }
+          function handler() {
+            check().then((b) => {
+              if (!b) {
+                return handler();
+              }
+              submit();
+            });
+          }
+          function submit() {
+            console.log(new Date(), "去下单");
+            btn.click();
+            setTimeout(() => {
+              // handler();
+              submit();
+              var ele = document.querySelector<HTMLDivElement>(".ui-dialog");
+              if (ele) {
+                ele.parentNode!.removeChild(ele);
+              }
+            }, 200);
+          }
+          let input_pass = document.querySelector<HTMLInputElement>(
+            ".quark-pw-result-input"
+          )!;
+          input_pass.value = pass;
+          input_pass.dispatchEvent(new Event("input"));
+          submit();
+        },
+        accounts.jingdong.paypass,
+        args.expectedPrice
+      );
+    } catch (e) {
+      if (page!) {
+        page!.close();
+      }
+      throw e;
     }
-    throw e;
-  }
+  };
 }
 
 export async function getNextDataByGoodsInfo(

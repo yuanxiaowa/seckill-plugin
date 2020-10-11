@@ -35,7 +35,7 @@ export interface ArgOrder<T> {
   addressId?: string;
   referer?: string;
   autopay?: boolean;
-  is_pc?: boolean;
+  from_pc?: boolean;
   resubmit?: boolean;
   half_discount?: boolean;
   tbgold?: boolean;
