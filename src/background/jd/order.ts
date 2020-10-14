@@ -6,9 +6,9 @@ import { request } from "../common/request";
 import { getCookie } from "./tools";
 import { newPage } from "../page";
 
-
 export async function waitForStock(
-  args: Parameters<typeof getStock>[0]): Promise<any> {
+  args: Parameters<typeof getStock>[0]
+): Promise<any> {
   var data = await getStock(args, {});
   return {
     success: JSON.stringify(data).includes("无货"),
@@ -42,14 +42,12 @@ export async function buyDirect(
   };
 
   if (args.jianlou && data.stock.StockState === 34) {
-    await waitForStock(
-      [
-        {
-          skuId,
-          num: String(args.quantity),
-        },
-      ]
-    );
+    await waitForStock([
+      {
+        skuId,
+        num: String(args.quantity),
+      },
+    ]);
     console.log("有库存了，去下单");
   }
   return next();
@@ -182,10 +180,12 @@ export async function submitOrder(
           }, 5000);
           setTimeout(() => {
             var ele = document.querySelector<HTMLInputElement>("#shortid")!;
-            ele.value = pass;
-            ele.dispatchEvent(new Event("focus"));
-            ele.dispatchEvent(new Event("input"));
-            ele.dispatchEvent(new Event("blur"));
+            if (ele) {
+              ele.value = pass;
+              ele.dispatchEvent(new Event("focus"));
+              ele.dispatchEvent(new Event("input"));
+              ele.dispatchEvent(new Event("blur"));
+            }
             submit();
           }, 500);
         },
