@@ -123,6 +123,7 @@ export async function submitOrder(
           var btn = (Array.from(
             document.querySelector<HTMLDivElement>("#payBtnList")!.children
           ) as HTMLDivElement[])
+            .reverse()
             .find((ele) => ele.style.display !== "none")!
             .querySelector<HTMLLinkElement>("a")!;
           // var data = {
@@ -178,16 +179,24 @@ export async function submitOrder(
               ele.parentNode!.removeChild(ele);
             }
           }, 5000);
-          setTimeout(() => {
-            var ele = document.querySelector<HTMLInputElement>("#shortid")!;
-            if (ele) {
-              ele.value = pass;
-              ele.dispatchEvent(new Event("focus"));
-              ele.dispatchEvent(new Event("input"));
-              ele.dispatchEvent(new Event("blur"));
-            }
-            submit();
-          }, 500);
+          var ele = document.querySelector<HTMLInputElement>("#shortid")!;
+          if (ele && ele.offsetParent) {
+            ele.value = pass;
+            ele.dispatchEvent(new Event("focus"));
+            ele.dispatchEvent(new Event("input"));
+            ele.dispatchEvent(new Event("blur"));
+          } else {
+            setTimeout(() => {
+              var ele = document.querySelector<HTMLInputElement>("#shortid")!;
+              if (ele && ele.offsetParent) {
+                ele.value = pass;
+                ele.dispatchEvent(new Event("focus"));
+                ele.dispatchEvent(new Event("input"));
+                ele.dispatchEvent(new Event("blur"));
+              }
+            }, 3000);
+          }
+          submit();
         },
         accounts.jingdong.paypass,
         args.expectedPrice
@@ -412,7 +421,9 @@ export async function submitOrderPc(
           var area_ele = document.querySelector<HTMLDivElement>(
             ".consignee-item.item-selected"
           )!;
-          var btn = document.getElementById("enterPriseUserPaymentSubmit")!;
+          var btn = Array.from<HTMLDivElement>(
+            document.querySelectorAll("#checkout-floatbar button")
+          ).find((ele) => ele.style.display !== "none")!;
           if (typeof expectedPrice === "number") {
             let price = +document
               .getElementById("sumPayPriceId")!
@@ -466,8 +477,15 @@ export async function submitOrderPc(
           let input_pass = document.querySelector<HTMLInputElement>(
             ".quark-pw-result-input"
           )!;
-          input_pass.value = pass;
-          input_pass.dispatchEvent(new Event("input"));
+          if (input_pass.offsetParent) {
+            input_pass.value = pass;
+            input_pass.dispatchEvent(new Event("input"));
+          } else {
+            setTimeout(() => {
+              input_pass.value = pass;
+              input_pass.dispatchEvent(new Event("input"));
+            }, 3000);
+          }
           submit();
         },
         accounts.jingdong.paypass,
