@@ -467,20 +467,22 @@ async function submitOrderStatic(args: ArgOrder<any>, retryCount = 0) {
         origin: "https://main.m.taobao.com",
       });
       logFile(ret, `手机订单提交成功`);
-      console.log(`\n😃${_n} ----------手机订单提交成功：${args.title}`);
-      console.timeEnd(_n + "订单提交 " + startTime);
-      let msg = `(${await getUserName()})手机订单提交成功，速度去付款：${
-        args.title
-      }`;
-      notify(msg);
-      sendQQMsg(msg);
-      if (
-        (args.autopay || args.expectedPrice! <= 0.3) &&
-        accounts.taobao.paypass
-      ) {
-        console.log(ret);
-        pay(ret.alipayWapCashierUrl, accounts.taobao.paypass);
-      }
+      setTimeout(async () => {
+        console.log(`\n😃${_n} ----------手机订单提交成功：${args.title}`);
+        console.timeEnd(_n + "订单提交 " + startTime);
+        let msg = `(${await getUserName()})手机订单提交成功，速度去付款：${
+          args.title
+        }`;
+        notify(msg);
+        sendQQMsg(msg);
+        if (
+          (args.autopay || args.expectedPrice! <= 0.3) &&
+          accounts.taobao.paypass
+        ) {
+          console.log(ret);
+          pay(ret.alipayWapCashierUrl, accounts.taobao.paypass);
+        }
+      });
     } catch (e) {
       startTime = Date.now();
       if (
@@ -644,20 +646,22 @@ async function submitOrderResubmit(args: ArgOrder<any>) {
           origin: "https://main.m.taobao.com",
         });
         logFile(ret, `手机订单提交成功`);
-        console.log(`\n😃 ----------手机订单提交成功：${args.title}`);
-        console.timeEnd("订单提交 " + startTime);
-        let msg = `(${await getUserName()})手机订单提交成功，速度去付款：${
-          args.title
-        }`;
-        notify(msg);
-        sendQQMsg(msg);
-        if (
-          (args.autopay || args.expectedPrice! <= 0.3) &&
-          accounts.taobao.paypass
-        ) {
-          console.log(ret);
-          pay(ret.alipayWapCashierUrl, accounts.taobao.paypass);
-        }
+        setTimeout(async () => {
+          console.log(`\n😃 ----------手机订单提交成功：${args.title}`);
+          console.timeEnd("订单提交 " + startTime);
+          let msg = `(${await getUserName()})手机订单提交成功，速度去付款：${
+            args.title
+          }`;
+          notify(msg);
+          sendQQMsg(msg);
+          if (
+            (args.autopay || args.expectedPrice! <= 0.3) &&
+            accounts.taobao.paypass
+          ) {
+            console.log(ret);
+            pay(ret.alipayWapCashierUrl, accounts.taobao.paypass);
+          }
+        });
       } catch (e) {
         startTime = Date.now();
         if (
