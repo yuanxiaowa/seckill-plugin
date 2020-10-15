@@ -314,12 +314,13 @@ async function submitOrderStatic(args: ArgOrder<any>, retryCount = 0) {
       method: "post",
       advance: 1500,
     });
+    lastSubmitTime = Date.now();
   } catch (e) {
     console.error(`\n😵获取订单信息出错：${args.title}`, e);
     if (retryCount >= 1) {
       console.error(`已经重试两次，放弃治疗：${args.title}`);
       if (e.name === "FAIL_SYS_TRAFFIC_LIMIT" || e.message.includes("被挤爆")) {
-        if (Date.now() - lastSubmitTime > 5 * 1000) {
+        if (Date.now() - lastSubmitTime > 10 * 60 * 1000) {
           lastSubmitTime = Date.now();
           window.open(
             `https://main.m.taobao.com/order/index.html?` +
@@ -585,6 +586,7 @@ async function submitOrderResubmit(args: ArgOrder<any>) {
         method: "post",
         advance: 1500,
       });
+      lastSubmitTime = Date.now();
     } catch (e) {
       console.error(`\n😵获取订单信息出错：${args.title}`, e);
       if (retryCount >= 1) {
@@ -593,7 +595,7 @@ async function submitOrderResubmit(args: ArgOrder<any>) {
           e.name === "FAIL_SYS_TRAFFIC_LIMIT" ||
           e.message.includes("被挤爆")
         ) {
-          if (Date.now() - lastSubmitTime > 5 * 1000) {
+          if (Date.now() - lastSubmitTime > 10 * 60 * 1000) {
             lastSubmitTime = Date.now();
             window.open(
               `https://main.m.taobao.com/order/index.html?` +
