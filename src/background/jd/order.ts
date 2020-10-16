@@ -174,10 +174,12 @@ export async function submitOrder(
           }
           setInterval(() => {
             // handler();
-            var ele = document.querySelector<HTMLDivElement>(".ui-dialog");
-            if (ele) {
+            var eles = document.querySelectorAll<HTMLDivElement>(
+              ".wx_wrap>div[id^=confirm_tip_]"
+            );
+            Array.from(eles).forEach((ele) => {
               ele.parentNode!.removeChild(ele);
-            }
+            });
           }, 5000);
           var ele = document.querySelector<HTMLInputElement>("#shortid")!;
           if (ele && ele.offsetParent) {
