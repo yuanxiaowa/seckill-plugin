@@ -14,6 +14,7 @@ import { logFile } from ".";
 import { getCartListFromMobile } from "../cart/mobile";
 import moment from "moment";
 import { fromPairs } from "ramda";
+import { goValidate, pay } from "./order-tools";
 
 function transformOrderData(
   orderdata: any,
@@ -292,7 +293,6 @@ export async function submitOrderFromMobile(args: ArgOrder<any>) {
   return submitOrderStatic(args);
 }
 
-let lastSubmitTime = 0;
 async function submitOrderStatic(args: ArgOrder<any>, retryCount = 0) {
   var startDate = new Date();
   var startTime = startDate.getTime();
@@ -314,29 +314,16 @@ async function submitOrderStatic(args: ArgOrder<any>, retryCount = 0) {
       method: "post",
       advance: 1500,
     });
-    lastSubmitTime = Date.now();
   } catch (e) {
     console.error(`\n😵获取订单信息出错：${args.title}`, e);
     if (retryCount >= 1) {
       console.error(`已经重试两次，放弃治疗：${args.title}`);
-      if (e.name === "FAIL_SYS_TRAFFIC_LIMIT" || e.message.includes("被挤爆")) {
-        if (Date.now() - lastSubmitTime > 10 * 60 * 1000) {
-          lastSubmitTime = Date.now();
-          window.open(
-            `https://main.m.taobao.com/order/index.html?` +
-              qs_lib.stringify(
-                Object.assign(
-                  {
-                    exParams: JSON.stringify({
-                      tradeProtocolFeatures: "5",
-                      userAgent: UA.wap,
-                    }),
-                  },
-                  args.data
-                )
-              )
-          );
-        }
+      if (
+        e.name === "x5-code" ||
+        e.name === "FAIL_SYS_TRAFFIC_LIMIT" ||
+        e.message.includes("被挤爆")
+      ) {
+        goValidate(args);
       }
       throw e;
     }
@@ -485,6 +472,10 @@ async function submitOrderStatic(args: ArgOrder<any>, retryCount = 0) {
       });
     } catch (e) {
       startTime = Date.now();
+      if (e.code === "x5-code") {
+        goValidate(args);
+        throw e;
+      }
       if (
         e.message.includes("优惠信息变更") ||
         e.message.startsWith("购买数量超过了限购数")
@@ -588,32 +579,16 @@ async function submitOrderResubmit(args: ArgOrder<any>) {
         method: "post",
         advance: 1500,
       });
-      lastSubmitTime = Date.now();
     } catch (e) {
       console.error(`\n😵获取订单信息出错：${args.title}`, e);
       if (retryCount >= 1) {
         console.error(`已经重试两次，放弃治疗：${args.title}`);
         if (
+          e.name === "x5-code" ||
           e.name === "FAIL_SYS_TRAFFIC_LIMIT" ||
           e.message.includes("被挤爆")
         ) {
-          if (Date.now() - lastSubmitTime > 10 * 60 * 1000) {
-            lastSubmitTime = Date.now();
-            window.open(
-              `https://main.m.taobao.com/order/index.html?` +
-                qs_lib.stringify(
-                  Object.assign(
-                    {
-                      exParams: JSON.stringify({
-                        tradeProtocolFeatures: "5",
-                        userAgent: UA.wap,
-                      }),
-                    },
-                    args.data
-                  )
-                )
-            );
-          }
+          goValidate(args);
         }
         throw e;
       }
@@ -664,6 +639,10 @@ async function submitOrderResubmit(args: ArgOrder<any>) {
         });
       } catch (e) {
         startTime = Date.now();
+        if (e.code === "x5-code") {
+          goValidate(args);
+          throw e;
+        }
         if (
           e.message.includes("优惠信息变更") ||
           e.message.startsWith("购买数量超过了限购数")
@@ -839,34 +818,3 @@ export const cartBuyFromMobile: BaseHandler["cartBuy"] = async function(
       ...args,
     });
 };
-
-// @ts-ignore
-window.pay = pay;
-
-function pay(url: string, pass: string) {
-  if (url.startsWith("//")) {
-    url = "https:" + url;
-  }
-  var code = `
-    console.log("enter1")
-    var $eles = document.querySelectorAll(".am-button.am-button-blue")
-    if ($eles.length>1) {
-      $eles[1].click();
-    }
-    console.log("enter2")
-    var pass = '${pass}';
-    // document.querySelector('.J-encryptpwd').val([...pass].map(c => encrypt(c)).join(','))
-    var pwd = document.querySelector('.J-pwd')
-    for(let i = 0; i < pass.length; i++) {
-      pwd.value += pass[i];
-      pwd.dispatchEvent(new Event("input"))
-    }
-  `;
-  console.log(url, code);
-  excutePageAction(url, {
-    code,
-    // autoclose: false
-    close_delay: 3000,
-    run_delay: 2000,
-  });
-}

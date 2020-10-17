@@ -119,7 +119,11 @@ export async function requestData(
   var msg = arr_msg[arr_msg.length - 1];
   if (code !== "SUCCESS") {
     let err = new Error(msg);
-    err.name = api + code;
+    if (res.data && res.data.url) {
+      err.name = "x5-code";
+    } else {
+      err.name = api + code;
+    }
     throw err;
   }
   return data;
