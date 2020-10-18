@@ -808,6 +808,7 @@ export const cartBuyFromMobile: BaseHandler["cartBuy"] = async function(
     args.other = {};
   }
   return () =>
+  // @ts-ignore
     submitOrderFromMobile({
       data: {
         buyNow: "false",

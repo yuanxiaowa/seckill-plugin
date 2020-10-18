@@ -4,14 +4,28 @@ export class ChromePage {
   setRequestInterception(arg0: boolean) {
     throw new Error("Method not implemented.");
   }
-  waitForSelector(arg0: string) {
-    throw new Error("Method not implemented.");
+  waitForSelector(selector: string) {
+    return this.evaluate(selector => {
+      return new Promise(resolve => {
+        function check() {
+          if (document.querySelector<HTMLElement>(selector)) {
+            resolve()
+          }
+          setTimeout(check, 60)
+        }
+        check()
+      })
+    }, selector)
   }
-  click(arg0: string) {
-    throw new Error("Method not implemented.");
+  click(selector: string) {
+    return this.evaluate((selector) => {
+      document.querySelector<HTMLElement>(selector)!.click()
+    }, selector)
   }
   reload() {
-    throw new Error("Method not implemented.");
+    return new Promise((resolve) =>
+      chrome.tabs.reload(this.tab.id!, {}, resolve)
+    );
   }
   private pending = true;
   private listeners_map: Record<string, Function[]> = {};

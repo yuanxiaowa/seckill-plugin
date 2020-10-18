@@ -42,13 +42,13 @@ export interface ArgOrder<T> {
   hongbao?: boolean;
 }
 
-export interface ArgCartBuy {
+export interface ArgCartBuy<T = any> {
   items: any[];
   jianlou?: number;
   expectedPrice?: number;
   no_relay?: boolean;
   addressId?: string;
-  other: any;
+  other?: any;
 }
 
 export type ArgSearch = {

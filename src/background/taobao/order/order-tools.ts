@@ -61,7 +61,7 @@ export function goValidate(args) {
 function collectValidationData() {
   var ele1 = document.querySelector<HTMLDivElement>("#nc_1_n1z")!;
   var touched = false;
-  var arr = [];
+  var arr: any = [];
   var start_time = 0;
   function getData(e) {
     var data = {};

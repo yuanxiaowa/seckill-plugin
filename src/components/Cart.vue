@@ -87,7 +87,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Vue, Watch } from "vue-property-decorator";
 import CartTable from "./CartTable.vue";
 import DatePicker from "./DatePicker.vue";
 import AddressPicker from "./AddressPicker.vue";
@@ -128,6 +128,7 @@ export default class App extends Vue {
   tbgold = true;
   hongbao = true
 
+  @Watch('from_pc')
   refresh() {
     return this.pullCartData();
   }

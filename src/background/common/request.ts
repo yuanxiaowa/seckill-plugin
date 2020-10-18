@@ -4,7 +4,7 @@ import { getJsonpData } from "./tool";
 
 axios.defaults.headers.post["Content-Type"] =
   "application/x-www-form-urlencoded";
-axios.defaults.paramsSerializer = data => {
+axios.defaults.paramsSerializer = (data) => {
   return qs_lib.stringify(data);
 };
 
@@ -51,24 +51,20 @@ export const request: {
   headers,
   type,
   referer,
-  dataType
+  dataType,
 }) {
   if (referer) {
-    headers = Object.assign(
-      {
-        _referer: referer
-      },
-      headers
-    );
+    headers = {
+      _referer: referer,
+      ...headers,
+    };
   }
   if (dataType === "json") {
     data = JSON.stringify(data);
-    headers = Object.assign(
-      {
-        "content-type": "application/json"
-      },
-      headers
-    );
+    headers = {
+      "content-type": "application/json",
+      ...headers,
+    };
   } else if (dataType === "form") {
     data = qs_lib.stringify(data);
   }
@@ -77,8 +73,14 @@ export const request: {
     data,
     params: qs,
     method,
-    headers
+    headers: {
+      _origin: new URL(url).origin,
+      ...headers,
+    },
   });
+  if (res.status >= 300) {
+    throw res;
+  }
   if (type === "jsonp") {
     return getJsonpData(res.data);
   }
@@ -92,7 +94,7 @@ request.jsonp = (url, options) =>
   request(Object.assign({ url, type: <DataType>"jsonp" }, options));
 request.form = (url, data, options) =>
   request(
-  // @ts-ignore
+    // @ts-ignore
     Object.assign(
       { url, method: <Method>"post", dataType: "form", data },
       options
