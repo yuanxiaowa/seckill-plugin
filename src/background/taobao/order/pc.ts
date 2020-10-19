@@ -260,7 +260,7 @@ async function submitOrder(
   }
   function getFormData(
     { endpoint, data, linkage, hierarchy: { structure } }: OrderData,
-    isUpdate = false
+    isUpdate = false,
   ) {
     var { submitOrderPC_1 } = data;
     var qs_data;
@@ -273,6 +273,8 @@ async function submitOrder(
     if (data.submitOrderPC_1) {
       if (isUpdate) {
         operator = "addressPC_1";
+        // data.addressPC_1.fields.selectedId =
+        //   data.addressPC_1.fields.options[i].deliveryAddressId;
         common = {
           compress: true,
           queryParams: linkage.common.queryParams,
@@ -298,10 +300,7 @@ async function submitOrder(
         submit_url = submitOrderPC_1.hidden.extensionMap.pcSubmitUrl;
       }
       formData = {
-        endpoint: JSON.stringify({
-          features: "0",
-          ...endpoint,
-        }),
+        endpoint: JSON.stringify(endpoint),
         operator,
         linkage: JSON.stringify({
           common,
@@ -468,6 +467,7 @@ async function submitOrder(
     };
   }
   function waitExpectedOrderData() {
+    var i = 0;
     return taskManager.registerTask(
       {
         name: "捡漏",
@@ -475,14 +475,15 @@ async function submitOrder(
         comment: args.title,
         handler: async () => {
           var { submit_url, formData, qs_data } = getFormData(res, true);
-          var text = await request.form(submit_url, formData, {
+          var resData = await request.form(submit_url, formData, {
             qs: qs_data,
             referer: addr_url,
             headers: {
               "x-requested-with": "XMLHttpRequest",
+              'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
             },
           });
-          var { data, endpoint, linkage, hierarchy } = JSON.parse(text);
+          var { data, endpoint, linkage, hierarchy } = resData;
           Object.assign(res.data, data);
           res.endpoint = endpoint;
           res.linkage = linkage;
@@ -797,6 +798,14 @@ interface OrderData {
       fields: {
         priceTips: string;
         showPrice: string;
+      };
+    };
+    addressPC_1: {
+      fields: {
+        options: {
+          deliveryAddressId: string;
+        }[];
+        selectedId: string;
       };
     };
     realPayPC_1: {

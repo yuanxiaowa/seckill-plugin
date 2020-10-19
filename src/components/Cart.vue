@@ -126,9 +126,10 @@ export default class App extends Vue {
   half_discount = false;
   autopay = false;
   tbgold = true;
-  hongbao = true
+  hongbao = true;
 
-  @Watch('from_pc')
+  @Watch("from_pc")
+  @Watch("platform")
   refresh() {
     return this.pullCartData();
   }
