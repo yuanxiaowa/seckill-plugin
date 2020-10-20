@@ -7,6 +7,8 @@ import { CouponHandler } from "@/structs/coupon";
 import { delay, formatUrl } from "../common/tool";
 import { request } from "../common/request";
 import { excuteRequestAction } from "../page";
+import { taskManager } from "../common/task-manager";
+import moment from "moment";
 
 export const handlers: CouponHandler[] = [
   {
@@ -409,7 +411,7 @@ export function getTaolijinFromPage(url: string) {
       urls: ["*://*.taobao.com/*"],
     });
     return resolveUrl(formatUrl(href)).then((url) => ({ url, success: true }));
-  }
+  };
 }
 
 export async function getTaolijinFromApi(url: string) {
@@ -614,6 +616,75 @@ export async function getHongbao(url: string) {
   }
   console.log(data.drawRetDesc);
 }
+
+async function get1111Hongbao(url: string) {
+  // wh_alimama: true
+  // disableNav: YES
+  // es: 5b+DG6gSXvsN+oQUE6FNzAioWZP3qDgNnYSgewQnie0YHpdVRmafwmyeJvHyxPy3
+  // ali_trackid: 2:mm_130931909_977950399_109602500307:1603202832_186_1127165491
+  // union_lens: lensId:APP@1603191126@0be55312_0f7a_17545a33890_1e44@025H2q488DN9Z4c2CFio5Ivt;recoveryid:1603202832_186_1127165491
+  // spm: a2e0r.13514612.32387955-MCRmhcAuto.dslot_1_share_20150318020001156
+  // un: d3c21efbc631c34d384c4a342af87869
+  // scm: 20140618.1.01010001.s101c6
+  // ut_sk: 1.utdid_null_1603191126174.TaoPassword-Outside.lianmeng-app
+  // bxsign: tbk08NPU2UJhHuWVWjp3w12ky5pTEWrLEbdDls1IEHyATkwA0Gn/yC0uL/CwNUDbZq70V4rAah 2uIe8c7z60NL5U/q0LIxVkRzvp6plwpMfOI=
+  try {
+    var data: {
+      chance: {
+        chanceLeft: string;
+        totalChance: string;
+      };
+      drawRetCode: string;
+      drawRetDesc: string;
+    } = await requestData("mtop.alimama.vegas.draw", {
+      data: {
+        extend: JSON.stringify({
+          union_lens:
+            "lensId:APP@1603191126@0be55312_0f7a_17545a33890_1e44@025H2q488DN9Z4c2CFio5Ivt;recoveryid:1603202832_186_1127165491;pvid:a211oj.20488333_1603209619989_08945933037496046_aY8wF2EpCT",
+          scence: "pc",
+          spm: "a211oj.20488333",
+          clickId: "1603202832_186_1127165491",
+        }),
+        es: "5b+DG6gSXvsN+oQUE6FNzAioWZP3qDgNnYSgewQnie0YHpdVRmafwmyeJvHyxPy3",
+        pid: "mm_130931909_977950399_109602500307",
+        eh: "oVCEq1EQc2B1Z2W8b6J6wZ9vh7xKjJWZME4BxDdS%2BQURyLQD8UMs1Q%3D%3D",
+        ua:
+          "137#cB99hE9oUJFH87UKABOpWHAGIn1B4eg99GZoSaw+OH1dIBWTzju75zIPZ/QPiTTe0dgdOyiUdOWrNswUpv/SDq79s03NMUozNCANNoycVGBlRzMGylfdxYEHyyV+jR1CrdSdieWv8O+6AN2CTIa81Kdjwnbh6n32tjUYSrfLuSusPZQWKNmIRt1ntKQlJtg3Wv7bi4+9cdpEFVPw3OO3WqIEIHcBs5pDB5s+HCcONg/g6Nf89vH4xHwPuvmgHKTt+VHvmcbNZF5Tze6+IVGFotG/RWg+kHh75ZS5ej7pJOzcAtQeAQA0boLX48euloeEoniF7oagXaTiWDgVu98eR7WGHw4vLHs2d6VZXAE45FvkNDrjQQ/IFxOiPMrwRHj4OhvvRF8r9A+AM0e70T0XpfNs/0ikuPgOazYgyJ9o9h1bR807kTQRS0Jc1Iei+pppY2US1lQypppcQonJ+ZDVpRmc1AlUit7O7yUxlqgipXicQofJ+WQesRnc1soBCEZxbwU94GQRl+7c7ID1XFGVpkUm1Igi+ppVYTUxuqgipB6mQofJ+GXppRJc1ITGU2ac7199iISe682XflbmXWjhGSXLbbBnoB8MYykCS+dAslqP7yRsVWnDED8kvIdbGHKWKBnJJXhMlvzo1E08pGGYrseNWTTe9p1n1IZ29pecoKDCUiEGurpk1vl0vp5CKbmpXaYLGGF1ILiJWHkETLVZn04IuNDUKp+fi4gCw43XDPn90DhTHggMOLnJcERvWRFFi0qblkFu5jRECFdx8l+TFSQHgSw+VvYgk90aLg3OrlkJpRPfbcVKtipmzcngD6YX1QQLhwFB+pHHX+PxvRax3G63yLf9pd/KphhCg9ErYB5t4JjhxdsT2/P+2RkQo78s5ZW3Fsw9tPs03x7WZ3yv0LDtlenwQpgP/ieWe8iUsPDkAEh2T661DVS5DhBykhl/ZfFyqRCq1v0/oTKaldK+qmdNe0OnrF97IYq4+AepgxxvikQuLHqJ90jgAoeVd4hqFrYrEDC1ctlMMZRCJRVtfPi4BvHR204fpuU9tHiZe+dEurjzT0YlbDCCwzCFAvaEKxCkNMkT8Nf4lKesqti18QcWTe1PUf1A8unKjbOrHPucsp58E2DrnZ51DBDFRXJ6JBVOivZA29kj9m91ub7aDn5E0Dir5ymrtZpjhmYeog/yFDiy0wcL2/XBc+8oJ58P06l1SQ5is40wSULfGKlrnDV4po7coGJtoMOxhcMUiL0yafbURwOxc8jZPVJHFxSt2oAWNH7GT2xcldKWszP7h7u2gQRKhseTxZ4UGUqJQess74HXFaFCrqK1S6eXkUrxljYprTq/RIF5mDfE6GqF6dpMOCbsCF7sg0ClmHIeesplKuqEGNq90BTN591XDWTsMl1XSWJBK6XEepLevMkm/qp9x/HNVIU4KuSS8FHUXRJrvTD2OAWdnh5wJnnX5KJJzf27tJ289oDSK84+VoAUOqv=",
+        umidToken:
+          "T2gAEyg1X-OCYwjp9DZ6uAitKoiVjihxv03gFWzVZr5xCEmA1RQXfy36IsRyNPBu_gcQenFvLwDcwqzZQj_BIKws",
+      },
+      version: "1.0",
+      referer: url,
+    });
+    console.log(data);
+    if (+data.chance.chanceLeft > 0) {
+      return getHongbao(url);
+    }
+    taskManager.registerTask(
+      {
+        name: "抢双十一红包",
+        time: moment("00:00:00", "hh:mm:ss")
+          .add("day", 1)
+          .toString(),
+        platform: "taobao",
+        comment: "",
+        async handler() {
+          get1111Hongbao(url);
+        },
+      },
+      0
+    );
+    console.log(data.drawRetDesc);
+  } catch (e) {
+    if (e.message === "流量限制") {
+      getHongbao(url);
+    }
+  }
+}
+
+get1111Hongbao(
+  "https://1111.tmall.com/union?wh_alimama=true&disableNav=YES&es=5b%2BDG6gSXvsN%2BoQUE6FNzAioWZP3qDgNnYSgewQnie0YHpdVRmafwmyeJvHyxPy3&ali_trackid=2:mm_130931909_977950399_109602500307:1603202832_186_1127165491&union_lens=lensId:APP@1603191126@0be55312_0f7a_17545a33890_1e44@025H2q488DN9Z4c2CFio5Ivt;recoveryid:1603202832_186_1127165491&spm=a2e0r.13514612.32387955-MCRmhcAuto.dslot_1_share_20150318020001156&un=d3c21efbc631c34d384c4a342af87869&scm=20140618.1.01010001.s101c6&ut_sk=1.utdid_null_1603191126174.TaoPassword-Outside.lianmeng-app&bxsign=tbk08NPU2UJhHuWVWjp3w12ky5pTEWrLEbdDls1IEHyATkwA0Gn/yC0uL/CwNUDbZq70V4rAah+2uIe8c7z60NL5U/q0LIxVkRzvp6plwpMfOI="
+);
 
 /**
  *
