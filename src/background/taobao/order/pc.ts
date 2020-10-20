@@ -474,7 +474,8 @@ async function submitOrder(
         platform: "taobao-pc",
         comment: args.title,
         handler: async () => {
-          var { submit_url, formData, qs_data } = getFormData(res, true);
+          try{
+            var { submit_url, formData, qs_data } = getFormData(res, true);
           var resData = await request.form(submit_url, formData, {
             qs: qs_data,
             referer: addr_url,
@@ -500,6 +501,9 @@ async function submitOrder(
                 }
               }); */
           return getOrderDataMeta(res).success;
+          }catch(e) {
+            debugger
+          }
         },
         time: start_time + 1000 * 60 * args.jianlou!,
       },
