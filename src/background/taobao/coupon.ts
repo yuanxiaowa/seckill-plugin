@@ -664,20 +664,18 @@ async function get1111Hongbao(url: string) {
     if (+data.chance.chanceLeft > 0) {
       return getHongbao(url);
     }
+    console.log(data.drawRetDesc);
     var t = moment("00:00:00", "hh:mm:ss").add("day", 1);
-    taskManager.registerTask(
+    await taskManager.registerTask(
       {
         name: "抢双十一红包",
         time: t.valueOf(),
         platform: "taobao",
         comment: "",
-        async handler() {
-          get1111Hongbao(url);
-        },
       },
       t.valueOf()
     );
-    console.log(data.drawRetDesc);
+    get1111Hongbao(url);
   } catch (e) {
     if (e.message === "流量限制") {
       getHongbao(url);
