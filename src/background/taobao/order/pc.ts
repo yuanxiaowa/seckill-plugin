@@ -261,6 +261,7 @@ async function submitOrder(
   function getFormData(
     { endpoint, data, linkage, hierarchy: { structure } }: OrderData,
     isUpdate = false,
+    i=0
   ) {
     var { submitOrderPC_1 } = data;
     var qs_data;
@@ -273,8 +274,8 @@ async function submitOrder(
     if (data.submitOrderPC_1) {
       if (isUpdate) {
         operator = "addressPC_1";
-        // data.addressPC_1.fields.selectedId =
-        //   data.addressPC_1.fields.options[i].deliveryAddressId;
+        data.addressPC_1.fields.selectedId =
+          data.addressPC_1.fields.options[i].deliveryAddressId;
         common = {
           compress: true,
           queryParams: linkage.common.queryParams,
@@ -474,24 +475,26 @@ async function submitOrder(
         platform: "taobao-pc",
         comment: args.title,
         handler: async () => {
-          try{
-            var { submit_url, formData, qs_data } = getFormData(res, true);
-          var resData = await request.form(submit_url, formData, {
-            qs: qs_data,
-            referer: addr_url,
-            headers: {
-              "x-requested-with": "XMLHttpRequest",
-              'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
-            },
-          });
-          var { data, endpoint, linkage, hierarchy } = resData;
-          Object.assign(res.data, data);
-          res.endpoint = endpoint;
-          res.linkage = linkage;
-          if (hierarchy) {
-            res.hierarchy = hierarchy;
-          }
-          /* setting.req.post("http://localhost:88", {
+          try {
+            i = 1-i
+            var { submit_url, formData, qs_data } = getFormData(res, true, i);
+            var resData = await request.form(submit_url, formData, {
+              qs: qs_data,
+              referer: addr_url,
+              headers: {
+                "x-requested-with": "XMLHttpRequest",
+                "content-type":
+                  "application/x-www-form-urlencoded; charset=UTF-8",
+              },
+            });
+            var { data, endpoint, linkage, hierarchy } = resData;
+            Object.assign(res.data, data);
+            res.endpoint = endpoint;
+            res.linkage = linkage;
+            if (hierarchy) {
+              res.hierarchy = hierarchy;
+            }
+            /* setting.req.post("http://localhost:88", {
                 qs: qs_data,
                 form: formData,
                 headers: {
@@ -500,10 +503,8 @@ async function submitOrder(
                   // origin: "https://buy.tmall.com"
                 }
               }); */
-          return getOrderDataMeta(res).success;
-          }catch(e) {
-            debugger
-          }
+            return getOrderDataMeta(res).success;
+          } catch (e) {}
         },
         time: start_time + 1000 * 60 * args.jianlou!,
       },

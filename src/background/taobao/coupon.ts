@@ -77,9 +77,9 @@ export const handlers: CouponHandler[] = [
     api: getDailygroup,
   },
   {
-    test: startsWith('https://1111.tmall.com/union'),
+    test: startsWith("https://1111.tmall.com/union"),
     api: get1111Hongbao,
-  }
+  },
   /* invitation1: {
     test: startsWith("https://fans.m.tmall.com/"),
     api: getInvitation
@@ -638,7 +638,7 @@ async function get1111Hongbao(url: string) {
         chanceLeft: string;
         totalChance: string;
       };
-      drawRetCode: string;
+      drawRetCode: string | number;
       drawRetDesc: string;
     } = await requestData("mtop.alimama.vegas.draw", {
       data: {
@@ -661,7 +661,7 @@ async function get1111Hongbao(url: string) {
       referer: url,
     });
     console.log(data);
-    if (+data.chance.chanceLeft > 0) {
+    if (data.drawRetCode === 4 || +data.chance.chanceLeft > 0) {
       return getHongbao(url);
     }
     console.log(data.drawRetDesc);
@@ -686,7 +686,6 @@ async function get1111Hongbao(url: string) {
 get1111Hongbao(
   "https://1111.tmall.com/union?wh_alimama=true&disableNav=YES&es=5b%2BDG6gSXvsN%2BoQUE6FNzAioWZP3qDgNnYSgewQnie0YHpdVRmafwmyeJvHyxPy3&ali_trackid=2:mm_130931909_977950399_109602500307:1603202832_186_1127165491&union_lens=lensId:APP@1603191126@0be55312_0f7a_17545a33890_1e44@025H2q488DN9Z4c2CFio5Ivt;recoveryid:1603202832_186_1127165491&spm=a2e0r.13514612.32387955-MCRmhcAuto.dslot_1_share_20150318020001156&un=d3c21efbc631c34d384c4a342af87869&scm=20140618.1.01010001.s101c6&ut_sk=1.utdid_null_1603191126174.TaoPassword-Outside.lianmeng-app&bxsign=tbk08NPU2UJhHuWVWjp3w12ky5pTEWrLEbdDls1IEHyATkwA0Gn/yC0uL/CwNUDbZq70V4rAah+2uIe8c7z60NL5U/q0LIxVkRzvp6plwpMfOI="
 );
-
 
 /**
  *
