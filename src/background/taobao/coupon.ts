@@ -662,7 +662,7 @@ async function get1111Hongbao(url: string) {
     });
     console.log(data);
     if (data.drawRetCode === 4 || +data.chance.chanceLeft > 0) {
-      return getHongbao(url);
+      return get1111Hongbao(url);
     }
     console.log(data.drawRetDesc);
     var t = moment("00:00:00", "hh:mm:ss").add("day", 1);
@@ -678,7 +678,7 @@ async function get1111Hongbao(url: string) {
     get1111Hongbao(url);
   } catch (e) {
     if (e.message === "流量限制") {
-      getHongbao(url);
+      get1111Hongbao(url);
     }
   }
 }

@@ -8,7 +8,7 @@
   <div class="page-component__scroll">
     <config />
     <router-view></router-view>
-    <iframe ref="ifr" :key="id" :src="status_url" frameborder="0" style="opacity:0"></iframe>
+    <iframe ref="ifr" :key="id" :src="status_url" frameborder="0" style="opacity:0;position:absolute;left:-100%"></iframe>
     <el-backtop target=".page-component__scroll"></el-backtop>
   </div>
 </template>

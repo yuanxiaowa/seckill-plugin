@@ -248,4 +248,10 @@ chrome.runtime.onMessageExternal.addListener(function(
       })
     );
 });
-chrome.runtime.onMessage.addListener(console.log);
+// @ts-ignore
+window.executeScript = (fn: string | Function, ...args: any[]) => {
+  const code = typeof fn === "function" ? fn.toString() : fn;
+  return eval(
+    `(${code})(${args.map((item) => JSON.stringify(item)).join(",")})`
+  );
+};
