@@ -1,6 +1,13 @@
 function getScript() {
   function handler() {
-    var list = document.querySelectorAll(".address-list>div");
+    
+    var isTaobao = location.hostname.includes("taobao.");
+    if (isTaobao) {
+      window.confirm = () => true;
+    }
+    var list = document.querySelectorAll(
+      isTaobao ? ".addr-item-wrapper label" : ".address-list>div"
+    );
     var b = false;
     var currentPrice = +document.querySelector(".realpay--price").textContent;
     function exchangeAddress() {
@@ -35,7 +42,9 @@ function getScript() {
     exchangeAddress();
   }
   var ele = document.createElement("script");
-  ele.textContent = `(${handler.toString()})()`;
+  var scriptContent = `(${handler.toString()})()`;
+  console.log(scriptContent);
+  ele.textContent = scriptContent;
   document.body.appendChild(ele);
   document.body.removeChild(ele);
 }
