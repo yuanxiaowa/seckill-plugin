@@ -261,7 +261,7 @@ async function submitOrder(
   function getFormData(
     { endpoint, data, linkage, hierarchy: { structure } }: OrderData,
     isUpdate = false,
-    i=0
+    i = 0
   ) {
     var { submitOrderPC_1 } = data;
     var qs_data;
@@ -476,7 +476,7 @@ async function submitOrder(
         comment: args.title,
         handler: async () => {
           try {
-            i = 1-i
+            i = 1 - i;
             var { submit_url, formData, qs_data } = getFormData(res, true, i);
             var resData = await request.form(submit_url, formData, {
               qs: qs_data,
@@ -599,7 +599,7 @@ async function submitOrder(
               //   res.url().startsWith("https://tscenter.alipay.com/home/pc.htm")
               // );
               await page.waitForSelector("#J_authSubmit");
-              await page.evaluate(() => {
+              await page.evaluate((pass: string) => {
                 var ele = document.querySelector<HTMLInputElement>(
                   "#payPassword_rsainput"
                 )!;
@@ -735,17 +735,81 @@ async function submitOrderFromBrowser2(
   // });
   await page.goto(Referer);
   await page.evaluate(createForm, form, addr_url);
-  page.evaluate(() => {
-    document.querySelector<HTMLFormElement>("#__form")!.submit();
-  });
-  await page.waitForNavigation();
   return async () => {
-    await page.reload();
+    page.evaluate(() => {
+      document.querySelector<HTMLFormElement>("#__form")!.submit();
+    });
+    await page.waitForNavigation();
+    await delay(1000);
+    page.evaluate(getScript, args.expectedPrice);
+    // await page.reload();
     // page.click('.addr-default+div')
     // await page.waitForResponse(res => res.url().startsWith('https://buy.tmall.com/auction/json/async_linkage.do'))
     // await delay(16)
-    page.click(".go-btn");
+    // page.click(".go-btn");
   };
+}
+
+function getScript(price = 10) {
+  function handler(maxPrice?: number) {
+    var isTaobao = location.hostname.includes("taobao.");
+    if (isTaobao) {
+      window.confirm = () => true;
+    }
+    var list = document.querySelectorAll<HTMLDivElement>(
+      isTaobao ? ".addr-item-wrapper label" : ".address-list>div"
+    );
+    var b = false;
+    // var currentPrice = Number(
+    //   document.querySelector<HTMLDivElement>(".realpay--price")!.textContent
+    // );
+    function exchangeAddress() {
+      if (b) {
+        list[0].click();
+      } else {
+        list[1].click();
+      }
+      b = !b;
+    }
+    const btn = document.querySelector<HTMLDivElement>(
+      "#submitOrderPC_1 a:last-child"
+    )!;
+    function submit() {
+      btn.click();
+    }
+
+    var send = XMLHttpRequest.prototype.send;
+    XMLHttpRequest.prototype.send = function(data) {
+      // @ts-ignore
+      if (this.__sufei_url.startsWith("/auction/json/async_linkage.do?")) {
+        const listener = () => {
+          try {
+            const { data } = JSON.parse(this.responseText);
+            if (+data.realPayPC_1.fields.price <= maxPrice!) {
+              submit();
+              return;
+            }
+          } catch (e) {
+            console.log(e)
+            exchangeAddress();
+          }
+          exchangeAddress();
+          // this.removeEventListener("load", listener);
+        };
+        this.addEventListener("load", listener);
+        this.addEventListener("error", listener);
+        this.addEventListener("timeout", listener);
+      }
+      return send.call(this, data);
+    };
+    exchangeAddress();
+  }
+  var ele = document.createElement("script");
+  var scriptContent = `(${handler.toString()})(${price})`;
+  console.log(scriptContent);
+  ele.textContent = scriptContent;
+  document.body.appendChild(ele);
+  document.body.removeChild(ele);
 }
 
 function createForm(data, action) {

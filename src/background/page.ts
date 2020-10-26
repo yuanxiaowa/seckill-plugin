@@ -5,22 +5,22 @@ export class ChromePage {
     throw new Error("Method not implemented.");
   }
   waitForSelector(selector: string) {
-    return this.evaluate(selector => {
-      return new Promise(resolve => {
+    return this.evaluate((selector) => {
+      return new Promise((resolve) => {
         function check() {
           if (document.querySelector<HTMLElement>(selector)) {
-            resolve()
+            resolve();
           }
-          setTimeout(check, 60)
+          setTimeout(check, 60);
         }
-        check()
-      })
-    }, selector)
+        check();
+      });
+    }, selector);
   }
   click(selector: string) {
     return this.evaluate((selector) => {
-      document.querySelector<HTMLElement>(selector)!.click()
-    }, selector)
+      document.querySelector<HTMLElement>(selector)!.click();
+    }, selector);
   }
   reload() {
     return new Promise((resolve) =>
@@ -88,7 +88,10 @@ export class ChromePage {
     return this.waitForNavigation();
   }
 
-  evaluate(fn: string | Function, ...args: any[]) {
+  evaluate<T extends any[] = []>(
+    fn: string | ((...args: T) => any),
+    ...args: T
+  ) {
     var args_str = args.map((arg) => JSON.stringify(arg)).join(",");
     var code = typeof fn !== "string" ? `(${fn.toString()})(${args_str})` : fn;
     console.log(code);
