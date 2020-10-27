@@ -15,6 +15,7 @@ import { getCartListFromMobile } from "../cart/mobile";
 import moment from "moment";
 import { fromPairs } from "ramda";
 import { goValidate, pay } from "./order-tools";
+import getFyOBJ from "./fyOBJ";
 
 function transformOrderData(
   orderdata: any,
@@ -166,8 +167,8 @@ function transformOrderData(
   //       "-" + Number(/￥(.*)/.exec(coupon.fields.totalValue)![1]).toFixed(2);
   //   }
   // }
-  var ua =
-    "120#bX1bSbnosGDVHyn4GCwVLGU/qhVnPz7gXEWbpeS3BWDqxvHnn5lbFazGrvimIXiCHD7UAc0M2w+P7Kfq6seiXL43dPZhT8GsVJxqI1hO5pn0FZqOHHxEb+SDknLFlAPg9GwNUK3PYbkIPXIbbUDONee/P8Lw6HPIbOrA46pVSxtkOyzBz7iDwUM4AoTzGn/90yrFLO3G+rJ6P7+sMwCXDz/N0SfEPlbi7PrCoAFDGtdGZpidU604NtyrUhPPrZdWgGjYcB/El9OAzLmzmr8y2dwGHV7jQ62eEmmJAXLdZR1O1HN659N54xjQn5DvPxZn+QOZlmhE4x82LuhqpkBfqONOw6/Q6bqc3gRTExBUAhYLsjDquA1eIjj7oJ8cHNZp8qRhrqjTLybJadlqKxiCGXED2IYBiu1GrDmVtJFidJHXe3/z83vuWtU9AtSUM1xzE+Zj5Nja2aXk8qxB+WUy0WHZ8XlEmG3+Cn6lVxy1X9rjaZiolupmFWAyWixVo6oNo9t/JU+9x1vuy/Y+SOPcmLNSHhHUI82BO6C3fnGKeanPtZ5eA8T60dCWiXGdNcG0MXaPjwR5fYl7BjrcOb/z4UX1tN7uBZR1RVY6/En0Wj0DvpNy2sUG353sdPT9g4YTsgRcuJA1g9RJySfifhuNEh/Hh2pciXhwrpJUPV3R2aFW//d8UpQbXM+oOjKaDcVQJEMBEqZYjoQDIe6b/aYjfNtpDMsM8O+9jI1QgwXdsId5V2AkxiYFzPNUzsnPgzoO1OpA+yDFf9JEXPOTnzF2TX/a7R0phyFAFGuMBNfqHcQN24fqstfOO0A=";
+  // var ua =
+  //   "120#bX1bSbnosGDVHyn4GCwVLGU/qhVnPz7gXEWbpeS3BWDqxvHnn5lbFazGrvimIXiCHD7UAc0M2w+P7Kfq6seiXL43dPZhT8GsVJxqI1hO5pn0FZqOHHxEb+SDknLFlAPg9GwNUK3PYbkIPXIbbUDONee/P8Lw6HPIbOrA46pVSxtkOyzBz7iDwUM4AoTzGn/90yrFLO3G+rJ6P7+sMwCXDz/N0SfEPlbi7PrCoAFDGtdGZpidU604NtyrUhPPrZdWgGjYcB/El9OAzLmzmr8y2dwGHV7jQ62eEmmJAXLdZR1O1HN659N54xjQn5DvPxZn+QOZlmhE4x82LuhqpkBfqONOw6/Q6bqc3gRTExBUAhYLsjDquA1eIjj7oJ8cHNZp8qRhrqjTLybJadlqKxiCGXED2IYBiu1GrDmVtJFidJHXe3/z83vuWtU9AtSUM1xzE+Zj5Nja2aXk8qxB+WUy0WHZ8XlEmG3+Cn6lVxy1X9rjaZiolupmFWAyWixVo6oNo9t/JU+9x1vuy/Y+SOPcmLNSHhHUI82BO6C3fnGKeanPtZ5eA8T60dCWiXGdNcG0MXaPjwR5fYl7BjrcOb/z4UX1tN7uBZR1RVY6/En0Wj0DvpNy2sUG353sdPT9g4YTsgRcuJA1g9RJySfifhuNEh/Hh2pciXhwrpJUPV3R2aFW//d8UpQbXM+oOjKaDcVQJEMBEqZYjoQDIe6b/aYjfNtpDMsM8O+9jI1QgwXdsId5V2AkxiYFzPNUzsnPgzoO1OpA+yDFf9JEXPOTnzF2TX/a7R0phyFAFGuMBNfqHcQN24fqstfOO0A=";
   var common: any;
 
   var { address_1 } = orderData;
@@ -249,7 +250,6 @@ function transformOrderData(
       }),
       operator,
     }),
-    // ua
   };
   return postdata;
 }
@@ -300,6 +300,10 @@ async function submitOrderStatic(args: ArgOrder<any>, retryCount = 0) {
   // other.memo other.ComplexInput
   console.log(`\n😎----准备进入手机订单结算页：${args.title}`);
   var data1;
+  const url = `https://main.m.taobao.com/order/index.html?${qs_lib.stringify(
+    args.data
+  )}`;
+  let fyOBJ = await getFyOBJ(url);
   try {
     data1 = await requestData("mtop.trade.order.build.h5", {
       data: Object.assign(
@@ -443,14 +447,12 @@ async function submitOrderStatic(args: ArgOrder<any>, retryCount = 0) {
       console.time(_n + "订单提交 " + startTime);
       console.log(data1);
       let ret = await requestData("mtop.trade.order.create.h5", {
-        data: postdata,
+        data: { ...postdata, ua: fyOBJ.getUA(), umidToken: fyOBJ.umidToken },
         method: "post",
         qs: {
           [data1.global.secretKey]: data1.global.secretValue,
         },
-        referer: `https://main.m.taobao.com/order/index.html?${qs_lib.stringify(
-          args.data
-        )}`,
+        referer: url,
         origin: "https://main.m.taobao.com",
       });
       logFile(ret, `手机订单提交成功`);
@@ -558,11 +560,15 @@ async function submitOrderStatic(args: ArgOrder<any>, retryCount = 0) {
 async function submitOrderResubmit(args: ArgOrder<any>) {
   var startDate = new Date();
   var startTime = startDate.getTime();
+  const url = `https://main.m.taobao.com/order/index.html?${qs_lib.stringify(
+    args.data
+  )}`;
   // console.time("订单结算 " + args.title + startTime);
   // other.memo other.ComplexInput
   console.log(`\n😎----准备进入手机订单结算页：${args.title}`);
   let retryCount = 0;
   let prev_msg = "";
+  let fyOBJ = await getFyOBJ(url);
   async function handler() {
     var data1;
     try {
@@ -610,14 +616,12 @@ async function submitOrderResubmit(args: ArgOrder<any>) {
         console.time("订单提交 " + startTime);
         console.log(data1);
         let ret = await requestData("mtop.trade.order.create.h5", {
-          data: postdata,
+          data: { ...postdata, ua: fyOBJ.getUA(), umidToken: fyOBJ.umidToken },
           method: "post",
           qs: {
             [data1.global.secretKey]: data1.global.secretValue,
           },
-          referer: `https://main.m.taobao.com/order/index.html?${qs_lib.stringify(
-            args.data
-          )}`,
+          referer: url,
           origin: "https://main.m.taobao.com",
         });
         logFile(ret, `手机订单提交成功`);
@@ -808,7 +812,7 @@ export const cartBuyFromMobile: BaseHandler["cartBuy"] = async function(
     args.other = {};
   }
   return () =>
-  // @ts-ignore
+    // @ts-ignore
     submitOrderFromMobile({
       data: {
         buyNow: "false",
