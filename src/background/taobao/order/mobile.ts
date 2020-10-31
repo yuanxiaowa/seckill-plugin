@@ -64,12 +64,16 @@ function transformOrderData(
         const { coupon_3 } = data;
         const p = Number(coupon_3.hidden.extensionMap.value);
         coupon_3.hidden.extensionMap.value = -p;
-        coupon_3.fields.components[0].price = coupon_3.fields.components[0].price.replace(
-          "-",
-          ""
-        );
+        if (coupon_3.fields.components) {
+          coupon_3.fields.components[0].price = coupon_3.fields.components[0].price.replace(
+            "-",
+            ""
+          );
+        }
         coupon_3.fields.price = coupon_3.fields.price.replace("-", "");
-        coupon_3.fields.asSelect.selectedIds.fill("false");
+        if (coupon_3.fields.asSelect) {
+          coupon_3.fields.asSelect.selectedIds.fill("false");
+        }
         const finalPrice = (
           submitOrder_1.hidden.extensionMap.showPrice - p
         ).toFixed(2);
