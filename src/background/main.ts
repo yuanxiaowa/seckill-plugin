@@ -23,6 +23,7 @@ import { runJdTasks } from "./jd/task";
 // import "./baidu";
 import { HandlerWithAll } from "@/structs/api";
 import { ifElse, propIs } from "ramda";
+import { addCallbacks } from "./init";
 
 function wrappedDelay<TArgs = any, TReturn = any>({
   name,
@@ -221,13 +222,15 @@ const taobao = {
 // @ts-ignore
 window.taobao = taobao;
 
-taobao.checkStatus("taobao");
-if (config.is_main) {
-  taobao.checkStatus("jingdong");
-  if (accounts.jingdong.password) {
-    runJdTasks();
+addCallbacks(() => {
+  taobao.checkStatus("taobao");
+  if (config.is_main) {
+    taobao.checkStatus("jingdong");
+    if (accounts.jingdong.password) {
+      runJdTasks();
+    }
   }
-}
+});
 
 chrome.runtime.onMessageExternal.addListener(function(
   { name, args },
