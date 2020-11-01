@@ -51,11 +51,11 @@ function transformOrderData(
           tbgold_1.fields.isChecked = "false";
           tbgold_1.events.itemClick[0].fields.isChecked = "false";
           const finalPrice = (
-            submitOrder_1.hidden.extensionMap.showPrice - p
+            Number(submitOrder_1.hidden.extensionMap.showPrice) + p
           ).toFixed(2);
           submitOrder_1.hidden.extensionMap.showPrice = finalPrice;
           submitOrder_1.fields.price = submitOrder_1.fields.price.replace(
-            /\d.*/,
+            /[\d.]+/,
             finalPrice
           );
         }
@@ -63,14 +63,14 @@ function transformOrderData(
       if (args.hongbao === false) {
         const { coupon_3 } = data;
         const p = Number(coupon_3.hidden.extensionMap.value);
-        coupon_3.hidden.extensionMap.value = -p;
+        coupon_3.hidden.extensionMap.value = `-${p}`;
         if (coupon_3.fields.components) {
           coupon_3.fields.components[0].price = coupon_3.fields.components[0].price.replace(
             "-",
             ""
           );
         }
-        coupon_3.fields.price = coupon_3.fields.price.replace("-", "");
+        coupon_3.fields.price = "未使用"; // coupon_3.fields.price.replace("-", "");
         if (coupon_3.fields.asSelect) {
           coupon_3.fields.asSelect.selectedIds.fill("false");
         }
@@ -79,7 +79,7 @@ function transformOrderData(
         ).toFixed(2);
         submitOrder_1.hidden.extensionMap.showPrice = finalPrice;
         submitOrder_1.fields.price = submitOrder_1.fields.price.replace(
-          /\d.*/,
+          /[\d.]+/,
           finalPrice
         );
       }
@@ -235,7 +235,7 @@ function transformOrderData(
     address_1.fields.cornerType = "both";
     if (coupon_3) {
       // 使用红包
-      coupon_3.fields.cornerType = "top";
+      coupon_3.fields.cornerType = "bottom";
     }
     if (tbgold_1) {
       tbgold_1.fields.cornerType = "top";

@@ -223,18 +223,22 @@ async function submitOrder(
     data: { form, addr_url, referer },
   } = args;
   console.log(args.title + ":准备进入订单结算页:");
-  logFile(addr_url + "\n" + JSON.stringify(form), "pc-准备进入订单结算页");
+  // logFile(addr_url + "\n" + JSON.stringify(form), "pc-准备进入订单结算页");
   var start_time = Date.now();
   var html: string = await request.form(addr_url, form, {
     referer,
   });
   var time_diff = Date.now() - start_time;
-  if (html.lastIndexOf("security-X5", html.indexOf("</title>")) > -1) {
-    let msg = "进入订单结算页碰到验证拦截";
-    console.log(`-------${msg}--------`);
-    logFile(html, "pc-订单提交验证拦截");
-    throw new Error(msg);
+  function checkValidate(html: string) {
+    if (html.lastIndexOf("security-X5", html.indexOf("</title>")) > -1) {
+      let msg = "进入订单结算页碰到验证拦截";
+      console.log(`-------${msg}--------`);
+      // logFile(html, "pc-订单提交验证拦截");
+      goValidate(args);
+      throw new Error(msg);
+    }
   }
+  checkValidate(html);
   console.log(args.title + ":进入订单结算页用时：" + time_diff);
   logFile(addr_url + "\n" + html, "pc-订单结算页", ".html");
   var text = /var orderData\s*=(.*);/.exec(html)![1];
@@ -467,6 +471,29 @@ async function submitOrder(
       msg,
     };
   }
+  function waitExpectedOrderData1() {
+    return taskManager.registerTask(
+      {
+        name: "捡漏",
+        platform: "taobao-pc",
+        comment: args.title,
+        handler: async () => {
+          try {
+            var html: string = await request.form(addr_url, form, {
+              referer,
+            });
+            checkValidate(html);
+            var text = /var orderData\s*=(.*);/.exec(html)![1];
+            res = JSON.parse(text);
+            return getOrderDataMeta(res).success;
+          } catch (e) {}
+        },
+        time: start_time + 1000 * 60 * args.jianlou!,
+      },
+      0,
+      "刷到库存了，去下单---"
+    );
+  }
   function waitExpectedOrderData() {
     var i = 0;
     return taskManager.registerTask(
@@ -561,10 +588,13 @@ async function submitOrder(
         }
         if (ret.trim().startsWith("<a")) {
           console.log(args.title + "：订单被拦截");
+
+          goValidate(args);
           sendQQMsg(`${args.title}(${setting.username}) pc订单被拦截`);
           return;
         }
         if (ret.indexOf("security-X5") > -1) {
+          goValidate(args);
           console.log(args.title + "-------提交碰到验证拦截--------");
           logFile(ret, "pc-订单提交验证拦截");
           return;
@@ -785,12 +815,12 @@ function getScript(price = 10) {
         const listener = () => {
           try {
             const { data } = JSON.parse(this.responseText);
-            if (+data.realPayPC_1.fields.price <= maxPrice!) {
+            if (data.realPayPC_1 && +data.realPayPC_1.fields.price <= maxPrice!) {
               submit();
               return;
             }
           } catch (e) {
-            console.log(e)
+            console.log(e);
             exchangeAddress();
           }
           exchangeAddress();
@@ -824,6 +854,26 @@ function createForm(data, action) {
     form.appendChild(input);
   });
   document.body.appendChild(form);
+}
+
+let lastValidateTime = 0;
+
+async function goValidate(args) {
+  var now = Date.now();
+  if (now - lastValidateTime > 1000 * 10) {
+    lastValidateTime = now;
+
+    var {
+      data: { form, addr_url, Referer },
+    } = args;
+    var page = await newPage();
+
+    await page.goto(Referer);
+    await page.evaluate(createForm, form, addr_url);
+    page.evaluate(() => {
+      document.querySelector<HTMLFormElement>("#__form")!.submit();
+    });
+  }
 }
 
 interface OrderData {
