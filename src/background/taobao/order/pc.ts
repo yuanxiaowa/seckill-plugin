@@ -815,7 +815,10 @@ function getScript(price = 10) {
         const listener = () => {
           try {
             const { data } = JSON.parse(this.responseText);
-            if (data.realPayPC_1 && +data.realPayPC_1.fields.price <= maxPrice!) {
+            if (
+              data.realPayPC_1 &&
+              +data.realPayPC_1.fields.price <= maxPrice!
+            ) {
               submit();
               return;
             }
@@ -868,7 +871,7 @@ async function goValidate(args) {
     } = args;
     var page = await newPage();
 
-    await page.goto(Referer);
+    await page.goto(Referer || "https://www.taobao.com/");
     await page.evaluate(createForm, form, addr_url);
     page.evaluate(() => {
       document.querySelector<HTMLFormElement>("#__form")!.submit();
