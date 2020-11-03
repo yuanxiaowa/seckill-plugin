@@ -1,6 +1,5 @@
 function getScript() {
   function handler() {
-    
     var isTaobao = location.hostname.includes("taobao.");
     if (isTaobao) {
       window.confirm = () => true;
@@ -8,8 +7,12 @@ function getScript() {
     var list = document.querySelectorAll(
       isTaobao ? ".addr-item-wrapper label" : ".address-list>div"
     );
+    if (list.length === 0) {
+      return;
+    }
     var b = false;
-    var currentPrice = +document.querySelector(".realpay--price").textContent;
+    var btnPrice = document.querySelector(".realpay--price");
+    var currentPrice = btnPrice ? +btnPrice.textContent : 300;
     function exchangeAddress() {
       if (b) {
         list[0].click();
@@ -18,8 +21,11 @@ function getScript() {
       }
       b = !b;
     }
-    const btn = document.querySelector("#submitOrderPC_1 a:last-child");
+    let btn = document.querySelector("#submitOrderPC_1 a:last-child");
     function submit() {
+      if (!btn) {
+        btn = document.querySelector("#submitOrderPC_1 a:last-child");
+      }
       btn.click();
     }
 
@@ -28,7 +34,10 @@ function getScript() {
       if (this.__sufei_url.startsWith("/auction/json/async_linkage.do?")) {
         const listener = () => {
           const { data } = JSON.parse(this.responseText);
-          if (+data.realPayPC_1.fields.price < currentPrice) {
+          if (
+            data.realPayPC_1 &&
+            +data.realPayPC_1.fields.price < currentPrice
+          ) {
             submit();
           } else {
             exchangeAddress();
@@ -54,24 +63,29 @@ document.querySelector("button").onclick = () => {
     code: `(${getScript.toString()})()`,
   });
   chrome.extension.getBackgroundPage().executeScript(() => {
-    chrome.tabs.query({
-      active: true,
-      currentWindow: true
-    }, ([tab]) => {
-      function handler() {
-
-      }
-      chrome.webNavigation.onCompleted.addListener(details => {
-        if(details.tabId === tab.id) {
-          // https://buy.tmall.com/auction/order/TmallConfirmOrderError.htm?__buy_error_code=USING_PROMOTION_FAIL&__buy_error_trace_id=7019391d16035066132543483e&__buy_error_original_code=F-10005-11-10-003&__buy_error_bizorder_id=
-          if (new URL(details.url).pathname.includes('/auction/order/TmallConfirmOrderError.htm')) {
-            chrome.webNavigation.onCompleted.removeListener(handler)
-            chrome.tabs.executeScript({
-              code: 'location.back()'
-            })
+    chrome.tabs.query(
+      {
+        active: true,
+        currentWindow: true,
+      },
+      ([tab]) => {
+        function handler() {}
+        chrome.webNavigation.onCompleted.addListener((details) => {
+          if (details.tabId === tab.id) {
+            // https://buy.tmall.com/auction/order/TmallConfirmOrderError.htm?__buy_error_code=USING_PROMOTION_FAIL&__buy_error_trace_id=7019391d16035066132543483e&__buy_error_original_code=F-10005-11-10-003&__buy_error_bizorder_id=
+            if (
+              new URL(details.url).pathname.includes(
+                "/auction/order/TmallConfirmOrderError.htm"
+              )
+            ) {
+              chrome.webNavigation.onCompleted.removeListener(handler);
+              chrome.tabs.executeScript({
+                code: "location.back()",
+              });
+            }
           }
-        }
-      })
-    })
-  })
+        });
+      }
+    );
+  });
 };

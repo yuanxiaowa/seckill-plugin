@@ -789,6 +789,9 @@ function getScript(price = 10) {
     var list = document.querySelectorAll<HTMLDivElement>(
       isTaobao ? ".addr-item-wrapper label" : ".address-list>div"
     );
+    if (list.length === 0) {
+      return
+    }
     var b = false;
     // var currentPrice = Number(
     //   document.querySelector<HTMLDivElement>(".realpay--price")!.textContent
@@ -801,10 +804,15 @@ function getScript(price = 10) {
       }
       b = !b;
     }
-    const btn = document.querySelector<HTMLDivElement>(
+    let btn = document.querySelector<HTMLDivElement>(
       "#submitOrderPC_1 a:last-child"
     )!;
     function submit() {
+      if (!btn) {
+        btn = document.querySelector<HTMLDivElement>(
+          "#submitOrderPC_1 a:last-child"
+        )!
+      }
       btn.click();
     }
 
