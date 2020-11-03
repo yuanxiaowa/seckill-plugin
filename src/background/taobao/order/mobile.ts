@@ -84,11 +84,13 @@ function transformOrderData(
         );
       }
     }
-    let price = data.realPay_1
-      ? +data.realPay_1.fields.price
-      : submitOrder_1.hidden.extensionMap.showPrice;
+    let price = Number(
+      data.realPay_1
+        ? data.realPay_1.fields.price
+        : submitOrder_1.hidden.extensionMap.showPrice
+    );
     if (typeof args.expectedPrice === "number") {
-      if (Number(args.expectedPrice) < Number(price) - 0.1) {
+      if (Number(args.expectedPrice) < price - 0.1) {
         throw {
           message: `${args.title} 价格太高，期望${args.expectedPrice}，实际${price}`,
           code: 2,
@@ -759,7 +761,10 @@ export const buyDirectFromMobile: BaseHandler["buy"] = async function(args) {
         }
       }
     }
-    if (typeof args.expectedPrice === "number") {
+    if (
+      typeof args.expectedPrice === "number" &&
+      typeof data.price === "number"
+    ) {
       args.expectedPrice = Math.min(data.price, args.expectedPrice);
     }
     return submitOrderFromMobile(

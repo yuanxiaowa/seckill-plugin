@@ -39,6 +39,7 @@
         <el-checkbox v-model="tbgold">淘金币</el-checkbox>
         <el-checkbox v-model="hongbao">红包</el-checkbox>
         <el-checkbox v-model="from_pc">pc购买</el-checkbox>
+        <el-checkbox v-model="from_browser">浏览器提交</el-checkbox>
       </el-col>
     </el-form-item>
     <el-form-item label="解析">
@@ -132,6 +133,7 @@ interface InfoItem {
   quantity: number;
   skus?: number[];
   expectedPrice?: number;
+  from_browser?: boolean;
   datetime?: string;
   mc_dot1?: boolean;
   price_coudan?: number;
@@ -191,6 +193,7 @@ export default class Buy extends Vue {
   jianlou = 30;
   from_cart = false;
   from_pc = false;
+  from_browser = false;
   no_relay = true;
   half_discount = false;
   autopay = false;
@@ -248,6 +251,7 @@ export default class Buy extends Vue {
           autopay: this.autopay,
           tbgold: this.tbgold,
           hongbao: this.hongbao,
+          from_browser: this.from_browser,
         },
         // @ts-ignore
         this.datetime || this.metadata.datetime,
@@ -342,6 +346,7 @@ export default class Buy extends Vue {
     this.force_jianlou = false;
     this.jianlou = 15;
     this.from_cart = false;
+    this.from_browser = false;
   }
 
   get realPlatform() {

@@ -124,8 +124,8 @@ export async function submitOrder(
             document.querySelector<HTMLDivElement>("#payBtnList")!.children
           ) as HTMLDivElement[])
             .reverse()
-            .find((ele) => ele.style.display !== "none")!
-            .querySelector<HTMLLinkElement>("a")!;
+            .map((ele) => ele.querySelector<HTMLLinkElement>("a")!)
+            .find((ele) => ele.style.display !== "none")!;
           // var data = {
           //   skuNumList: products.map(({ mainSku }) => ({
           //     skuId: mainSku.skuId,
