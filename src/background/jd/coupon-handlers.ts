@@ -12,8 +12,8 @@ const executer = createScheduler(3000);
 export function goGetCookie(url: string) {
   return request.get("https://wq.jd.com/mlogin/mpage/Login", {
     qs: {
-      rurl: url
-    }
+      rurl: url,
+    },
   });
 }
 
@@ -70,7 +70,7 @@ export async function queryFloorCoupons(url: string) {
       }
       return data.extend.active;
     })
-    .filter(items => items.length > 0);
+    .filter((items) => items.length > 0);
 }
 
 export async function obtainFloorCoupon(data: { key: string; level: string }) {
@@ -87,10 +87,10 @@ export async function obtainFloorCoupon(data: { key: string; level: string }) {
       callback: "jsonpCBKE",
       // g_tk: time33(getCookie("wq_skey")),
       // g_pt_tk,
-      g_ty: "ls"
+      g_ty: "ls",
     },
     referer: "https://wqs.jd.com/event/promote/mobile8/index.shtml",
-    type: "jsonp"
+    type: "jsonp",
   });
   /* try{ jsonpCBKA(
 {
@@ -123,19 +123,19 @@ export async function getFloorCoupons(url: string) {
   return {
     success: true,
     res: Promise.all(
-      items.map(_items =>
+      items.map((_items) =>
         Promise.all(
-          _items.map(item =>
+          _items.map((item) =>
             executer(() =>
               obtainFloorCoupon({
                 key: item.key,
-                level: item.level
+                level: item.level,
               })
             )
           )
         )
       )
-    )
+    ),
   };
 }
 /**
@@ -184,10 +184,10 @@ export async function getJingfen(url: string) {
         referUrl: url,
         childActivityUrl: url,
         pageClickKey: "MJDAlliance_CheckDetail",
-        ...getBaseData()
+        ...getBaseData(),
       },
       {
-        functionId: "jingfenCoupon"
+        functionId: "jingfenCoupon",
       }
     );
   } catch (e) {
@@ -197,7 +197,7 @@ export async function getJingfen(url: string) {
   return {
     success,
     url: getGoodsUrl(sku),
-    msg
+    msg,
   };
 }
 
@@ -226,9 +226,9 @@ export async function queryGoodsCoupon(data: {
       popId: data.vid,
       t: Math.random(),
       // g_tk: time33(getCookie("wq_skey")),
-      g_ty: "ls"
+      g_ty: "ls",
     },
-    type: "jsonp"
+    type: "jsonp",
   });
   interface T {
     key: string;
@@ -253,15 +253,15 @@ export async function queryGoodsCoupon(data: {
   return <T[]>[
     ...coupons,
     ...use_coupons
-      .filter(item => item.type === 1)
-      .map(item => ({
+      .filter((item) => item.type === 1)
+      .map((item) => ({
         owned: true,
         name: item.name,
         id: item.id,
         quota: +item.quota,
         discount: +item.parValue,
-        couponType: item.type
-      }))
+        couponType: item.type,
+      })),
   ];
 }
 
@@ -280,9 +280,9 @@ export async function obtainGoodsCoupon(data: { roleId: number; key: string }) {
       roleid: data.roleId,
       t: Math.random(),
       // g_tk: time33(getCookie("wq_skey")),
-      g_ty: "ls"
+      g_ty: "ls",
     },
-    referer: "https://item.m.jd.com/product/36850022644.html"
+    referer: "https://item.m.jd.com/product/36850022644.html",
   });
   return res;
 }
@@ -292,16 +292,16 @@ export async function getGoodsCoupons(skuId: string) {
   var coupons = await queryGoodsCoupon({
     skuId,
     vid: item.venderID,
-    cid: item.category[item.category.length - 1]
+    cid: item.category[item.category.length - 1],
   });
   var data = await Promise.all(
     coupons
-      .filter(item => !item.owned)
-      .map(item =>
+      .filter((item) => !item.owned)
+      .map((item) =>
         executer(() =>
           obtainGoodsCoupon({
             roleId: item.roleId!,
-            key: item.key
+            key: item.key,
           })
         )
       )
@@ -309,7 +309,7 @@ export async function getGoodsCoupons(skuId: string) {
   return {
     success: true,
     res: data,
-    url: `https://item.jd.com/${skuId}.html`
+    url: `https://item.jd.com/${skuId}.html`,
   };
 }
 /**
@@ -329,16 +329,16 @@ export async function getQuanpinCoupon(url: string, phone = "18605126843") {
       platform: "3",
       pageClickKey: "-1",
       userArea: "",
-      ...getBaseData()
+      ...getBaseData(),
     },
     {
       functionId: "activityLongPage",
-      api: ""
+      api: "",
     }
   );
   let {
     returnStatus,
-    status: { minorTitle, activityUrl }
+    status: { minorTitle, activityUrl },
   }: {
     // 1:已抢光 3:没领到
     returnStatus: number;
@@ -351,7 +351,7 @@ export async function getQuanpinCoupon(url: string, phone = "18605126843") {
   return {
     success: returnStatus !== 1 && returnStatus !== 3,
     url: activityUrl,
-    msg: minorTitle
+    msg: minorTitle,
   };
 }
 
@@ -376,22 +376,22 @@ export async function getCouponZeus(url: string) {
               type: "plusCoupon",
               subType: "material",
               mapKey: "comment[0]",
-              mapTo: "cate"
-            }
-          ]
+              mapTo: "cate",
+            },
+          ],
         },
         {
           type: "advertGroup",
           id: "03592688",
           mapTo: "bankCoupons",
-          next: [{ type: "jrCoupon", mapKey: "extension.key", mapTo: "cate" }]
+          next: [{ type: "jrCoupon", mapKey: "extension.key", mapTo: "cate" }],
         },
         {
           type: "productGroup",
           id: "09963245",
           mapTo: "giftskus",
           diversityFilter: "1,5,9,13,17",
-          dupliRemovalFlag: 1
+          dupliRemovalFlag: 1,
         },
         { type: "advertGroup", id: "03602534", mapTo: "loveListDataGirl" },
         { type: "advertGroup", id: "03602977", mapTo: "loveListDataBoy" },
@@ -401,27 +401,27 @@ export async function getCouponZeus(url: string) {
           type: "productGroup",
           id: "09965963",
           mapTo: "more",
-          diversityFilter: "1,5,9,13,17"
-        }
-      ])
+          diversityFilter: "1,5,9,13,17",
+        },
+      ]),
     },
     {
       functionId: "qryCompositeMaterials",
-      api: "client.action"
+      api: "client.action",
     }
   );
   return Promise.all(
-    bankCoupons.list.concat(normalCoupons.list).map(item =>
+    bankCoupons.list.concat(normalCoupons.list).map((item) =>
       executer(() =>
         requestData(
           {
             scene: 3,
             actKey: item.link,
-            activityId: /Zeus\/(\w+)/.exec(url)![1]
+            activityId: /Zeus\/(\w+)/.exec(url)![1],
           },
           {
             functionId: "newBabelAwardCollection",
-            api: "client.action"
+            api: "client.action",
           }
         )
       )
@@ -434,7 +434,7 @@ export async function getShopCoupons(url: string) {
   var text = /window.SHOP_COUPONS\s*=\s*(\[[\s\S]*?\])\s*;/.exec(html)![1];
   var now = Date.now();
   var coupons: any[] = JSON.parse(text).filter(
-    item =>
+    (item) =>
       moment(item.beginTime, "yyyy.MM.DD").valueOf() <= now &&
       now < moment(item.endTime, "yyyy.MM.DD").valueOf()
   );
@@ -465,12 +465,12 @@ export async function getCouponSingle(url: string, other?: any) {
           sceneval: searchParams.get("sceneval"),
           g_login_type: "1",
           callback: "jsonpCBKA",
-          g_ty: "ls"
+          g_ty: "ls",
         },
         other
       ),
       referer: url,
-      type: "jsonp"
+      type: "jsonp",
     }
   );
   var success = ret === 0 || ret === 999;
@@ -479,13 +479,13 @@ export async function getCouponSingle(url: string, other?: any) {
     let img_url = "https:" + rvc_content;
     return getCouponSingle(url, {
       verifycode: "",
-      verifysession: rvc_uuid
+      verifysession: rvc_uuid,
     });
   }
   // 145:提交频繁 16:已抢完
   return {
     success,
-    msg: errmsg
+    msg: errmsg,
   };
 }
 
@@ -515,11 +515,11 @@ export async function queryActivityCoupons(url: string) {
   }
   let activityId = /active\/(\w+)/.exec(url)![1];
   let directCoupons = arr[2].match(/\/\/(jrmkt|btmkt)\.jd\.com\/[^"]+/g) || [];
-  directCoupons = directCoupons.map(url => `https:${url}`);
+  directCoupons = directCoupons.map((url) => `https:${url}`);
 
   let simpleCoupons =
     html.match(/\/\/coupon\.m\.jd\.com\/coupons\/show\.action\?[^"']+/g) || [];
-  simpleCoupons = simpleCoupons.map(item => `https:` + item);
+  simpleCoupons = simpleCoupons.map((item) => `https:` + item);
   let items: {
     cpId: string;
     args: string;
@@ -537,14 +537,14 @@ export async function queryActivityCoupons(url: string) {
     discount: string;
   }[] = flatten<any>(
     Object.keys(data)
-      .filter(key => data[key].couponList)
-      .map(key =>
+      .filter((key) => data[key].couponList)
+      .map((key) =>
         data[key].couponList
           .filter(
             ({ status }) =>
               typeof status === "undefined" || status === "0" || status === "5"
           )
-          .map(item => {
+          .map((item) => {
             var dp;
             var limit;
             var discount;
@@ -561,7 +561,7 @@ export async function queryActivityCoupons(url: string) {
             var data = Object.assign(item, {
               activityId,
               actKey: item.cpId,
-              dp
+              dp,
             });
             return data;
           })
@@ -573,7 +573,7 @@ export async function queryActivityCoupons(url: string) {
   return {
     items,
     directCoupons,
-    simpleCoupons
+    simpleCoupons,
   };
 }
 
@@ -610,16 +610,16 @@ export async function obtainActivityCoupon(data: {
         posLat: "",
         focus: "",
         innerAnchor: "",
-        ...getBaseData()
+        ...getBaseData(),
       }),
       client: "wh5",
       clientVersion: "1.0.0",
       sid: "",
       uuid: "15617018266251592388825",
-      area: ""
+      area: "",
     },
     {
-      dataType: 'form'
+      dataType: "form",
     }
   );
   var resData = JSON.parse(ret);
@@ -695,14 +695,14 @@ export async function obtainActivityCoupon(data: {
 export async function getActivityCoupons(url: string) {
   var { items, directCoupons, simpleCoupons } = await queryActivityCoupons(url);
   var activityId = /(\w+)\/index.html/.exec(url)![1];
-  directCoupons.forEach(url => {
+  directCoupons.forEach((url) => {
     request.get(url);
   });
   simpleCoupons.forEach(getCouponSingle);
   return {
     success: true,
     res: await Promise.all(
-      items.map(item =>
+      items.map((item) =>
         executer(() =>
           obtainActivityCoupon({
             discount: item.discount,
@@ -711,11 +711,11 @@ export async function getActivityCoupons(url: string) {
             actKey: item.cpId,
             args: item.args,
             scene: item.scene,
-            childActivityUrl: encodeURIComponent(url)
+            childActivityUrl: encodeURIComponent(url),
           })
         )
       )
-    )
+    ),
   };
 }
 export async function getFanliCoupon(url: string) {
@@ -743,9 +743,9 @@ export async function getFanliCoupon(url: string) {
         activityId: searchParams.get("activityId") || "",
         pageClickKey: `coupon_icon${searchParams.get(
           "couponIndex"
-        )}goods${searchParams.get("goodIndex")}get2`
+        )}goods${searchParams.get("goodIndex")}get2`,
       },
-      referer: url
+      referer: url,
     }
   );
   var { content, code, msg } = JSON.parse(text);
@@ -754,3 +754,44 @@ export async function getFanliCoupon(url: string) {
   }
   return content;
 }
+
+export async function getLCoupon(url: string) {
+  if (url.startsWith("https://u.jd.com/")) {
+    let html = await fetch(url).then((res) => res.text());
+    const url2 = /var\s+hrl\s*='(.*?)'/.exec(html)![1];
+    url = await fetch(url2, {
+      headers: {
+        _referer: url,
+      },
+    }).then((res) => res.url);
+  }
+  const { searchParams } = new URL(url);
+  await request.get("https://api.m.jd.com/api", {
+    qs: {
+      _t: Date.now().toString(),
+      appid: "u",
+      body: JSON.stringify({
+        childActivityUrl: url,
+        d: searchParams.get("d"),
+        eid: "",
+        fp: "",
+        giftInfo: "",
+        pageClickKey: "MJDAlliance_CheckDetail",
+        platform: 3,
+        q: searchParams.get("q"),
+        referUrl: url.split("#")[0],
+        shshshfp: "-1",
+        shshshfpa: "-1",
+        shshshfpb: "-1",
+        sku: searchParams.get("sku"),
+        wxtoken: "",
+      }),
+      client: "wh5",
+      clientVersion: "1.0.0",
+      functionId: "getUnionGiftCoupon",
+      loginType: "2",
+    },
+  });
+}
+// @ts-ignore
+window.getLCoupon = getLCoupon
