@@ -1,6 +1,14 @@
 import { delay } from "./common/tool";
 
 export class ChromePage {
+  private pending = true;
+  private listeners_map: Record<string, Function[]> = {};
+  constructor(
+    public tab: chrome.tabs.Tab,
+    public win?: chrome.windows.Window,
+    public is_default = false
+  ) {}
+  t = 0;
   setRequestInterception(arg0: boolean) {
     throw new Error("Method not implemented.");
   }
@@ -27,14 +35,6 @@ export class ChromePage {
       chrome.tabs.reload(this.tab.id!, {}, resolve)
     );
   }
-  private pending = true;
-  private listeners_map: Record<string, Function[]> = {};
-  constructor(
-    public tab: chrome.tabs.Tab,
-    public win?: chrome.windows.Window,
-    public is_default = false
-  ) {}
-  t = 0;
   resetTimer() {
     clearTimeout(this.t);
     // @ts-ignore
@@ -178,6 +178,7 @@ export class ChromePage {
         this.id,
         {
           code,
+          runAt: "document_end",
         },
         ([data]) => {
           resolve(data);
@@ -210,29 +211,33 @@ export class ChromePage {
       }
     });
   }
-  static async create() {
+  static async create(url?: string) {
     ChromePage.initEvents();
     if (ChromePage.default_page) {
       if (!ChromePage.default_page.pending) {
         ChromePage.default_page.pending = true;
+        if (url) {
+          await ChromePage.default_page.goto(url);
+        }
         return ChromePage.default_page;
       }
     } else {
-      let tab = await ChromePage.createTab();
+      let tab = await ChromePage.createTab(url);
       let page = new ChromePage(tab, undefined, true);
       ChromePage.default_page = page;
       return page;
     }
     let win = await ChromePage.createWindow();
-    let tab = await ChromePage.createTab(win.id);
+    let tab = await ChromePage.createTab(url, win.id);
     return new ChromePage(tab, win);
   }
-  static createTab(windowId?: number) {
+  static createTab(url?: string, windowId?: number) {
     return new Promise<chrome.tabs.Tab>((resolve) => {
       chrome.tabs.create(
         {
           windowId,
           active: false,
+          url,
         },
         resolve
       );
@@ -271,8 +276,7 @@ export async function excutePageAction<T = any>(
     run_delay?: number;
   }
 ) {
-  var page = await ChromePage.create();
-  await page.goto(url);
+  var page = await ChromePage.create(url);
   await delay(800 + run_delay);
   var data = await page.executeScript(code);
   if (autoclose) {
@@ -327,8 +331,8 @@ export async function excuteRequestAction<T = any>(
   });
 }
 
-export function newPage() {
-  return ChromePage.create();
+export function newPage(url?: string) {
+  return ChromePage.create(url);
 }
 
 // @ts-ignore

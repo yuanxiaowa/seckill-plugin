@@ -647,6 +647,7 @@ async function submitOrderResubmit(args: ArgOrder<any>) {
             pay(ret.alipayWapCashierUrl, accounts.taobao.paypass);
           }
         });
+        return true
       } catch (e) {
         startTime = Date.now();
         if (e.code === "x5-code") {

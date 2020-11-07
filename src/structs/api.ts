@@ -19,8 +19,12 @@ export interface BaseHandler {
   getConfig(): Promise<Config>;
   resolveUrl(args: { url: string }): Promise<string>;
   qiangquan(args: CouponArg): Promise<CouponResult | undefined>;
-  buy(args: ArgBuyDirect): Promise<any>;
-  cartBuy(arg: ArgCartBuy): Promise<any>;
+  buy(args: ArgBuyDirect & {
+    from_browser?: boolean;
+  }): Promise<any>;
+  cartBuy(arg: ArgCartBuy & {
+    from_browser?: boolean;
+  }): Promise<any>;
   coudan(arg: CoudanArg): Promise<any>;
   getGoodsInfo(args: { url: string });
 }

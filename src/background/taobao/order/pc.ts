@@ -44,79 +44,51 @@ export const buyDirectFromPc: BaseHandler["buy"] = async function(args) {
   } else {
     addr_url += tradeConfig[2];
   }
-  return async () => {
-    try {
-      if (args.jianlou) {
-        waitForStock(
-          {
-            id: getItemId(args.url),
-            quantity: args.quantity,
-            skuId: form.skuId,
-            url: args.url,
-            title: itemDO.title,
-          },
-          args.jianlou
-        ).then(() =>
-          submitOrder(
-            Object.assign(
-              {
-                data: {
-                  form,
-                  addr_url,
-                  referer: args.url,
-                },
-                other: {},
-                title: itemDO.title,
-              },
-              args
-            ),
-            type
-          )
-        );
-        return "正在捡漏中";
-      }
-      return submitOrder(
-        Object.assign(
-          {
-            data: {
-              form,
-              addr_url,
-              referer: args.url,
-            },
-            other: {},
-            title: itemDO.title,
-          },
-          args
-        ),
-        type
-      );
-      /* var ret = await req.post("https:" + tradeConfig[2], {
+  function submit() {
+    var nextData: any = {
+      data: {
         form,
-        qs: qs_data
-      }); */
-    } catch (e) {
-      console.error("订单提交出错", e);
+        addr_url,
+        referer: args.url,
+      },
+      // @ts-ignore
+      other: {},
+      title: itemDO.title,
+      ...args,
+    };
+    if (args.from_browser) {
+      return submitOrderFromBrowser2(nextData, type);
     }
-  };
+    return () => submitOrder(nextData, type);
+  }
+  try {
+    var f = await submit();
+    if (args.jianlou) {
+      waitForStock(
+        {
+          id: getItemId(args.url),
+          quantity: args.quantity,
+          skuId: form.skuId,
+          url: args.url,
+          title: itemDO.title,
+        },
+        args.jianlou
+      ).then(f);
+      return "正在捡漏中";
+    }
+    return f();
+    /* var ret = await req.post("https:" + tradeConfig[2], {
+      form,
+      qs: qs_data
+    }); */
+  } catch (e) {
+    console.error("订单提交出错", e);
+  }
 };
 
 export const coudanFromPc: BaseHandler["coudan"] = async function(args) {};
 
-export const cartBuyFromPc: BaseHandler["cartBuy"] = async function(
-  args: ArgCartBuy<{
-    sellerId: string;
-    cartId: string;
-    skuId: string;
-    itemId: string;
-    quantity: number;
-    createTime: string;
-    attr: string;
-    toBuy: string;
-    title: string;
-  }> & {
-    from_browser: boolean;
-  }
-) {
+export const cartBuyFromPc: BaseHandler["cartBuy"] = async function(args) {
   const { items, from_browser, ...restArgs } = args;
   var cartIdStr = items.map(({ cartId }) => cartId).join(",");
   var sellerIdStr = [...new Set(items.map(({ sellerId }) => sellerId))].join(
@@ -150,7 +122,7 @@ export const cartBuyFromPc: BaseHandler["cartBuy"] = async function(
         source_time: Date.now(),
       },
       addr_url: `https://buy.taobao.com/auction/order/confirm_order.htm?spm=a1z0d.6639537.0.0.undefined`,
-      Referer: `https://cart.taobao.com/cart.htm?spm=a220o.1000855.a2226mz.12.5ada2389fIdDSp&from=btop`,
+      referer: `https://cart.taobao.com/cart.htm?spm=a220o.1000855.a2226mz.12.5ada2389fIdDSp&from=btop`,
     };
   } else {
     type = "tmall";
@@ -170,30 +142,19 @@ export const cartBuyFromPc: BaseHandler["cartBuy"] = async function(
         source_time: Date.now(),
       },
       addr_url: `https://buy.tmall.com/order/confirm_order.htm?spm=a1z0d.6639537.0.0.undefined`,
-      Referer: `https://cart.taobao.com/cart.htm?spm=a21bo.2017.1997525049.1.5af911d97tfEQo&from=mini&ad_id=&am_id=&cm_id=&pm_id=1501036000a02c5c3739`,
+      referer: `https://cart.taobao.com/cart.htm?spm=a21bo.2017.1997525049.1.5af911d97tfEQo&from=mini&ad_id=&am_id=&cm_id=&pm_id=1501036000a02c5c3739`,
     };
   }
+  const nextData = {
+    data,
+    other: {},
+    ...restArgs,
+    title: items.map(({ title }) => title).join(","),
+  };
   if (from_browser) {
-    return submitOrderFromBrowser2(
-      {
-        data,
-        other: {},
-        ...restArgs,
-        title: items.map(({ title }) => title).join(","),
-      },
-      type
-    );
+    return submitOrderFromBrowser2(nextData, type);
   }
-  return () =>
-    submitOrder(
-      {
-        data,
-        other: {},
-        ...args,
-        title: items.map(({ title }) => title).join(","),
-      },
-      type
-    );
+  return () => submitOrder(nextData, type);
 };
 
 async function waitForStock(
@@ -667,13 +628,13 @@ async function submitOrderFromBrowser(
   args: ArgOrder<{
     form: Record<string, any>;
     addr_url: string;
-    Referer: string;
+    referer: string;
   }>,
   type: string,
   p?: Promise<void>
 ) {
   var {
-    data: { form, addr_url, Referer },
+    data: { form, addr_url, referer },
   } = args;
   var page = await newPage();
   await page.setRequestInterception(true);
@@ -707,7 +668,7 @@ async function submitOrderFromBrowser(
       request.continue();
     }
   });
-  await page.goto(Referer);
+  await page.goto(referer);
   await page.evaluate(createForm, form, addr_url);
   if (p) {
     await p;
@@ -724,14 +685,15 @@ async function submitOrderFromBrowser2(
   args: ArgOrder<{
     form: Record<string, any>;
     addr_url: string;
-    Referer: string;
+    referer: string;
   }>,
   type: string
 ) {
   var {
-    data: { form, addr_url, Referer },
+    data: { form, addr_url, referer },
   } = args;
   var page = await newPage();
+  await page.goto(referer);
   // await page.setRequestInterception(true);
   // page.on("request", request => {
   //   // if (
@@ -763,7 +725,6 @@ async function submitOrderFromBrowser2(
   //     request.continue();
   //   }
   // });
-  await page.goto(Referer);
   await page.evaluate(createForm, form, addr_url);
   return async () => {
     page.evaluate(() => {
@@ -790,7 +751,7 @@ function getScript(price = 10) {
       isTaobao ? ".addr-item-wrapper label" : ".address-list>div"
     );
     if (list.length === 0) {
-      return
+      return;
     }
     var b = false;
     // var currentPrice = Number(
@@ -811,7 +772,7 @@ function getScript(price = 10) {
       if (!btn) {
         btn = document.querySelector<HTMLDivElement>(
           "#submitOrderPC_1 a:last-child"
-        )!
+        )!;
       }
       btn.click();
     }
@@ -853,7 +814,7 @@ function getScript(price = 10) {
   document.body.removeChild(ele);
 }
 
-function createForm(data, action) {
+function createForm(data, action, need_submit = false) {
   var form = document.createElement("form");
   form.action = action;
   form.method = "post";
@@ -865,6 +826,9 @@ function createForm(data, action) {
     form.appendChild(input);
   });
   document.body.appendChild(form);
+  if (need_submit) {
+    form.submit();
+  }
 }
 
 let lastValidateTime = 0;
@@ -875,15 +839,12 @@ async function goValidate(args) {
     lastValidateTime = now;
 
     var {
-      data: { form, addr_url, Referer },
+      data: { form, addr_url, referer },
     } = args;
     var page = await newPage();
 
-    await page.goto(Referer || "https://www.taobao.com/");
-    await page.evaluate(createForm, form, addr_url);
-    page.evaluate(() => {
-      document.querySelector<HTMLFormElement>("#__form")!.submit();
-    });
+    await page.goto(referer || "https://www.taobao.com/");
+    await page.evaluate(createForm, form, addr_url, true);
   }
 }
 
