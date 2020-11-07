@@ -10,29 +10,29 @@ export async function getBillionList({ url }) {
 }
 export async function getBillionList1(url: string) {
   var {
-    data: { billionFloor, hotFloor }
+    data: { billionFloor, hotFloor },
   } = await request.post(
     "https://api.m.jd.com/client.action?functionId=getBillionSubsidyInfo&body=%7B%22source%22%3A%22home_subsidy%22%7D&client=m&appid=XPMSGC2019&area=&geo=%5Bobject%20Object%5D",
     undefined,
     {
       referer: url,
       headers: {
-        _origin: "https://story.m.jd.com"
-      }
+        _origin: "https://story.m.jd.com",
+      },
     }
   );
 
   return [
     ...hotFloor.resultList,
     ...billionFloor.resultList,
-    ...billionFloor.advanceList
-  ].map(item =>
+    ...billionFloor.advanceList,
+  ].map((item) =>
     Object.assign(item, {
       url: `https://item.jd.com/${item.skuId}.html`,
       referer: url,
       disCount: Number(item.disCount),
       pDisCount: Number(item.pDisCount),
-      type: 1
+      type: 1,
     })
   );
 }
@@ -40,8 +40,8 @@ export async function getBillionList1(url: string) {
 export async function getBillionList2(url) {
   var {
     data: {
-      billionAllowanceHighCouponList: { list }
-    }
+      billionAllowanceHighCouponList: { list },
+    },
   } = await request.post(
     "https://api.m.jd.com/client.action",
     {
@@ -52,78 +52,50 @@ export async function getBillionList2(url) {
         qryParam: JSON.stringify([
           {
             type: "advertGroup",
-            id: "04056297",
-            mapTo: "billionAllowanceTitle"
+            id: "04492754",
+            mapTo: "billionAllowanceFloorTitleBg",
           },
           {
             type: "advertGroup",
-            id: "04066392",
-            mapTo: "billionAllowanceOrderConfig"
-          },
-          {
-            type: "advertGroup",
-            id: "04047647",
+            id: "04942094",
             mapTo: "billionAllowancePreCouponList",
             next: [
               {
                 type: "advertGroup",
-                mapKey: "comment[0]",
-                mapTo: "OrderConfig"
-              }
-            ]
+                mapKey: "comment[1]",
+                mapTo: "OrderConfig",
+              },
+            ],
           },
           {
             type: "advertGroup",
-            id: "04050913",
+            id: "04942107",
             mapTo: "billionAllowanceHighCouponList",
             next: [
               {
                 type: "advertGroup",
                 mapKey: "comment[1]",
-                mapTo: "OrderConfig"
+                mapTo: "OrderConfig",
               },
               {
                 type: "productSku",
                 mapKey: "extension.cpSkuId",
-                mapTo: "product"
-              }
-            ]
+                mapTo: "product",
+              },
+            ],
           },
-          {
-            type: "advertGroup",
-            id: "04025251",
-            mapTo: "billionAllowanceCouponMore"
-          },
-          {
-            type: "advertGroup",
-            id: "04025252",
-            mapTo: "billionAllowanceGoodsMore"
-          },
-          { type: "advertGroup", id: "04056492", mapTo: "HypermarketTitle" },
-          {
-            type: "advertGroup",
-            id: "04080382",
-            mapTo: "HypermarketList",
-            next: [
-              {
-                type: "productGroup",
-                mapKey: "comment[0]",
-                mapTo: "productList"
-              }
-            ]
-          }
         ]),
         pageId: "1426387",
         activityIdRaw: "00576882",
         previewTime: "",
-        platform: "APP/m"
+        platform: "APP/m",
       }),
       clientVersion: "1.0.0",
-      client: "wh5"
+      client: "wh5",
     },
     {
       referer: url,
-      dataType: "form"
+      dataType: "form",
     }
   );
   var activityId = /active\/(\w+)/.exec(url)![1];
@@ -136,7 +108,7 @@ export async function getBillionList2(url) {
     }
     return {
       skuName: item.name,
-      skuImage: item.image,
+      skuImage: item.skuImage,
       p: Number(item.pPrice),
       pDisCount: item.pPrice - extension.disCount,
       disCount: extension.disCount,
@@ -146,7 +118,7 @@ export async function getBillionList2(url) {
       roleId: extension.roleId,
       url: `https://item.jd.com/${item.skuId}.html`,
       referer: url,
-      nextTime
+      nextTime,
     };
   });
   console.log(ret);
@@ -169,7 +141,7 @@ export async function getBillion1(item) {
     {
       referer: item.referer,
       headers: {
-        _origin: "https://story.m.jd.com"
+        _origin: "https://story.m.jd.com",
       },
       qs: {
         functionId: "receiveSeckillCoupon",
@@ -181,11 +153,11 @@ export async function getBillion1(item) {
           disCount: item.disCount,
           batchId: item.batchId,
           source: "home_subsidy",
-          floorType: "2"
+          floorType: "2",
         }),
         client: "m",
-        appid: "XPMSGC2019"
-      }
+        appid: "XPMSGC2019",
+      },
     }
   );
   console.log(item.skuName, code, resultMsg);
@@ -209,7 +181,7 @@ export async function getBillion1(item) {
           name: item.skuName,
           platform: "jingdong",
           comment: "京东百亿补贴",
-          time: date.valueOf()
+          time: date.valueOf(),
         },
         date.valueOf()
       );
@@ -227,14 +199,14 @@ export async function getBillion2(item) {
       body: JSON.stringify({
         activityId: item.activityId,
         scene: 1,
-        args: `key=${item.key},roleId=${item.roleId}`
+        args: `roleId=${item.roleId},key=${item.key}`,
       }),
       clientVersion: "1.0.0",
-      client: "wh5"
+      client: "wh5",
     },
     {
       referer: item.referer,
-      dataType: "form"
+      dataType: "form",
     }
   );
   // {"subCodeMsg":"本时段优惠券已抢完，请14:00再来吧！","subCode":"D2","code":"0","msg":null}
@@ -248,7 +220,7 @@ export async function getBillion2(item) {
         name: item.skuName,
         platform: "jingdong",
         comment: "京东百亿补贴",
-        time: nextTime
+        time: nextTime,
       },
       nextTime
     );

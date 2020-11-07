@@ -92,7 +92,6 @@
       <el-button
         type="warning"
         @click="doQiangquan"
-        :disabled="datas.length === 0"
         >抢券</el-button
       >
       <el-button

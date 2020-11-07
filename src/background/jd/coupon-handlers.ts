@@ -6,6 +6,7 @@ import { getGoodsUrl, getGoodsInfo } from "./goods";
 import moment from "moment";
 import { flatten } from "ramda";
 import { DT } from "../common/setting";
+import { taskManager } from "../common/task-manager";
 
 const executer = createScheduler(3000);
 
@@ -526,7 +527,7 @@ export async function queryActivityCoupons(url: string) {
     srv: string;
     jsonSrv: string;
     // 0:满减 2:白条
-    // 0:可领 1:已领取 3:今日已领取 4:今日已抢完
+    // 0:可领 1:已领取 3:今日已领取 4:今日已抢完 8:下一场
     status: string;
     // 1
     scene: string;
@@ -535,6 +536,7 @@ export async function queryActivityCoupons(url: string) {
     scope: string;
     limit: string;
     discount: string;
+    skuName: string;
   }[] = flatten<any>(
     Object.keys(data)
       .filter((key) => data[key].couponList)
@@ -542,10 +544,13 @@ export async function queryActivityCoupons(url: string) {
         data[key].couponList
           .filter(
             ({ status }) =>
-              typeof status === "undefined" || status === "0" || status === "5"
+              typeof status === "undefined" ||
+              status === "0" ||
+              status === "5" ||
+              status === "8"
           )
           .map((item) => {
-            var dp;
+            var dp = Number(item.discount);
             var limit;
             var discount;
             if (item.limit) {
@@ -585,6 +590,7 @@ export async function obtainActivityCoupon(data: {
   actKey: string;
   discount: string;
   limit: string;
+  skuName: string;
 }) {
   var ret: string = await request.post(
     `https://api.m.jd.com/client.action?functionId=newBabelAwardCollection`,
@@ -661,26 +667,53 @@ export async function obtainActivityCoupon(data: {
         to_date.add("d", 1);
       }
       console.log(to_date.format(), "开始抢券");
-      delay(to_date.valueOf() - Date.now() - DT.jingdong).then(() =>
-        obtainActivityCoupon(data)
-      );
+
+      const time = to_date.valueOf();
+      taskManager
+        .registerTask(
+          {
+            name: data.skuName,
+            platform: "jingdong",
+            comment: "抢券",
+            time,
+          },
+          time
+        )
+        .then(() => obtainActivityCoupon(data));
     })();
   } else if (resData.subCode === "A14") {
-    delay(
-      moment("00", "HH")
-        .add("d", 1)
-        .valueOf() -
-        Date.now() -
-        DT.jingdong
-    ).then(() => obtainActivityCoupon(data));
+    const time = moment("00", "HH")
+      .add("d", 1)
+      .valueOf();
+    taskManager
+      .registerTask(
+        {
+          name: data.skuName,
+          platform: "jingdong",
+          comment: "抢券",
+          time,
+        },
+        time
+      )
+      .then(() => obtainActivityCoupon(data));
   } else if (resData.subCode === "A8" || resData.subCode === "D2") {
     console.log(resData.subCodeMsg);
     (() => {
       let to_date = moment(/\d{2}:\d{2}/.exec(resData.subCodeMsg)![0], "HH");
+      const time = to_date.valueOf();
       console.log(to_date.format(), "开始抢券");
-      delay(to_date.valueOf() - Date.now() - DT.jingdong).then(() =>
-        obtainActivityCoupon(data)
-      );
+
+      taskManager
+        .registerTask(
+          {
+            name: data.skuName,
+            platform: "jingdong",
+            comment: "抢券",
+            time,
+          },
+          time
+        )
+        .then(() => obtainActivityCoupon(data));
     })();
   } else if (resData.subCode === "A25") {
     if (resData.subCodeMsg.startsWith("活动太火爆")) {
@@ -712,6 +745,7 @@ export async function getActivityCoupons(url: string) {
             args: item.args,
             scene: item.scene,
             childActivityUrl: encodeURIComponent(url),
+            skuName: item.skuName,
           })
         )
       )
@@ -794,4 +828,4 @@ export async function getLCoupon(url: string) {
   });
 }
 // @ts-ignore
-window.getLCoupon = getLCoupon
+window.getLCoupon = getLCoupon;
