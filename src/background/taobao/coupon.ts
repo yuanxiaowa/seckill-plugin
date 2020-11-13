@@ -665,15 +665,15 @@ async function get1111Hongbao(url: string) {
       return get1111Hongbao(url);
     }
     console.log(data.drawRetDesc);
-    var t = moment("00:00:00", "hh:mm:ss").add("day", 1);
+    var t = getNextTime();
     await taskManager.registerTask(
       {
         name: "抢双十一红包",
-        time: t.valueOf(),
+        time: t,
         platform: "taobao",
         comment: "",
       },
-      t.valueOf()
+      t
     );
     get1111Hongbao(url);
   } catch (e) {
@@ -683,8 +683,17 @@ async function get1111Hongbao(url: string) {
   }
 }
 
+function getNextTime() {
+  const now = moment();
+  const nextHour = [20, 21].find((i) => now.get("hour") < i);
+  const nextDate = nextHour
+    ? moment(nextHour, "hh")
+    : moment("00", "hh").add("day", 1);
+  return nextDate.valueOf();
+}
+
 get1111Hongbao(
-  "https://1111.tmall.com/union?wh_alimama=true&disableNav=YES&es=5b%2BDG6gSXvsN%2BoQUE6FNzAioWZP3qDgNnYSgewQnie0YHpdVRmafwmyeJvHyxPy3&ali_trackid=2:mm_130931909_977950399_109602500307:1603202832_186_1127165491&union_lens=lensId:APP@1603191126@0be55312_0f7a_17545a33890_1e44@025H2q488DN9Z4c2CFio5Ivt;recoveryid:1603202832_186_1127165491&spm=a2e0r.13514612.32387955-MCRmhcAuto.dslot_1_share_20150318020001156&un=d3c21efbc631c34d384c4a342af87869&scm=20140618.1.01010001.s101c6&ut_sk=1.utdid_null_1603191126174.TaoPassword-Outside.lianmeng-app&bxsign=tbk08NPU2UJhHuWVWjp3w12ky5pTEWrLEbdDls1IEHyATkwA0Gn/yC0uL/CwNUDbZq70V4rAah+2uIe8c7z60NL5U/q0LIxVkRzvp6plwpMfOI="
+  "https://1111.tmall.com/union?wh_alimama=true&disableNav=YES&from=surprise&es=0LUR%2BwQVLyUN%2BoQUE6FNzFGgGZWVVPe%2BofCQzO81Q2nsgGe4cdBKzVEbQTfm%2FfAA&ali_trackid=2:mm_124416268_30902206_113114651:1604925253_151_609890377&union_lens=lensId:APP@1604924796@0b0ae80f_1047_175acf8ee45_a0ac@025EJp4GMEQZXvL9LTArAHQV;recoveryid:1604925253_151_609890377&spm=a2e0r.13514612.32387953-MCRmhc20201111.dslot_4_share_20150318020001364&un=a877e42aa376ee838011994573a7abfb&scm=20140618.1.01010001.s101c6&ut_sk=1.utdid_null_1604924796498.TaoPassword-Outside.lianmeng-app&bxsign=tbkaB2CK0mBr7xo9FdZWwrjv0X41Anu8oYxEy/Ynkqfo/bmw2VoozD+qmOvYQkHCzQHgxD4LGs7q78jVijxiqoU1qTYTXDwIDCBJrtpby3yG28="
 );
 
 /**
