@@ -801,7 +801,7 @@ function getScript(price = 10) {
         this.addEventListener("load", listener);
         this.addEventListener("error", listener);
         this.addEventListener("timeout", listener);
-        this.addEventListener('abort', listener)
+        this.addEventListener("abort", listener);
       }
       return send.call(this, data);
     };

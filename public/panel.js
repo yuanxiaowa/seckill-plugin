@@ -42,9 +42,11 @@ function getScript() {
           } else {
             exchangeAddress();
           }
-          this.removeEventListener("load", listener);
         };
         this.addEventListener("load", listener);
+        this.addEventListener("error", listener);
+        this.addEventListener("timeout", listener);
+        this.addEventListener("abort", listener);
       }
       return send.call(this, data);
     };
