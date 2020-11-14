@@ -227,9 +227,9 @@ export class ChromePage {
       ChromePage.default_page = page;
       return page;
     }
-    let win = await ChromePage.createWindow();
-    let tab = await ChromePage.createTab(url, win.id);
-    return new ChromePage(tab, win);
+    // let win = await ChromePage.createWindow();
+    let tab = await ChromePage.createTab(url/* , win.id */);
+    return new ChromePage(tab/* , win */);
   }
   static createTab(url?: string, windowId?: number) {
     return new Promise<chrome.tabs.Tab>((resolve) => {
