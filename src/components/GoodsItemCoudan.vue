@@ -80,14 +80,16 @@ export default class GoodsItemCoudan extends Vue {
     this.loading = true;
     try {
       if (this.isLonely) {
-        let item = await goodsInfo({
-          ...this.item,
-          platform: this.platform,
-        });
-        this.actualItem = {
-          ...item,
-          ...this.item,
-        };
+        try {
+          let item = await goodsInfo({
+            ...this.item,
+            platform: this.platform,
+          });
+          this.actualItem = {
+            ...item,
+            ...this.item,
+          };
+        } catch (e) {}
       } else {
         this.actualItem = this.item;
       }

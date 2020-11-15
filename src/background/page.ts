@@ -95,6 +95,7 @@ export class ChromePage {
     var args_str = args.map((arg) => JSON.stringify(arg)).join(",");
     var code = typeof fn !== "string" ? `(${fn.toString()})(${args_str})` : fn;
     console.log(code);
+    console.trace()
     return this.executeScript(code);
   }
 
@@ -118,7 +119,7 @@ export class ChromePage {
         const handler = (
           details: chrome.webNavigation.WebNavigationFramedCallbackDetails
         ) => {
-          if (details.tabId === this.tab.id) {
+          if (details.tabId === this.tab.id && details.frameId === 0) {
             chrome.webNavigation.onCompleted.removeListener(handler);
             resolve(details);
           }

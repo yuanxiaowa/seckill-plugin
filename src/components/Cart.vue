@@ -67,7 +67,7 @@
       </el-form-item>
       <el-form-item>
         <el-button type="danger" :disabled="checkedLength === 0" @click="submit"
-          >提交订单</el-button
+          >提交订单({{checkedLength}})</el-button
         >
       </el-form-item>
     </el-form>

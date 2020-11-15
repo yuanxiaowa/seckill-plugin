@@ -223,13 +223,19 @@ const taobao = {
 window.taobao = taobao;
 
 addCallbacks(() => {
-  taobao.checkStatus("taobao");
+  taobao.checkStatus({
+    platform: "taobao",
+  });
   if (config.is_main) {
-    taobao.checkStatus("jingdong").then((b) => {
-      if (b) {
-        runJdTasks();
-      }
-    });
+    taobao
+      .checkStatus({
+        platform: "jingdong",
+      })
+      .then((b) => {
+        if (b) {
+          runJdTasks();
+        }
+      });
   }
 });
 

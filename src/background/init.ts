@@ -3,6 +3,9 @@ import { set_config, set_accounts } from "./common/setting";
 const callbacks: (() => void)[] = [];
 let inited = false;
 function init() {
+  if (inited) {
+    return;
+  }
   inited = true;
   var _config = localStorage.getItem("config");
   var _accounts = localStorage.getItem("accounts");

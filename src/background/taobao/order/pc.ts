@@ -726,18 +726,24 @@ async function submitOrderFromBrowser2(
   //   }
   // });
   await page.evaluate(createForm, form, addr_url);
+  async function waitResponse() {
+    let res = await page.waitForNavigation();
+    if (res.url.includes("/TmallConfirmOrderError.htm")) {
+      throw new Error("系统繁忙");
+    }
+  }
   return async () => {
-    page.evaluate(() => {
-      document.querySelector<HTMLFormElement>("#__form")!.submit();
-    });
-    await page.waitForNavigation();
-    await delay(1000);
-    page.evaluate(getScript, args.expectedPrice);
-    const res = await page.waitForNavigation();
-    console.log(res);
-    if (res.url.includes("TmallConfirmOrderError.htm")) {
-      page.close()
-      return submitOrderFromBrowser2(args, type).then((f) => f());
+    try {
+      page.evaluate(() => {
+        document.querySelector<HTMLFormElement>("#__form")!.submit();
+      });
+      // await delay(1000);
+      await waitResponse();
+      page.evaluate(getScript, args.expectedPrice);
+      await waitResponse();
+    } catch (e) {
+      submitOrderFromBrowser2(args, type).then((f) => f());
+      page.close();
     }
     // await page.reload();
     // page.click('.addr-default+div')
