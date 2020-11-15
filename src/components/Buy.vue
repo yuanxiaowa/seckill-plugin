@@ -192,7 +192,7 @@ export default class Buy extends Vue {
   jianlou = 30;
   from_cart = false;
   from_pc = false;
-  from_browser = false;
+  from_browser = true;
   no_relay = true;
   half_discount = false;
   autopay = false;
@@ -345,7 +345,7 @@ export default class Buy extends Vue {
     this.force_jianlou = false;
     this.jianlou = 15;
     this.from_cart = false;
-    this.from_browser = false;
+    this.from_browser = true;
   }
 
   get realPlatform() {

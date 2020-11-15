@@ -113,9 +113,19 @@ export class ChromePage {
     });
   }
   waitForNavigation() {
-    return new Promise<void>((resolve) => {
-      this.once("webNavigation.onCompleted", resolve);
-    });
+    return new Promise<chrome.webNavigation.WebNavigationFramedCallbackDetails>(
+      (resolve) => {
+        const handler = (
+          details: chrome.webNavigation.WebNavigationFramedCallbackDetails
+        ) => {
+          if (details.tabId === this.tab.id) {
+            chrome.webNavigation.onCompleted.removeListener(handler);
+            resolve(details);
+          }
+        };
+        chrome.webNavigation.onCompleted.addListener(handler);
+      }
+    );
   }
   waitForResponseBody(filter: (url: string) => boolean) {
     return new Promise((resolve) => {
@@ -228,8 +238,8 @@ export class ChromePage {
       return page;
     }
     // let win = await ChromePage.createWindow();
-    let tab = await ChromePage.createTab(url/* , win.id */);
-    return new ChromePage(tab/* , win */);
+    let tab = await ChromePage.createTab(url /* , win.id */);
+    return new ChromePage(tab /* , win */);
   }
   static createTab(url?: string, windowId?: number) {
     return new Promise<chrome.tabs.Tab>((resolve) => {

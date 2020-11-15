@@ -118,7 +118,7 @@ export default class App extends Vue {
   noinvalid = false;
   expectedPrice = 0;
   forcePrice = false;
-  from_browser = false;
+  from_browser = true;
   jianlou = 30;
   no_relay = true;
   addressId = "";

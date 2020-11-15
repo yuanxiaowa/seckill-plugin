@@ -31,7 +31,7 @@ export default {
   cartUpdateQuantity: updateCartQuantity,
   getUserName() {},
   getGoodsInfo() {},
-  checkStatus: checkStatus,
+  checkStatus,
   getAddresses() {},
   getMyCoupons: getMyCoupons,
   deleteCoupon: deleteCoupon,

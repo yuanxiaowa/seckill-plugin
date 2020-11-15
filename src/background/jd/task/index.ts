@@ -8,7 +8,13 @@ import { farm_tasks } from "./farm";
 import { nutrient_tasks } from "./nutrient";
 import { pig_tasks } from "./pig";
 
+let running = false;
+
 export function runJdTasks() {
+  if (running) {
+    return;
+  }
+  running = true;
   excuteTasks(jr_tasks);
   excuteTasks(jd_tasks);
   excuteTasks(joy_tasks);

@@ -225,10 +225,11 @@ window.taobao = taobao;
 addCallbacks(() => {
   taobao.checkStatus("taobao");
   if (config.is_main) {
-    taobao.checkStatus("jingdong");
-    if (accounts.jingdong.password) {
-      runJdTasks();
-    }
+    taobao.checkStatus("jingdong").then((b) => {
+      if (b) {
+        runJdTasks();
+      }
+    });
   }
 });
 

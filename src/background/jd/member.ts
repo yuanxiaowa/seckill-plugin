@@ -4,6 +4,7 @@ import { accounts } from "../common/setting";
 import { delay, formatUrl } from "../common/tool";
 import { getCookie } from "./tools";
 import moment from "moment";
+import { runJdTasks } from './task';
 
 export async function isLoginMobile() {
   var { retcode } = await request.jsonp(
@@ -37,6 +38,9 @@ export async function loginMobile() {
     pwd.dispatchEvent(new Event("input"));
     document.querySelector<HTMLLinkElement>(".btn")!.click();
   }, accounts.jingdong);
+  await page.waitForNavigation()
+  await delay(2000)
+  runJdTasks();
   /* await page.waitForResponse(
     startsWith("https://jcap.m.jd.com/cgi-bin/api/check")
   ); */
@@ -80,6 +84,7 @@ export function checkStatusMobile() {
     if (!b) {
       loginMobile();
     }
+    return b;
   });
 }
 var pc_logined = false;

@@ -733,6 +733,12 @@ async function submitOrderFromBrowser2(
     await page.waitForNavigation();
     await delay(1000);
     page.evaluate(getScript, args.expectedPrice);
+    const res = await page.waitForNavigation();
+    console.log(res);
+    if (res.url.includes("TmallConfirmOrderError.htm")) {
+      page.close()
+      return submitOrderFromBrowser2(args, type).then((f) => f());
+    }
     // await page.reload();
     // page.click('.addr-default+div')
     // await page.waitForResponse(res => res.url().startsWith('https://buy.tmall.com/auction/json/async_linkage.do'))
