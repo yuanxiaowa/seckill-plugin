@@ -795,9 +795,15 @@ function getScript(price = 10) {
       if (this.__sufei_url.startsWith("/auction/json/async_linkage.do?")) {
         const listener = () => {
           try {
-            const { data } = JSON.parse(this.responseText);
+            const { data, linkage } = JSON.parse(this.responseText);
+            // linkage.request.find(key => key.startsWith('itemInfoPC_') && !data[key])
             if (
-              !data.invalidGroupPC_2 &&
+              !(
+                data.invalidGroupPC_2 ||
+                linkage.request.find(
+                  (key) => key.startsWith("itemInfoPC_") && !data[key]
+                )
+              ) &&
               data.realPayPC_1 &&
               +data.realPayPC_1.fields.price <= maxPrice!
             ) {
