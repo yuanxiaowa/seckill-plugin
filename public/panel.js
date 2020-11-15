@@ -35,6 +35,7 @@ function getScript() {
         const listener = () => {
           const { data } = JSON.parse(this.responseText);
           if (
+            !data.invalidGroupPC_2 &&
             data.realPayPC_1 &&
             +data.realPayPC_1.fields.price < currentPrice
           ) {
