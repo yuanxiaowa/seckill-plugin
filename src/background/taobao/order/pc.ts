@@ -693,6 +693,7 @@ async function submitOrderFromBrowser2(
     data: { form, addr_url, referer },
   } = args;
   var page = await newPage();
+  page.autoclose = false;
   await page.goto(referer);
   // await page.setRequestInterception(true);
   // page.on("request", request => {

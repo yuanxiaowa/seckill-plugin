@@ -6,7 +6,8 @@ export class ChromePage {
   constructor(
     public tab: chrome.tabs.Tab,
     public win?: chrome.windows.Window,
-    public is_default = false
+    public is_default = false,
+    public autoclose = true
   ) {}
   t = 0;
   setRequestInterception(arg0: boolean) {
@@ -37,10 +38,12 @@ export class ChromePage {
   }
   resetTimer() {
     clearTimeout(this.t);
-    // @ts-ignore
-    this.t = setTimeout(() => {
-      this.close();
-    }, 1000 * 60 * 10);
+    if (this.autoclose) {
+      // @ts-ignore
+      this.t = setTimeout(() => {
+        this.close();
+      }, 1000 * 60 * 10);
+    }
   }
   set url(url: string) {
     chrome.tabs.update(this.id, {
@@ -94,8 +97,6 @@ export class ChromePage {
   ) {
     var args_str = args.map((arg) => JSON.stringify(arg)).join(",");
     var code = typeof fn !== "string" ? `(${fn.toString()})(${args_str})` : fn;
-    console.log(code);
-    console.trace()
     return this.executeScript(code);
   }
 
@@ -201,6 +202,7 @@ export class ChromePage {
     clearTimeout(this.t);
     if (this.is_default) {
       this.pending = false;
+      this.autoclose = true;
       return;
     }
     return new Promise((resolve) => chrome.tabs.remove(this.id, resolve));
