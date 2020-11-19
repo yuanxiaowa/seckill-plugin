@@ -275,6 +275,11 @@ export default class Search extends Vue {
     return this.searchType === "juhuasuan";
   }
 
+  @Watch("form_data.start_price")
+  onStartPriceChange(v: number) {
+    this.form_data.end_price = Number(v || 0) + 10;
+  }
+
   @Watch("searchType", {
     immediate: true,
   })

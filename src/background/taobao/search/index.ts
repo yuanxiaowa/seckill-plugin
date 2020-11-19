@@ -23,7 +23,7 @@ export async function getGoodsList(data: Partial<ArgSearch>) {
   var q = data.keyword;
   delete data.page;
   delete data.keyword;
-  delete data.end_price;
+  // delete data.end_price;
   delete data.searchType;
   var qs = Object.assign(
     {
