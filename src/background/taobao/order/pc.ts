@@ -730,6 +730,7 @@ async function submitOrderFromBrowser2(
   await page.evaluate(createForm, form, addr_url);
   async function waitResponse() {
     let res = await page.waitForNavigation();
+    console.log(res);
     if (res.url.includes("/TmallConfirmOrderError.htm")) {
       throw new Error("系统繁忙");
     }

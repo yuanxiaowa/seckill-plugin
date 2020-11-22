@@ -83,7 +83,14 @@ export async function getGoodsInfo({
   url: string;
   skuId?: string;
 }) {
-  return getGoodsInfoFromMobile(url, skuId);
+  try {
+    return await getGoodsInfoFromMobile(url, skuId);
+  } catch (e) {
+    if (e.message === "哎哟喂,被挤爆啦,请稍后重试") {
+      window.open(url.replace("detail.", "detail.m."));
+    }
+    throw e;
+  }
 }
 
 export function getGoodsPromotions(item: any) {

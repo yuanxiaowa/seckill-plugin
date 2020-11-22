@@ -15,7 +15,14 @@ import { getCartListFromMobile } from "../cart/mobile";
 import moment from "moment";
 import { fromPairs } from "ramda";
 import { goValidate, pay } from "./order-tools";
-import getFyOBJ from "./fyOBJ";
+// import getFyOBJ from "./fyOBJ";
+
+const getFyOBJ = (url: string) => ({
+  getUA() {
+    return `defaultUA1_uab_not_loaded@@${url}@@${Date.now()}`;
+  },
+  umidToken: `defaultToken1_um_not_loaded@@${url}@@${Date.now()}`,
+});
 
 function transformOrderData(
   orderdata: any,
@@ -647,7 +654,7 @@ async function submitOrderResubmit(args: ArgOrder<any>) {
             pay(ret.alipayWapCashierUrl, accounts.taobao.paypass);
           }
         });
-        return true
+        return true;
       } catch (e) {
         startTime = Date.now();
         if (e.code === "x5-code") {
