@@ -10,7 +10,7 @@ import { request } from "@/background/common/request";
 import { taskManager } from "@/background/common/task-manager";
 import { config } from "@/background/common/setting";
 import { notify, sendQQMsg } from "@/background/common/message";
-import { getUserName } from '../tools';
+import { getUserName } from "../tools";
 
 export const buyDirectFromPc: BaseHandler["buy"] = async function(args) {
   var {
@@ -743,11 +743,9 @@ async function submitOrderFromBrowser2(
       await waitResponse();
       page.evaluate(getScript, args.expectedPrice);
       await waitResponse();
-      getUserName().then(text => {
-        notify(`(${text})pc订单提交成功，速度去付款：${
-          args.title
-        }`)
-      })
+      getUserName().then((text) => {
+        notify(`(${text})pc订单提交成功，速度去付款：${args.title}`);
+      });
     } catch (e) {
       submitOrderFromBrowser2(args, type).then((f) => f());
       page.close();
@@ -806,10 +804,10 @@ function getScript(price = 10) {
             // linkage.request.find(key => key.startsWith('itemInfoPC_') && !data[key])
             if (
               !(
-                data.invalidGroupPC_2 ||
+                data.invalidGroupPC_2 /*  ||
                 linkage.request.find(
                   (key) => key.startsWith("itemInfoPC_") && !data[key]
-                )
+                ) */
               ) &&
               data.realPayPC_1 &&
               +data.realPayPC_1.fields.price <= maxPrice!

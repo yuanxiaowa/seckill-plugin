@@ -457,6 +457,7 @@ export async function getCouponSingle(url: string, other?: any) {
     {
       qs: Object.assign(
         {
+          linkKey: searchParams.get('linkKey'),
           key: searchParams.get("key"),
           roleId: searchParams.get("roleId"),
           to: searchParams.get("to"),
