@@ -731,9 +731,16 @@ async function submitOrderFromBrowser2(
   async function waitResponse() {
     let res = await page.waitForNavigation();
     console.log(res);
-    if (res.url.includes("/TmallConfirmOrderError.htm")) {
+    // https://cashierstm.alipay.com/login/trust_login.do?sign_account_no=20887027503590110156&sign_date=1606096820&trade_no=2020112322001159015759266089&sign_signature=_en_upiga_eb_ne4kl_t_l_ln_d_df46_zdn9_f_v%2F_p_s3jz_l_y_u_r8_o_piym_rnj71r_lz_q%3D%3D&already_check=0&sign_from=3000&fromcashier=true&goto=https://cashierstm.alipay.com/preprocess/trade/tradePreprocessGw.htm
+    // https://www.taobao.com/markets/bx/wait_pc?uuid=dfb0f60a8c849de271e8c4d3bb549bf7&action=wait
+    const { url } = res;
+    if (
+      url.includes("/TmallConfirmOrderError.htm") ||
+      url.includes("/markets/bx/wait_pc")
+    ) {
       throw new Error("系统繁忙");
     }
+    return url.includes('alipay.com/')
   }
   return async () => {
     try {
@@ -743,10 +750,12 @@ async function submitOrderFromBrowser2(
       // await delay(1000);
       await waitResponse();
       page.evaluate(getScript, args.expectedPrice);
-      await waitResponse();
-      getUserName().then((text) => {
-        notify(`(${text})pc订单提交成功，速度去付款：${args.title}`);
-      });
+      const canPay = await waitResponse();
+      if (canPay) {
+        getUserName().then((text) => {
+          notify(`(${text})pc订单提交成功，速度去付款：${args.title}`);
+        });
+      }
     } catch (e) {
       submitOrderFromBrowser2(args, type).then((f) => f());
       page.close();
