@@ -195,6 +195,7 @@ export async function addCartFromMobile(args: ParamsOfAddCart) {
       },
       method: "post",
       version: "3.1",
+      referer: args.url,
     });
     if (!cartId) {
       throw new Error(msg);
