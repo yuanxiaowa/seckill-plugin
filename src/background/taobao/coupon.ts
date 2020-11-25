@@ -310,7 +310,7 @@ export async function getQuanDetailFromPage(url: string) {
 export async function getCouponEdetailFromPage(url: string) {
   var href = await excuteRequestAction<string>(url, {
     code:
-      '[...document.querySelectorAll(".btn-name")].forEach(ele => ele.click());console.log(document.querySelector("a"));document.querySelector("a").getAttribute("href");',
+      '[...document.querySelectorAll(".btn-name,.coupon-btn-right")].forEach(ele => ele.click());console.log(document.querySelector("a"));document.querySelector("a").getAttribute("href");',
     test: test(/mtop\.alimama\.union\.xt\.biz\.(\w+)\.api\.entry/),
     urls: ["*://*.taobao.com/*"],
   });
