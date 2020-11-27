@@ -4,7 +4,7 @@ import { accounts } from "../common/setting";
 import { delay, formatUrl } from "../common/tool";
 import { getCookie } from "./tools";
 import moment from "moment";
-import { runJdTasks } from './task';
+import { runJdTasks } from "./task";
 
 export async function isLoginMobile() {
   var { retcode } = await request.jsonp(
@@ -38,8 +38,8 @@ export async function loginMobile() {
     pwd.dispatchEvent(new Event("input"));
     document.querySelector<HTMLLinkElement>(".btn")!.click();
   }, accounts.jingdong);
-  await page.waitForNavigation()
-  await delay(2000)
+  await page.waitForNavigation();
+  await delay(2000);
   runJdTasks();
   /* await page.waitForResponse(
     startsWith("https://jcap.m.jd.com/cgi-bin/api/check")
@@ -68,7 +68,9 @@ export async function loginPc() {
       account.username;
     document.querySelector<HTMLInputElement>("#nloginpwd")!.value =
       account.password;
-    document.querySelector<HTMLLinkElement>("#loginsubmit")!.click();
+    setTimeout(() => {
+      document.querySelector<HTMLLinkElement>("#loginsubmit")!.click();
+    });
   }, accounts.jingdong);
   /* window.open(
     "https://qq.jd.com/new/qq/login.aspx?ReturnUrl=https%3A%2F%2Fwww.jd.com%2F"

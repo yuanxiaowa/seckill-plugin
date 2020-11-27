@@ -736,11 +736,13 @@ async function submitOrderFromBrowser2(
     const { url } = res;
     if (
       url.includes("/TmallConfirmOrderError.htm") ||
-      url.includes("/markets/bx/wait_pc")
+      url.includes("/markets/bx/wait_pc") ||
+      url.includes("/wait.php") ||
+      url.includes("/deny_pc")
     ) {
       throw new Error("系统繁忙");
     }
-    return url.includes('alipay.com/')
+    return url.includes("alipay.com/");
   }
   return async () => {
     try {
