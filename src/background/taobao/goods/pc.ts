@@ -1,6 +1,6 @@
 import { request } from "@/background/common/request";
 
-export async function getGoodsInfoFromPc(url: string, hasForm = false) {
+export async function getGoodsInfoFromPc(url: string, hasForm = false, quantity = 1) {
   url = url.replace("detail.m.tmall.com/", "detail.tmall.com/");
   var html = await request.get(url);
   var text = /TShop\.Setup\(\s*(.*)\s*\);/.exec(html)![1];
@@ -52,7 +52,7 @@ export async function getGoodsInfoFromPc(url: string, hasForm = false) {
       item_url_refer: url,
 
       allow_quantity: itemDO.quantity,
-      buy_param: [itemDO.itemId, 1, skuId].join("_"),
+      buy_param: [itemDO.itemId, quantity, skuId].join("_"),
       _tb_token_: "edeb7b783ff65",
       skuInfo: [itemDO.title].join(";"),
       _input_charset: "UTF-8",

@@ -19,7 +19,7 @@ export const buyDirectFromPc: BaseHandler["buy"] = async function(args) {
     tradeType,
     form,
     detail,
-  } = await getGoodsInfoFromPc(args.url, true);
+  } = await getGoodsInfoFromPc(args.url, true, args.quantity);
   if (!args.ignoreRepeat) {
     if (prev_id === itemDO.itemId) {
       throw new Error("重复下单");
@@ -738,7 +738,8 @@ async function submitOrderFromBrowser2(
       url.includes("/TmallConfirmOrderError.htm") ||
       url.includes("/markets/bx/wait_pc") ||
       url.includes("/wait.php") ||
-      url.includes("/deny_pc")
+      url.includes("/deny_pc") ||
+      url.includes("/error.html")
     ) {
       throw new Error("系统繁忙");
     }
@@ -807,7 +808,9 @@ function getScript(price = 10) {
     }
 
     var send = XMLHttpRequest.prototype.send;
+    var lastTime = Date.now();
     XMLHttpRequest.prototype.send = function(data) {
+      lastTime = Date.now();
       // @ts-ignore
       if (this.__sufei_url.startsWith("/auction/json/async_linkage.do?")) {
         const listener = () => {
@@ -841,6 +844,14 @@ function getScript(price = 10) {
       }
       return send.call(this, data);
     };
+    setInterval(() => {
+      if (Date.now() - lastTime > 5 * 1000) {
+        exchangeAddress();
+      }
+    }, 3000);
+    setTimeout(() => {
+      location.href = "https://error.taobao.com/app/tbhome/common/error.html";
+    }, 1000 * 60 * 21);
     exchangeAddress();
   }
   var ele = document.createElement("script");
