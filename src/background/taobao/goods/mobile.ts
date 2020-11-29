@@ -9,6 +9,7 @@ export async function getGoodsInfoFromMobile(url: string, skuId?: string) {
   var data = await requestData("mtop.taobao.detail.getdetail", {
     data: { itemNumId: itemId },
     version: "6.0",
+    referer: url,
   });
   return transformMobileGoodsInfo(data, skuId);
 }
