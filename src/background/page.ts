@@ -114,18 +114,19 @@ export class ChromePage {
       });
     });
   }
-  waitForNavigation() {
+  waitForNavigation(completed = true) {
     return new Promise<chrome.webNavigation.WebNavigationFramedCallbackDetails>(
       (resolve) => {
+        const name = completed ? "onCompleted" : "onBeforeNavigate";
         const handler = (
           details: chrome.webNavigation.WebNavigationFramedCallbackDetails
         ) => {
           if (details.tabId === this.tab.id && details.frameId === 0) {
-            chrome.webNavigation.onCompleted.removeListener(handler);
+            chrome.webNavigation[name].removeListener(handler);
             resolve(details);
           }
         };
-        chrome.webNavigation.onCompleted.addListener(handler);
+        chrome.webNavigation[name].addListener(handler);
       }
     );
   }
