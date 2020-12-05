@@ -309,7 +309,7 @@ export async function excuteRequestAction<T = any>(
     urls,
     autoclose = true,
   }: {
-    code: string;
+    code: string | Function;
     test: (url: string) => boolean;
     urls: string[];
     autoclose?: boolean;
@@ -317,6 +317,7 @@ export async function excuteRequestAction<T = any>(
 ) {
   var page = await ChromePage.create();
   var getted = false;
+  const injectCode = typeof code === "function" ? `(${code.toString()})()` : code;
   return new Promise<T>((resolve) => {
     var listener = async (
       details: chrome.webRequest.WebResponseCacheDetails
@@ -328,12 +329,12 @@ export async function excuteRequestAction<T = any>(
         getted = true;
         page.off("webRequest.onCompleted", listener);
         await delay(800);
-        let data = page.executeScript(code);
+        let data = page.executeScript(injectCode);
         resolve(data);
         if (autoclose) {
           setTimeout(() => {
             page.close();
-          }, 1000);
+          }, 3000);
         }
       }
     };

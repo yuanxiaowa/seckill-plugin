@@ -207,7 +207,9 @@ const taobao = {
     return jd.getPlusQuanpin(item);
   },
   logout: ifElse(isJd, jd.logout, tb.logout),
-  getRedirectedUrl,
+  getRedirectedUrl({ url }) {
+    return getRedirectedUrl(url);
+  },
   getCouponCenterItems,
   getCouponCenterCoupon,
   getCommentList: tb.getCommentList,
