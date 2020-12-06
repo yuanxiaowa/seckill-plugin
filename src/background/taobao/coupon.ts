@@ -321,9 +321,9 @@ export async function getCouponEdetailFromPage(url: string) {
           return;
         }
         items.forEach((ele) => ele.click());
-        document.querySelector("a")!.getAttribute("href");
       }
       handler()
+      return document.querySelector("a")!.getAttribute("href");
     },
     test: test(/mtop\.alimama\.union\.xt\.biz\.(\w+)\.api\.entry/),
     urls: ["*://*.taobao.com/*"],
