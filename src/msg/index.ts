@@ -90,6 +90,27 @@ export function init(config: any) {
       }
     }
   };
+
+  var ws2 = new WebSocket("ws://127.0.0.1:12345");
+  ws2.onmessage = (e) => {
+    const {type, from_name, msg} = JSON.parse(e.data);
+    if (type === 1 && /(免|兔)单/.test(from_name)) {
+      if (handler(msg) && !msg.includes("饿了么")) {
+        // sendMsg("你好呀，" + text);
+        /* if (
+        /(\d+)点|锁单|先锁|0\.\d|速度|红包|抽奖|试试|手慢无|好价|神价/.test(
+          text
+        )
+      ) {
+        sendGroupMsg(text);
+      } */
+        if (config.is_main) {
+          console.log(msg);
+          sendGroupMsg(msg);
+        }
+      }
+    }
+  };
 }
 
 const r_taobao = /(?<!\w)\w{11}(?!\w)/g;
