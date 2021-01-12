@@ -79,9 +79,9 @@ export async function getGoodsList(args: ArgSearch): Promise<any> {
     filt_type: [
       [
         `dredisprice`,
-        `L${args.end_price || 100000000}M${args.start_price || 0}`
+        `L${args.end_price || 100000000}M${args.start_price || 0}`,
       ].join(","),
-      ["redisstore", 1].join(",")
+      ["redisstore", 1].join(","),
     ].join(";"),
     coupon_aggregation: "yes",
     neverpop: "yes",
@@ -96,22 +96,23 @@ export async function getGoodsList(args: ArgSearch): Promise<any> {
     ext_attr_sort: "no",
     multi_suppliers: "yes",
     rtapi: "no",
-    area_ids: "12,988,47821"
+    area_ids: "12,988,47821",
   };
-  var data = await request.jsonp(
+  var { data } = await request.jsonp(
     "https://so.m.jd.com/list/couponSearch._m2wq_list",
     {
-      qs: _qs
+      qs: _qs,
     }
   );
-  var items = data.searchm.Paragraph.map(item => {
+  var items = data.searchm.Paragraph.map((item) => {
     return Object.assign(
       {
         id: item.wareid,
         url: `https://item.m.jd.com/product/${item.wareid}.html`,
         title: item.Content.warename,
         price: item.dredisprice,
-        img: "//img12.360buyimg.com/mobilecms/s455x455_" + item.Content.imageurl
+        img:
+          "https://img12.360buyimg.com/mobilecms/s455x455_" + item.Content.imageurl,
       },
       item
     );
@@ -128,21 +129,21 @@ export async function getGoodsList(args: ArgSearch): Promise<any> {
           .fill(1)
           .join(","),
         skus: items.map(({ id }) => id).join(","),
-        area: "1_72_2819_0"
+        area: "1_72_2819_0",
       },
       referer:
-        "https://so.m.jd.com/list/couponSearch.action?" + qs_lib.stringify(_qs)
+        "https://so.m.jd.com/list/couponSearch.action?" + qs_lib.stringify(_qs),
     }
   );
-  Object.keys(stockstate.data).forEach(key => {
+  Object.keys(stockstate.data).forEach((key) => {
     var { a } = stockstate.data[key];
-    var item = items.find(item => item.id === key);
+    var item = items.find((item) => item.id === key);
     item.stock = a === "34" ? 0 : 1;
   });
   return {
     more: true,
-    items: items.filter(item => item.stock > 0),
-    page: args.page
+    items: items.filter((item) => item.stock > 0),
+    page: args.page,
   };
 }
 
@@ -159,8 +160,8 @@ export async function getGoodsPrice(skuId: string) {
         origin: 2,
         source: "pingou",
         _: Date.now(),
-        g_ty: "ls"
-      }
+        g_ty: "ls",
+      },
     }
   );
   return Number(p);
@@ -188,7 +189,7 @@ type DisCount = DisCount1 | DisCount2 | DisCount3;
 
 export async function calcPrice({
   skuId,
-  plus = false
+  plus = false,
 }: {
   skuId: string;
   plus?: boolean;
@@ -197,12 +198,12 @@ export async function calcPrice({
     item,
     price,
     promov2: [{ pis }],
-    pingouItem
+    pingouItem,
   } = await getGoodsInfo(skuId);
   var coupons = await queryGoodsCoupon({
     skuId,
     vid: item.venderID,
-    cid: item.category[item.category.length - 1]
+    cid: item.category[item.category.length - 1],
   });
   pis = pis.filter(({ subextinfo }) => subextinfo);
   // 满199元减80元
@@ -225,7 +226,7 @@ export async function calcPrice({
           ...subRuleList.map(({ needMoney, rewardMoney }) => ({
             type: 1,
             needMoney: Number(needMoney),
-            rewardMoney: Number(rewardMoney)
+            rewardMoney: Number(rewardMoney),
           }))
         );
       } else if (extType === 2) {
@@ -233,14 +234,14 @@ export async function calcPrice({
           type: 2,
           needMoney: Number(item.needMoney),
           rewardMoney: Number(item.rewardMoney),
-          topMoney: Number(item.topMoney)
+          topMoney: Number(item.topMoney),
         });
       } else if (extType === 15) {
         d1.push(
           ...subRuleList.map(({ needNum, rebate }) => ({
             type: 3,
             needNum: Number(needNum),
-            rebate: Number(rebate) / 10
+            rebate: Number(rebate) / 10,
           }))
         );
       }
@@ -248,10 +249,10 @@ export async function calcPrice({
     R.map<any, any>(R.compose(JSON.parse, R.prop("subextinfo")))
   );
   f(pis);
-  var d2: DisCount[] = coupons.map(item => ({
+  var d2: DisCount[] = coupons.map((item) => ({
     type: 1,
     needMoney: item.quota,
-    rewardMoney: item.discount
+    rewardMoney: item.discount,
   }));
   var p = Number(price.p);
   if (pingouItem) {
@@ -266,7 +267,7 @@ export async function calcPrice({
     d: any[];
     total_raw: number;
   }[] = [];
-  [...d1, ...d2].forEach(item => {
+  [...d1, ...d2].forEach((item) => {
     if (item.type === 1 || item.type === 2) {
       let num = item.needMoney / p;
       if (item.needMoney - Math.floor(num) * p >= 1) {
@@ -280,7 +281,7 @@ export async function calcPrice({
         total_raw,
         num,
         price: total / num,
-        d: [item]
+        d: [item],
       });
     } else if (item.type === 3) {
       let num = item.needNum;
@@ -292,7 +293,7 @@ export async function calcPrice({
         total_raw,
         num,
         price: total / num,
-        d: [item]
+        d: [item],
       });
     }
   });
@@ -310,7 +311,7 @@ export async function calcPrice({
       num,
       total_raw,
       price: total / num,
-      d: [item1, item2]
+      d: [item1, item2],
     };
   }
   function calc2(item1: DisCount2, item2: DisCount1) {
@@ -333,7 +334,7 @@ export async function calcPrice({
       total_raw,
       num,
       price: total / num,
-      d: [item1, item2]
+      d: [item1, item2],
     };
   }
   function calc3(item1: DisCount3, item2: DisCount1) {
@@ -350,7 +351,7 @@ export async function calcPrice({
       total_raw,
       num,
       price: total / num,
-      d: [item1, item2]
+      d: [item1, item2],
     };
   }
   function gcc(a: number, b: number) {
@@ -384,22 +385,22 @@ export async function calcPrice({
             total_raw,
             num,
             price: total / num,
-            d: [item1, item2]
+            d: [item1, item2],
           });
         }
       }
     }
   }
-  if (!ret.find(item => item.num === 1)) {
+  if (!ret.find((item) => item.num === 1)) {
     ret.push({
       total: p,
       num: 1,
       price: p,
       d: [],
-      total_raw: p
+      total_raw: p,
     });
   }
-  return R.uniqBy<any, any>(item => item.num)(
+  return R.uniqBy<any, any>((item) => item.num)(
     ret.sort((item1, item2) => item1.price - item2.price)
   );
 }
@@ -419,20 +420,20 @@ export async function getStock(
         provinceId: address.provId,
         cityId: address.cityId,
         countyId: address.countyId,
-        townId: address.townId
+        townId: address.townId,
       },
       coordnateRequest: {
         longtitude: address.longitude / 1000000 + "",
-        latitude: address.latitude / 1000000 + ""
-      }
+        latitude: address.latitude / 1000000 + "",
+      },
     },
     {
       referer: "https://trade.jd.com/shopping/order/getOrderInfo.action",
       headers: {
         "x-requested-with": "XMLHttpRequest",
         "user-agent":
-          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.100 Safari/537.36"
-      }
+          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.100 Safari/537.36",
+      },
     }
   );
   return res.result;
@@ -442,22 +443,22 @@ export async function getGoodsCollection(page = 1) {
   var data = await request.jsonp(
     `https://wq.jd.com/fav/comm/FavCommQueryFilter?cp=${page}&pageSize=10&category=0&promote=0&cutPrice=0&coupon=0&stock=0&areaNo=1_72_4139_0&_=1567754146891&sceneval=2&g_login_type=1&callback=jsonpCBKB&g_ty=ls`
   );
-  var items = data.map(item =>
+  var items = data.map((item) =>
     Object.assign(item, {
       title: item.commTitle,
       img: item.imageUrl,
-      id: item.commId
+      id: item.commId,
     })
   );
   return {
     items,
-    more: items.length > 0
+    more: items.length > 0,
   };
 }
 
 export function delGoodsCollection(items: any[]) {
   return Promise.all(
-    items.map(item =>
+    items.map((item) =>
       request.jsonp(
         `https://wq.jd.com/fav/comm/FavCommDel?commId=${item.commId}&_=1567754783171&sceneval=2&g_login_type=1&callback=jsonpCBKII&g_ty=ls`
       )
