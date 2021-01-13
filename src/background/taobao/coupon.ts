@@ -811,9 +811,14 @@ async function getDailygroupCoupon({
     });
   });
   const hasInventory = async (i: number) => {
-    var {
-      data: { showBenefits },
-    } = await getMeta();
+    while (true) {
+      try {
+        var {
+          data: { showBenefits },
+        } = await getMeta();
+        break;
+      } catch (e) {}
+    }
     const item = showBenefits[i];
     const b = item.canWin === true || item.canWin === "true";
     if (!b && (item.hadWin === true || item.hadWin === "true")) {
