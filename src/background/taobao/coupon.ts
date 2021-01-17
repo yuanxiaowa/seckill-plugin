@@ -845,7 +845,7 @@ async function getDailygroupCoupon({
           },
           t
         )
-        .then(() => qiangquanToTime(i, t + 1000 * 60 * 3));
+        .then(() => qiangquanToTime(i, t + 1000 * 60));
     }
     async function qiangquanToTime(i: number, t: number) {
       const res = await qiangquan().catch(() => ({ success: false }));
