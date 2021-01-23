@@ -188,7 +188,8 @@ export async function getJingfen(url: string) {
         ...getBaseData(),
       },
       {
-        functionId: "jingfenCoupon",
+        // functionId: "jingfenCoupon",
+        functionId: "getUnionGiftCoupon",
       }
     );
   } catch (e) {
@@ -457,7 +458,7 @@ export async function getCouponSingle(url: string, other?: any) {
     {
       qs: Object.assign(
         {
-          linkKey: searchParams.get('linkKey'),
+          linkKey: searchParams.get("linkKey"),
           key: searchParams.get("key"),
           roleId: searchParams.get("roleId"),
           to: searchParams.get("to"),
