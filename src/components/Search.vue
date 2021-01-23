@@ -410,16 +410,27 @@ export default class Search extends Vue {
   }
 
   fetcher({ page }) {
-    var extra_params = this.extra_params
-      .trim()
-      .split(/\r?\n/)
-      .map((item) => item.trim())
-      .filter(Boolean)
-      .reduce((state, item) => {
-        var [key, value] = item.split("=");
-        state[key] = value;
-        return state;
-      }, {});
+    var str = this.extra_params.trim();
+    var extra_params = {};
+    if (/^https?:\/\//.test(str)) {
+      extra_params = [...new URL(str).searchParams.entries()].reduce(
+        (acc, [key, value]) => ({
+          ...acc,
+          [key]: value,
+        }),
+        {}
+      );
+    } else if (str) {
+      extra_params = str
+        .split(/\r?\n/)
+        .map((item) => item.trim())
+        .filter(Boolean)
+        .reduce((state, item) => {
+          var [key, value] = item.split("=");
+          state[key] = value;
+          return state;
+        }, {});
+    }
     return goodsList(
       Object.assign(
         {
