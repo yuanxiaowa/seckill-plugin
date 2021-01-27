@@ -1,4 +1,5 @@
-import { resolveUrl, getRedirectedUrl } from "../api";
+import { super_user } from "@/config";
+import { resolveUrl, getRedirectedUrl, sendPrivateMsg } from "../api";
 import { Platform } from "../handlers";
 import { qiangquan } from "./order";
 
@@ -221,10 +222,11 @@ export function resolveText(text: string, datetime?: string | Date) {
       if (!/钢化膜|手机膜|数据线/.test(text)) {
         action = "notice";
       }
+    } else if (/大米|油/.test(text)) {
+      action = "qiangquan";
+      sendPrivateMsg(text, super_user)
     } else if (
-      /大米|盐|有货的上|蟹|桌|椅|酸奶|纯甄|安慕希|蒙牛|伊利|罗马仕|充电宝/.test(
-        text
-      )
+      /盐|有货的上|蟹|桌|椅|酸奶|纯甄|安慕希|蒙牛|伊利|罗马仕|充电宝/.test(text)
     ) {
       action = "notice";
     }
