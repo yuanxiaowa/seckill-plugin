@@ -41,15 +41,15 @@ export async function buyDirect(
     });
   };
 
-  if (args.jianlou && data.stock.StockState === 34) {
-    await waitForStock([
-      {
-        skuId,
-        num: String(args.quantity),
-      },
-    ]);
-    console.log("有库存了，去下单");
-  }
+  // if (args.jianlou && data.stock.StockState === 34) {
+  //   await waitForStock([
+  //     {
+  //       skuId,
+  //       num: String(args.quantity),
+  //     },
+  //   ]);
+  //   console.log("有库存了，去下单");
+  // }
   return next();
 }
 export async function cartBuy(data: any) {
@@ -167,13 +167,15 @@ export async function submitOrder(
           //     submit();
           //   });
           // }
+          let confirmBtn: HTMLLinkElement | null;
           function submit() {
             // console.log(new Date(), "去下单");
-            const confirm = document.querySelector<HTMLLinkElement>(".confirm");
-            if (confirm) {
-              confirm.click();
+            
+            if (confirmBtn) {
+              confirmBtn.click();
             } else {
               btn.click();
+              confirmBtn = document.querySelector<HTMLLinkElement>(".confirm");
             }
             setTimeout(submit, 500);
           }
