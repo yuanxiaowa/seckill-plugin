@@ -125,7 +125,7 @@ export async function submitOrder(
           ) as HTMLDivElement[])
             .reverse()
             .map((ele) => ele.querySelector<HTMLLinkElement>("a")!)
-            .find((ele) => ele.style.display !== "none")!;
+            .find((ele) => ele && ele.style.display !== "none")!;
           // var data = {
           //   skuNumList: products.map(({ mainSku }) => ({
           //     skuId: mainSku.skuId,
@@ -169,7 +169,12 @@ export async function submitOrder(
           // }
           function submit() {
             // console.log(new Date(), "去下单");
-            btn.click();
+            const confirm = document.querySelector<HTMLLinkElement>(".confirm");
+            if (confirm) {
+              confirm.click();
+            } else {
+              btn.click();
+            }
             setTimeout(submit, 500);
           }
           setInterval(() => {
