@@ -142,21 +142,21 @@ export async function resolveTaokouling(password: string) {
   //     },
   //   }
   // );
-  // var { data } = await request.form(
-  //   "https://taodaxiang.com/taopass/parse/get",
-  //   {
-  //     content: password,
-  //   }
-  // );
-  var data = await request.get(
-    `https://api.taokouling.com/tkl/tkljm`,
+  var { data } = await request.form(
+    "https://taodaxiang.com/taopass/parse/get",
     {
-      qs: {
-        apikey: "ccNMxlaXdJ",
-        tkl: password,
-      },
+      content: password,
     }
   );
+  // var data = await request.get(
+  //   `https://api.taokouling.com/tkl/tkljm`,
+  //   {
+  //     qs: {
+  //       apikey: "ccNMxlaXdJ",
+  //       tkl: password,
+  //     },
+  //   }
+  // );
   return data.url;
 }
 
