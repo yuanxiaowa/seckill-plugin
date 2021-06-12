@@ -1,21 +1,64 @@
+import { EventEmitter } from "events";
 import { delay } from "./common/tool";
+
+type EventMap = {
+  requestCompleted: [chrome.webRequest.WebResponseCacheDetails];
+  navigationCompleted: [
+    chrome.webNavigation.WebNavigationFramedCallbackDetails
+  ];
+  request: [any];
+};
+
+type EmitType = <T extends keyof EventMap>(
+  name: T,
+  ...args: EventMap[T]
+) => boolean;
+type ListenerType<RetType = void> = <T extends keyof EventMap>(
+  name: T,
+  listener: (...args: EventMap[T]) => void
+) => RetType;
 
 export class ChromePage {
   private pending = true;
-  private listeners_map: Record<string, Function[]> = {};
+
+  private bus = new EventEmitter();
+
   constructor(
     public tab: chrome.tabs.Tab,
     public win?: chrome.windows.Window,
     public is_default = false,
     public autoclose = true
-  ) {}
+  ) {
+    this.init();
+  }
+
+  init() {
+    chrome.webRequest.onCompleted.addListener(
+      (details) => {
+        if (details.tabId !== this.tab.id) {
+          return;
+        }
+        this.emit("requestCompleted", details);
+      },
+      {
+        urls: ["*://*/*"],
+        tabId: this.tab.id,
+      }
+    );
+    chrome.webNavigation.onCompleted.addListener((details) => {
+      if (details.tabId !== this.tab.id) {
+        return;
+      }
+      this.emit("navigationCompleted", details);
+    });
+  }
   t = 0;
   setRequestInterception(arg0: boolean) {
     throw new Error("Method not implemented.");
   }
   waitForSelector(selector: string) {
     return this.evaluate((selector) => {
-      return new Promise((resolve) => {
+      return new Promise<void>((resolve) => {
         function check() {
           if (document.querySelector<HTMLElement>(selector)) {
             resolve();
@@ -32,7 +75,7 @@ export class ChromePage {
     }, selector);
   }
   reload() {
-    return new Promise((resolve) =>
+    return new Promise<void>((resolve) =>
       chrome.tabs.reload(this.tab.id!, {}, resolve)
     );
   }
@@ -55,36 +98,23 @@ export class ChromePage {
     return this.tab.id!;
   }
 
-  on(name: string, listener: Function, ...args: any[]) {
-    var arr = name.split(".");
-    chrome[arr[0]][arr[1]].addListener(listener, ...args);
-    if (this.listeners_map[name]) {
-      this.listeners_map[name].push(listener);
-    } else {
-      this.listeners_map[name] = [];
-    }
-  }
+  emit = this.bus.emit.bind(this.bus) as EmitType;
 
-  off(name: string, listener?: Function) {
-    if (this.listeners_map[name]) {
-      if (!listener) {
-        delete this.listeners_map[name];
-      } else {
-        this.listeners_map[name].splice(
-          this.listeners_map[name].indexOf(listener),
-          1
-        );
-      }
-    }
-  }
-
-  once(name: string, listener: Function, ...args: any[]) {
-    var _listener = (...args: any[]) => {
-      this.off(name, _listener);
-      listener(...args);
+  on = ((name, listener) => {
+    this.bus.on(name, listener as any);
+    return () => {
+      this.bus.off(name, listener as any);
     };
-    this.on(name, _listener, ...args);
-  }
+  }) as ListenerType<() => void>;
+
+  once = ((name, listener) => {
+    this.bus.once(name, listener as any);
+    return () => {
+      this.bus.off(name, listener as any);
+    };
+  }) as ListenerType<() => void>;
+
+  off = this.bus.off.bind(this.bus) as ListenerType;
 
   goto(url: string) {
     this.url = url;
@@ -101,32 +131,24 @@ export class ChromePage {
   }
 
   waitForResponse(filter: (url: string) => boolean) {
-    return new Promise((resolve) => {
-      var listener = (details: chrome.webRequest.WebResponseCacheDetails) => {
+    return new Promise<void>((resolve) => {
+      const destroyFn = this.on("requestCompleted", (details) => {
         if (filter(details.url)) {
+          destroyFn();
           resolve();
-          this.off("webRequest.onCompleted", listener);
         }
-      };
-      this.on("webRequest.onCompleted", listener, {
-        urls: ["*://*/*"],
-        tabId: this.tab.id,
       });
     });
   }
-  waitForNavigation(completed = true) {
+  waitForNavigation() {
     return new Promise<chrome.webNavigation.WebNavigationFramedCallbackDetails>(
       (resolve) => {
-        const name = completed ? "onCompleted" : "onBeforeNavigate";
-        const handler = (
-          details: chrome.webNavigation.WebNavigationFramedCallbackDetails
-        ) => {
-          if (details.tabId === this.tab.id && details.frameId === 0) {
-            chrome.webNavigation[name].removeListener(handler);
+        const destroyFn = this.on("navigationCompleted", (details) => {
+          if (details.frameId === 0) {
+            destroyFn();
             resolve(details);
           }
-        };
-        chrome.webNavigation[name].addListener(handler);
+        });
       }
     );
   }
@@ -269,7 +291,7 @@ export class ChromePage {
         },
         (window) => {
           window!.alwaysOnTop = false;
-          resolve(window);
+          resolve(window!);
         }
       );
     });
@@ -317,31 +339,29 @@ export async function excuteRequestAction<T = any>(
 ) {
   var page = await ChromePage.create();
   var getted = false;
-  const injectCode = typeof code === "function" ? `(${code.toString()})()` : code;
+  const injectCode =
+    typeof code === "function" ? `(${code.toString()})()` : code;
   return new Promise<T>((resolve) => {
-    var listener = async (
-      details: chrome.webRequest.WebResponseCacheDetails
-    ) => {
-      if (test(details.url)) {
-        if (getted) {
-          return;
-        }
-        getted = true;
-        page.off("webRequest.onCompleted", listener);
-        await delay(800);
-        let data = page.executeScript(injectCode);
-        resolve(data);
-        if (autoclose) {
-          setTimeout(() => {
-            page.close();
-          }, 3000);
+    const destroyFn = page.on(
+      "requestCompleted",
+      async (details: chrome.webRequest.WebResponseCacheDetails) => {
+        if (test(details.url)) {
+          if (getted) {
+            return;
+          }
+          getted = true;
+          destroyFn();
+          await delay(800);
+          let data = page.executeScript(injectCode);
+          resolve(data);
+          if (autoclose) {
+            setTimeout(() => {
+              page.close();
+            }, 3000);
+          }
         }
       }
-    };
-    page.on("webRequest.onCompleted", listener, {
-      urls,
-      tabId: page.id,
-    });
+    );
     page.url = url;
   });
 }
