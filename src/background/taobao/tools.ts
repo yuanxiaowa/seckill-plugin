@@ -146,6 +146,11 @@ export async function resolveTaokouling(password: string) {
     "https://taodaxiang.com/taopass/parse/get",
     {
       content: password,
+    },
+    {
+      headers: {
+        "X-Requested-With": "XMLHttpRequest",
+      },
     }
   );
   // var data = await request.get(

@@ -794,14 +794,19 @@ export const buyDirectFromMobile: BaseHandler["buy"] = async function(args) {
 export const coudanFromMobile: BaseHandler["coudan"] = async function(
   data
 ): Promise<any> {
-  var ids = await Promise.all(
-    data.urls.map((url, i) =>
-      addCart({
-        url,
-        quantity: data.quantities[i],
-      })
-    )
-  );
+  var ids: string[] = [];
+  if (Array.isArray(data)) {
+    ids = await Promise.all(data.map((item) => addCart(item)));
+  } else {
+    ids = await Promise.all(
+      data.urls.map((url, i) =>
+        addCart({
+          url,
+          quantity: data.quantities[i],
+        })
+      )
+    );
+  }
   var list = await getCartListFromMobile();
   var datas: any[] = [];
   list.forEach(({ items }) => {
