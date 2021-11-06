@@ -484,6 +484,20 @@ export async function getCouponSingle(url: string, other?: any) {
       verifycode: "",
       verifysession: rvc_uuid,
     });
+  } else if (/(\d{2}:\d{2})/.test(errmsg)) {
+    const to_date = moment(RegExp.$1, "HH:mm");
+    const time = to_date.valueOf();
+    taskManager
+      .registerTask(
+        {
+          name: "领取单张优惠券",
+          platform: "jingdong",
+          comment: "抢券",
+          time,
+        },
+        time
+      )
+      .then(() => getCouponSingle(url, other));
   }
   // 145:提交频繁 16:已抢完
   return {

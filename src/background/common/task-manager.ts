@@ -57,7 +57,7 @@ export class TaskManager {
       Promise<any> & {
         id: number;
       }
-    >new Promise((resolve, reject) => {
+    >new Promise<void>((resolve, reject) => {
       var toTime = moment(data.time);
       var time = toTime.valueOf();
       var status = "pending";
@@ -156,7 +156,7 @@ export class TaskManager {
               }
             }
             f();
-          } catch (e) {
+          } catch (e: any) {
             if (e.name === "RequestError") {
               f();
               return;
