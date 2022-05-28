@@ -41,7 +41,7 @@ export default {
   getPlusQuanpin: getPlusQuanpin,
   getPlusQuanpinList: getPlusQuanpinList,
   sysTime: getSysTime(
-    "https://a.jd.com//ajax/queryServerData.html",
-    ({ serverTime }) => serverTime
+    "https://api.m.jd.com/client.action?functionId=queryMaterialProducts&client=wh5",
+    ({ currentTime2 }) => +currentTime2
   ),
 };

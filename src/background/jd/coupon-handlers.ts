@@ -290,12 +290,14 @@ export async function obtainGoodsCoupon(data: { roleId: number; key: string }) {
 }
 
 export async function getGoodsCoupons(skuId: string) {
-  var { item } = await getGoodsInfo(skuId);
-  var coupons = await queryGoodsCoupon({
-    skuId,
-    vid: item.venderID,
-    cid: item.category[item.category.length - 1],
-  });
+  var { item, coupons } = await getGoodsInfo(skuId);
+  if (!coupons) {
+    coupons = await queryGoodsCoupon({
+      skuId,
+      vid: item.venderID,
+      cid: item.category[item.category.length - 1],
+    });
+  }
   var data = await Promise.all(
     coupons
       .filter((item) => !item.owned)

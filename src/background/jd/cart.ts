@@ -5,7 +5,7 @@ export async function getCartList() {
   var html: string = await request.get(
     "https://p.m.jd.com/cart/cart.action?sceneval=2"
   );
-  var text = /window.cartData =([\s\S]*?)(if\s*\(|window\._)/.exec(html)![1];
+  var text = /window.cartData =([\s\S]*?)(;\s*)?(if\s*\(|window\._)/.exec(html)![1];
   var data: {
     traceId: string;
     areaId: string;

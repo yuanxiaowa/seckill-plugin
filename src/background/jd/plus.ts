@@ -16,9 +16,9 @@ export async function getPlusQuanpinList(): Promise<
     rs: { wholeCategoryCoupon }
   } = await request.get(
     "https://rsp.jd.com/coupon/dayCouponList/v1/?lt=m&an=plus.mobile&couponType=0_1&_=1578211295651",
-    {
-      referer
-    }
+    // {
+    //   referer
+    // }
   );
   return wholeCategoryCoupon;
 }

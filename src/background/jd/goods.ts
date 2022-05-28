@@ -58,14 +58,17 @@ export async function getGoodsInfo(skuId: string) {
         m_bp: string;
       };
       sence: string;
+      avlCoupon: {
+        coupons: any[];
+      };
     }
-  >eval(`(${/window\._itemInfo\s*=\s*\(([\s\S]*?})\);/.exec(ret)![1]})`);
+  >eval(`(${/window\._itemInfo\s*=\s*\(([\s\S]*?})\)\s*;\s*<\/script>/.exec(ret)![1]})`);
   if (!res.item) {
     res.item = JSON.parse(
       /window\._itemOnly\s*=\s*\(([\s\S]*?})\);/.exec(ret)![1]
     ).item;
   }
-  return res;
+  return { ...res, coupons: res.avlCoupon.coupons };
 }
 
 export async function getGoodsList(args: ArgSearch): Promise<any> {
@@ -112,7 +115,8 @@ export async function getGoodsList(args: ArgSearch): Promise<any> {
         title: item.Content.warename,
         price: item.dredisprice,
         img:
-          "https://img12.360buyimg.com/mobilecms/s455x455_" + item.Content.imageurl,
+          "https://img12.360buyimg.com/mobilecms/s455x455_" +
+          item.Content.imageurl,
       },
       item
     );
@@ -199,12 +203,15 @@ export async function calcPrice({
     price,
     promov2: [{ pis }],
     pingouItem,
+    coupons
   } = await getGoodsInfo(skuId);
-  var coupons = await queryGoodsCoupon({
-    skuId,
-    vid: item.venderID,
-    cid: item.category[item.category.length - 1],
-  });
+  if (!coupons) {
+    coupons = await queryGoodsCoupon({
+      skuId,
+      vid: item.venderID,
+      cid: item.category[item.category.length - 1],
+    });
+  }
   pis = pis.filter(({ subextinfo }) => subextinfo);
   // 满199元减80元
   // {"extType":1,"subExtType":1,"subRuleList":[{"needMoney":"199","rewardMoney":"80","subRuleList":[],"subRuleType":1}]}

@@ -6,6 +6,8 @@ type EventMap = {
   navigationCompleted: [
     chrome.webNavigation.WebNavigationFramedCallbackDetails
   ];
+  navigationRepaced: [chrome.webNavigation.WebNavigationFramedCallbackDetails];
+  DOMContentLoaded: [chrome.webNavigation.WebNavigationFramedCallbackDetails];
   request: [any];
 };
 
@@ -50,6 +52,12 @@ export class ChromePage {
         return;
       }
       this.emit("navigationCompleted", details);
+    });
+    chrome.webNavigation.onDOMContentLoaded.addListener((details) => {
+      if (details.tabId !== this.tab.id) {
+        return;
+      }
+      this.emit("DOMContentLoaded", details);
     });
   }
   t = 0;
@@ -127,13 +135,13 @@ export class ChromePage {
   ) {
     var args_str = args.map((arg) => JSON.stringify(arg)).join(",");
     var code = typeof fn !== "string" ? `(${fn.toString()})(${args_str})` : fn;
-    return this.executeScript(code);
+    return this.executeScript(code, true);
   }
 
-  waitForResponse(filter: (url: string) => boolean) {
+  waitForResponse(filter: (url: string, method: string) => boolean) {
     return new Promise<void>((resolve) => {
       const destroyFn = this.on("requestCompleted", (details) => {
-        if (filter(details.url)) {
+        if (details.tabId === this.id && filter(details.url, details.method)) {
           destroyFn();
           resolve();
         }
@@ -144,7 +152,7 @@ export class ChromePage {
     return new Promise<chrome.webNavigation.WebNavigationFramedCallbackDetails>(
       (resolve) => {
         const destroyFn = this.on("navigationCompleted", (details) => {
-          if (details.frameId === 0) {
+          if (details.tabId === this.id && details.frameId === 0) {
             destroyFn();
             resolve(details);
           }
@@ -207,8 +215,15 @@ export class ChromePage {
     });
   }
 
-  executeScript(code: string) {
+  executeScript(code: string, shared = false) {
     return new Promise<any>((resolve) => {
+      if (shared) {
+        code = `const _script = document.createElement('script');
+        _script.textContent=\`${code.replace(/(`|\\|\$\{)/g, '\\$1')}\`;
+        document.body.appendChild(_script);
+        console.log(_script);
+        `
+      }
       chrome.tabs.executeScript(
         this.id,
         {

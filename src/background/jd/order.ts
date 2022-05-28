@@ -94,6 +94,95 @@ export async function submitOrder(
   // var startTime = Date.now();
   const handler = async () => {
     page.goto(args.data.submit_url);
+    await page.waitForResponse((url) => url.includes("client.action?appid"));
+    // await delay(100);
+    page.evaluate(
+      function f(pass, expectedPrice) {
+        let price_Ele: HTMLDivElement;
+        function start() {
+          if (typeof expectedPrice === "number") {
+            let price = Number(price_Ele.textContent!.substring(1));
+            if (price > expectedPrice + 0.1) {
+              throw new Error(`价格太高了, 期望为${expectedPrice}`);
+            }
+          }
+
+          var btn = price_Ele.nextElementSibling as HTMLDivElement;
+          function submit() {
+            // console.log(new Date(), "去下单");
+            btn.click();
+          }
+          setInterval(() => {
+            // handler();
+            var eles = document.querySelectorAll(
+              "taro-view-core[class^=modal_index__]"
+            );
+            Array.from(eles).forEach((ele) => {
+              ele.parentNode!.removeChild(ele);
+            });
+          }, 5000);
+          const oldOpen = XMLHttpRequest.prototype.open;
+          XMLHttpRequest.prototype.open = function(...args) {
+            if (args[1] === "https://api.m.jd.com/client.action") {
+              this.addEventListener("readystatechange", () => {
+                if (this.readyState !== 4) {
+                  return;
+                }
+                const {
+                  body: { errorCode },
+                } = JSON.parse(this.responseText);
+                if (errorCode) {
+                  btn.click()
+                }
+              });
+            }
+            // @ts-ignore
+            oldOpen.apply(this, args);
+          };
+          submit();
+        }
+        function loop() {
+          price_Ele = document.querySelector<HTMLDivElement>(
+            "taro-view-core[class^=Submit_index__total__]"
+          )!;
+          if (price_Ele) {
+            start();
+          } else {
+            requestAnimationFrame(loop);
+          }
+        }
+        loop();
+      },
+      accounts.jingdong.paypass,
+      args.expectedPrice
+    );
+  };
+  return async () => {
+    await handler();
+    page.on("DOMContentLoaded", (details) => {
+      if (page.id !== details.tabId) {
+        return;
+      }
+      if (details.url !== args.data.submit_url) {
+      } else {
+        handler();
+      }
+    });
+  };
+}
+
+export async function submitOrder_old(
+  args: ArgOrder<{
+    submit_url: string;
+  }>
+): Promise<any> {
+  if (args.from_pc) {
+    return submitOrderPc(args);
+  }
+  var page = await newPage();
+  // var startTime = Date.now();
+  const handler = async () => {
+    page.goto(args.data.submit_url);
     await page.waitForResponse((url) => url.includes("userasset"));
     // await delay(100);
     page.evaluate(

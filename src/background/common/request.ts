@@ -74,7 +74,7 @@ export const request: {
     params: qs,
     method,
     headers: {
-      _origin: new URL(url).origin,
+      // _origin: new URL(url).origin,
       ...headers,
     },
   });
